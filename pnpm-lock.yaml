@@ -6,7 +6,9 @@ settings:
 
 importers:
 
-  .:
+  .: {}
+
+  api:
     dependencies:
       dotenv:
         specifier: ^17.2.1
