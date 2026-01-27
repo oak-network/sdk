@@ -433,3 +433,579 @@ The root `package.json` stays at the root for workspace management, and each pac
 
 ---
 
+_**User**_
+
+create an .env and env-sample to handling envs with the startup variables:   CLIENT_ID, CLIENT_SECRET, BASE_URL"
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+Creating `.env` and `.env-sample` with the startup variables. Checking for existing `.env` files and `.gitignore` entries:
+
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "undefined" • **0** result in **1** directory</summary>
+
+Directory: **undefined** (0 file)
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /Users/vinhas/Documents/code/CCP/sdk/.gitignore</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+`.env` is already in `.gitignore`. Creating `.env-sample` (committed) and `.env` (gitignored) at the root:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2">
+
+<details><summary>Tool use: **edit_file_v2** • Edit file: /Users/vinhas/Documents/code/CCP/sdk/.env-sample</summary>
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2">
+
+<details><summary>Tool use: **edit_file_v2** • Edit file: /Users/vinhas/Documents/code/CCP/sdk/.env</summary>
+
+</details>
+
+</tool-use>
+
+---
+
+
+Created both files:
+
+1. **`.env-sample`** — Template file (commit to git) with:
+   - Placeholder values and comments
+   - Example BASE_URL
+
+2. **`.env`** — Actual environment file (gitignored) with:
+   - Empty values for `CLIENT_ID` and `CLIENT_SECRET` (fill in your credentials)
+   - Default `BASE_URL` set to `https://api.crowdsplit.com`
+
+The `.env` file is already in your `.gitignore`, so it won't be committed. Developers can copy `.env-sample` to `.env` and fill in their values.
+
+Both files are at the root of your monorepo, which is standard for managing environment variables across workspace packages.
+
+---
+
+_**User**_
+
+I moved api to /packages/api, accomodate the rest of the code for that 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+Updating configuration files to reflect the new `packages/api` location. Checking the current structure and updating references:
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="list_dir_v2">
+<details>
+<summary>Tool use: **list_dir_v2**</summary>
+
+
+Parameters:
+
+```json
+{
+  "targetDirectory": "/Users/vinhas/Documents/code/CCP/sdk"
+}
+```
+Result:
+
+```json
+{
+  "directoryTreeRoot": {
+    "absPath": "/Users/vinhas/Documents/code/CCP/sdk",
+    "childrenDirs": [
+      {
+        "absPath": "/Users/vinhas/Documents/code/CCP/sdk/.specstory",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/vinhas/Documents/code/CCP/sdk/.specstory/history",
+            "childrenFiles": [
+              {
+                "name": "2026-01-27_14-05Z-pnpm-monorepo-package-structure.md"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenFiles": [
+          {
+            "name": ".gitignore"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/vinhas/Documents/code/CCP/sdk/.vscode",
+        "childrenFiles": [
+          {
+            "name": "settings.json"
+          }
+        ],
+        "childrenWereProcessed": true
+      },
+      {
+        "absPath": "/Users/vinhas/Documents/code/CCP/sdk/packages",
+        "childrenDirs": [
+          {
+            "absPath": "/Users/vinhas/Documents/code/CCP/sdk/packages/api",
+            "childrenDirs": [
+              {
+                "absPath": "/Users/vinhas/Documents/code/CCP/sdk/packages/api/__tests__",
+                "childrenDirs": [
+                  {
+                    "absPath": "/Users/vinhas/Documents/code/CCP/sdk/packages/api/__tests__/integration",
+                    "childrenFiles": [
+                      {
+                        "name": "authService.test.ts"
+                      },
+                      {
+                        "name": "customerService.test.ts"
+                      }
+                    ],
+                    "childrenWereProcessed": true
+                  },
+                  {
+                    "absPath": "/Users/vinhas/Documents/code/CCP/sdk/packages/api/__tests__/unit",
+                    "childrenFiles": [
+                      {
+                        "name": "authService.test.ts"
+                      },
+                      {
+                        "name": "customerService.test.ts"
+                      }
+                    ],
+                    "childrenWereProcessed": true
+                  }
+                ],
+                "childrenFiles": [
+                  {
+                    "name": "config.ts"
+                  }
+                ],
+                "childrenWereProcessed": true
+              },
+              {
+                "absPath": "/Users/vinhas/Documents/code/CCP/sdk/packages/api/src",
+                "childrenDirs": [
+                  {
+                    "absPath": "/Users/vinhas/Documents/code/CCP/sdk/packages/api/src/services",
+                    "childrenFiles": [
+                      {
+                        "name": "authService.ts"
+                      },
+                      {
+                        "name": "buyService.ts"
+                      },
+                      {
+                        "name": "customerService.ts"
+                      },
+                      {
+                        "name": "index.ts"
+                      },
+                      {
+                        "name": "paymentService.ts"
+                      },
+                      {
+                        "name": "planService.ts"
+                      },
+                      {
+                        "name": "providerService.ts"
+                      },
+                      {
+                        "name": "sellService.ts"
+                      },
+                      {
+                        "name": "transactionService.ts"
+                      },
+                      {
+                        "name": "transferService.ts"
+                      },
+                      {
+                        "name": "webhookService.ts"
+                      }
+                    ],
+                    "childrenWereProcessed": true
+                  },
+                  {
+                    "absPath": "/Users/vinhas/Documents/code/CCP/sdk/packages/api/src/types",
+                    "childrenFiles": [
+                      {
+                        "name": "buy.ts"
+                      },
+                      {
+                        "name": "common.ts"
+                      },
+                      {
+                        "name": "config.ts"
+                      },
+                      {
+                        "name": "customer.ts"
+                      },
+                      {
+                        "name": "index.ts"
+                      },
+                      {
+                        "name": "payment.ts"
+                      },
+                      {
+                        "name": "plan.ts"
+                      },
+                      {
+                        "name": "provider.ts"
+                      },
+                      {
+                        "name": "sell.ts"
+                      },
+                      {
+                        "name": "token.ts"
+                      },
+                      {
+                        "name": "transactions.ts"
+                      },
+                      {
+                        "name": "transfer.ts"
+                      },
+                      {
+                        "name": "webhook.ts"
+                      }
+                    ],
+                    "childrenWereProcessed": true
+                  },
+                  {
+                    "absPath": "/Users/vinhas/Documents/code/CCP/sdk/packages/api/src/utils",
+                    "childrenFiles": [
+                      {
+                        "name": "defaultRetryConfig.ts"
+                      },
+                      {
+                        "name": "errorHandler.ts"
+                      },
+                      {
+                        "name": "httpClient.ts"
+                      },
+                      {
+                        "name": "index.ts"
+                      },
+                      {
+                        "name": "retryHandler.ts"
+                      }
+                    ],
+                    "childrenWereProcessed": true
+                  }
+                ],
+                "childrenFiles": [
+                  {
+                    "name": "crowdsplitSDK.ts"
+                  },
+                  {
+                    "name": "index.ts"
+                  }
+                ],
+                "childrenWereProcessed": true
+              }
+            ],
+            "childrenFiles": [
+              {
+                "name": "jest.config.js"
+              },
+              {
+                "name": "package.json"
+              },
+              {
+                "name": "test-sdk.ts"
+              },
+              {
+                "name": "tsconfig.json"
+              }
+            ],
+            "childrenWereProcessed": true
+          }
+        ],
+        "childrenWereProcessed": true
+      }
+    ],
+    "childrenFiles": [
+      {
+        "name": ".cursorindexingignore"
+      },
+      {
+        "name": ".env-sample"
+      },
+      {
+        "name": ".gitignore"
+      },
+      {
+        "name": ".npmignore"
+      },
+      {
+        "name": "package.json"
+      },
+      {
+        "name": "pnpm-lock.yaml"
+      },
+      {
+        "name": "pnpm-workspace.yaml"
+      }
+    ],
+    "childrenWereProcessed": true
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /Users/vinhas/Documents/code/CCP/sdk/pnpm-workspace.yaml</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /Users/vinhas/Documents/code/CCP/sdk/package.json</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+Checking other configuration files for references to the old path:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /Users/vinhas/Documents/code/CCP/sdk/.vscode/settings.json</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "api/",
+  "path": "/Users/vinhas/Documents/code/CCP/sdk",
+  "outputMode": "files_with_matches",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "api/",
+    "path": "/Users/vinhas/Documents/code/CCP/sdk",
+    "outputMode": "files_with_matches",
+    "workspaceResults": {
+      "/Users/vinhas/Documents/code/CCP/sdk": {
+        "files": {
+          "files": [
+            "./.specstory/history/2026-01-27_14-05Z-pnpm-monorepo-package-structure.md",
+            "./pnpm-lock.yaml",
+            "./packages/api/src/services/webhookService.ts",
+            "./packages/api/src/services/transferService.ts",
+            "./packages/api/src/services/transactionService.ts",
+            "./packages/api/src/services/sellService.ts",
+            "./packages/api/src/services/providerService.ts",
+            "./packages/api/src/services/planService.ts",
+            "./packages/api/src/services/paymentService.ts",
+            "./packages/api/src/services/customerService.ts",
+            "./packages/api/src/services/buyService.ts",
+            "./packages/api/src/services/authService.ts",
+            "./packages/api/__tests__/unit/customerService.test.ts",
+            "./packages/api/__tests__/unit/authService.test.ts",
+            "./.gitignore"
+          ],
+          "totalFiles": 15
+        }
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+Updating `pnpm-workspace.yaml` to use the new path:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="edit_file_v2">
+
+<details><summary>Tool use: **edit_file_v2** • Edit file: /Users/vinhas/Documents/code/CCP/sdk/pnpm-workspace.yaml</summary>
+
+</details>
+
+</tool-use>
+
+---
+
+
+Checking for TypeScript configs or other files that might reference the old path:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /Users/vinhas/Documents/code/CCP/sdk/packages/api/tsconfig.json</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "undefined" • **1** result in **1** directory</summary>
+
+Directory: **undefined** (1 file)
+
+| File |
+|------|
+| `./packages/api/tsconfig.json` |
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="ripgrep_raw_search">
+<details>
+<summary>Tool use: **ripgrep_raw_search**</summary>
+
+
+Parameters:
+
+```json
+{
+  "pattern": "\\\"api\\\"",
+  "path": "/Users/vinhas/Documents/code/CCP/sdk",
+  "outputMode": "files_with_matches",
+  "caseInsensitive": false
+}
+```
+Result:
+
+```json
+{
+  "success": {
+    "pattern": "\\\"api\\\"",
+    "path": "/Users/vinhas/Documents/code/CCP/sdk",
+    "outputMode": "files_with_matches",
+    "workspaceResults": {
+      "/Users/vinhas/Documents/code/CCP/sdk": {
+        "files": {}
+      }
+    }
+  }
+}
+```
+Status: **completed**
+
+
+</details>
+</tool-use>
+
+---
+
+
+Checking for a root-level TypeScript config and verifying the workspace setup:
+
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="glob_file_search">
+<details>
+<summary>Tool use: **glob_file_search** • Searched codebase "undefined" • **1** result in **1** directory</summary>
+
+Directory: **/Users/vinhas/Documents/code/CCP/sdk** (1 file)
+
+| File |
+|------|
+| `packages/api/tsconfig.json` |
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file_v2">
+<details><summary>Tool use: **read_file_v2** • Read file: /Users/vinhas/Documents/code/CCP/sdk/.cursorindexingignore</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+Updated the workspace configuration. Summary:
+
+## Updated Files
+
+1. **`pnpm-workspace.yaml`** — Changed from `'api'` to `'packages/*'` to include all packages in the `packages` directory.
+
+## What's Already Correct
+
+- Package-level configs (`tsconfig.json`, `package.json`) are relative to their packages, so no changes needed.
+- `.vscode/settings.json` doesn't reference specific package paths.
+- `.gitignore` and other configs don't need updates.
+
+## Next Steps
+
+Run `pnpm install` from the root to regenerate `pnpm-lock.yaml` with the new workspace structure. The workspace will now recognize all packages under `packages/`, so you can add more packages there without updating `pnpm-workspace.yaml`.
+
+The monorepo is configured for the new structure.
+
+---
+

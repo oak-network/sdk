@@ -1,6 +1,5 @@
 packages:
-  - 'api'
+  - 'packages/*'
   # Add more workspace packages here as you create them
   # Example:
-  # - 'packages/*'
   # - 'apps/*'
