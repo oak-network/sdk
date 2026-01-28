@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, develop]
   pull_request:
-    branches: [main, master, develop]
+    branches: [main, develop]
 
 jobs:
   build-and-test:
@@ -12,8 +12,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
-    
+        node-version: [18.x, 20.x, 24.x]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
