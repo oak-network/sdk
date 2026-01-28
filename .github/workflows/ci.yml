@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x, 24.x]
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,11 +33,22 @@ jobs:
         run: pnpm install --frozen-lockfile
       
       - name: Build all packages
-        run: pnpm build
+        run: pnpm -r --workspace-concurrency=Infinity build
       
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests with coverage (enforces 100% threshold)
+        run: pnpm -r --workspace-concurrency=Infinity test --coverage
+        env:
+          CI: true
+      
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports-${{ matrix.node-version }}
+          path: |
+            packages/*/coverage/
+          retention-days: 30
       
       - name: Run lint
-        run: pnpm lint
+        run: pnpm -r --workspace-concurrency=Infinity lint
         continue-on-error: true

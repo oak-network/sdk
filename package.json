@@ -5,7 +5,8 @@
   "description": "Crowdsplit SDK Monorepo",
   "scripts": {
     "build": "pnpm -r build",
-    "test": "pnpm -r test",
+    "test": "pnpm -r test --coverage",
+    "test:ci": "pnpm -r test --coverage",
     "lint": "pnpm -r lint",
     "clean": "pnpm -r clean"
   },

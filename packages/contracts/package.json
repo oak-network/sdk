@@ -1,16 +1,13 @@
 {
-  "name": "crowdsplit-sdk",
+  "name": "@crowdsplit/contracts",
   "version": "1.0.0",
-  "description": "TypeScript SDK for Crowdsplit API",
+  "description": "Contract definitions and types for Crowdsplit SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "test": "jest __tests__/unit --coverage",
-    "test:unit": "jest __tests__/unit --coverage",
-    "test:integration": "jest __tests__/integration --coverage",
-    "test:all": "jest --coverage",
+    "test": "jest --coverage",
     "test:watch": "jest --watchAll"
   },
   "devDependencies": {
@@ -26,9 +23,5 @@
   "files": [
     "dist"
   ],
-  "dependencies": {
-    "dotenv": "^17.2.1",
-    "nock": "^14.0.10"
-  },
   "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a"
 }
