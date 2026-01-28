@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -31,6 +33,9 @@ jobs:
       
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Calculate next versions from changesets
+        run: pnpm changeset:status
       
       - name: Build all packages
         run: pnpm -r --workspace-concurrency=Infinity build
