@@ -1,147 +1,133 @@
-import {
-  SDKConfig,
+import type {
   CreatePlanRequest,
   CreatePlanResponse,
-  PlanDetailsResponse,
-  PlansListResponse,
-  PlansListQueryParams,
   DeletePlanResponse,
+  OakClient,
+  PlanDetailsResponse,
+  PlansListQueryParams,
+  PlansListResponse,
   PublishPlanResponse,
   UpdatePlanRequest,
   UpdatePlanResponse,
 } from "../types";
-import { httpClient, SDKError } from "../utils";
-import { RetryOptions } from "../utils/defaultRetryConfig";
-import { AuthService } from "./authService";
+import { httpClient } from "../utils/httpClient";
+import { SDKError } from "../utils/errorHandler";
+import { buildQueryString } from "./helpers";
 
-export class PlanService {
-  private config: SDKConfig;
-  private authService: AuthService;
-  private retryOptions: RetryOptions;
+export interface PlanService {
+  createPlan(createPlanRequest: CreatePlanRequest): Promise<CreatePlanResponse>;
+  publishPlan(id: string): Promise<PublishPlanResponse>;
+  planDetails(id: string): Promise<PlanDetailsResponse>;
+  listAvailablePlans(params?: PlansListQueryParams): Promise<PlansListResponse>;
+  updatePlan(id: string, updatePlanRequest: UpdatePlanRequest): Promise<UpdatePlanResponse>;
+  deletePlan(id: string): Promise<DeletePlanResponse>;
+}
 
-  constructor(
-    config: SDKConfig,
-    authService: AuthService,
-    retryOptions: RetryOptions
-  ) {
-    this.config = config;
-    this.authService = authService;
-    this.retryOptions = retryOptions;
-  }
-
+export const createPlanService = (client: OakClient): PlanService => ({
   async createPlan(
     createPlanRequest: CreatePlanRequest
   ): Promise<CreatePlanResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
       const response = await httpClient.post<CreatePlanResponse>(
-        `${this.config.baseUrl}/api/v1/subscription/plans`,
+        `${client.config.baseUrl}/api/v1/subscription/plans`,
         createPlanRequest,
         {
           headers: { Authorization: `Bearer ${token}` },
-          retryOptions: this.retryOptions,
+          retryOptions: client.retryOptions,
         }
       );
       return response;
     } catch (error) {
       throw new SDKError("Failed to create plan", error);
     }
-  }
+  },
 
   async publishPlan(id: string): Promise<PublishPlanResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
       const response = await httpClient.patch<PublishPlanResponse>(
-        `${this.config.baseUrl}/api/v1/subscription/plans/${id}/publish`,
-        undefined, // no body needed
+        `${client.config.baseUrl}/api/v1/subscription/plans/${id}/publish`,
+        undefined,
         {
           headers: { Authorization: `Bearer ${token}` },
-          retryOptions: this.retryOptions,
+          retryOptions: client.retryOptions,
         }
       );
       return response;
     } catch (error) {
       throw new SDKError("Failed to publish plan", error);
     }
-  }
+  },
 
   async planDetails(id: string): Promise<PlanDetailsResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
       const response = await httpClient.get<PlanDetailsResponse>(
-        `${this.config.baseUrl}/api/v1/subscription/plans/${id}`,
+        `${client.config.baseUrl}/api/v1/subscription/plans/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          retryOptions: this.retryOptions,
+          retryOptions: client.retryOptions,
         }
       );
       return response;
     } catch (error) {
       throw new SDKError("Failed to get plan details", error);
     }
-  }
+  },
 
   async listAvailablePlans(
     params?: PlansListQueryParams
   ): Promise<PlansListResponse> {
-    const queryString = params
-      ? `?${Object.entries(params)
-          .filter(([_, value]) => value !== undefined)
-          .map(
-            ([key, value]) =>
-              `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
-          )
-          .join("&")}`
-      : "";
-
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
+      const queryString = buildQueryString(params);
       const response = await httpClient.get<PlansListResponse>(
-        `${this.config.baseUrl}/api/v1/subscription/plans/${queryString}`,
+        `${client.config.baseUrl}/api/v1/subscription/plans${queryString}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          retryOptions: this.retryOptions,
+          retryOptions: client.retryOptions,
         }
       );
       return response;
     } catch (error) {
       throw new SDKError("Failed to get available plans", error);
     }
-  }
+  },
 
   async updatePlan(
     id: string,
-    createPlanRequest: UpdatePlanRequest
+    updatePlanRequest: UpdatePlanRequest
   ): Promise<UpdatePlanResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
       const response = await httpClient.patch<UpdatePlanResponse>(
-        `${this.config.baseUrl}/api/v1/subscription/plans/${id}`,
-        createPlanRequest,
+        `${client.config.baseUrl}/api/v1/subscription/plans/${id}`,
+        updatePlanRequest,
         {
           headers: { Authorization: `Bearer ${token}` },
-          retryOptions: this.retryOptions,
+          retryOptions: client.retryOptions,
         }
       );
       return response;
     } catch (error) {
       throw new SDKError("Failed to update plan", error);
     }
-  }
+  },
 
   async deletePlan(id: string): Promise<DeletePlanResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
       const response = await httpClient.delete<DeletePlanResponse>(
-        `${this.config.baseUrl}/api/v1/subscription/plans/${id}`,
+        `${client.config.baseUrl}/api/v1/subscription/plans/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          retryOptions: this.retryOptions,
+          retryOptions: client.retryOptions,
         }
       );
       return response;
     } catch (error) {
       throw new SDKError("Failed to delete plan", error);
     }
-  }
-}
+  },
+});

@@ -1,8 +1,3 @@
-import { RetryOptions } from "../utils";
+import type { OakClientConfig } from "./client";
 
-export interface SDKConfig {
-  baseUrl: string;
-  clientId: string;
-  clientSecret: string;
-  retryOptions?: Partial<RetryOptions>; // optional overrides for retry
-}
+export type SDKConfig = OakClientConfig;

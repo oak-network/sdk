@@ -1,19 +1,21 @@
 import {
-  CrowdsplitSDK,
+  createOakClient,
   CustomerListQueryParams,
   SubmitProviderRegistrationRequest,
 } from "./src";
+import { Crowdsplit } from "./src/products/crowdsplit";
 import dotenv from "dotenv";
 dotenv.config();
 
 async function testSDK() {
   console.log(process.env.BASE_URL);
   // Initialize the SDK with your backend's configuration
-  const sdk = new CrowdsplitSDK({
+  const client = createOakClient({
     baseUrl: process.env.BASE_URL as string, // Replace with your actual API base URL
     clientId: process.env.CLIENT_ID as string, // Replace with your actual client ID
     clientSecret: process.env.CLIENT_SECRET as string, // Replace with your actual client secret
   });
+  const cs = Crowdsplit(client);
 
   // try {
   //   const params: CustomerListQueryParams = {
@@ -247,7 +249,7 @@ async function testSDK() {
   // }
 
   try {
-    const response = await sdk.transaction.getAllTransactions();
+    const response = await cs.transactions.getAllTransactions();
     console.log("Webhook found :", response);
   } catch (err) {
     console.error("Error getting Webhook:", err);

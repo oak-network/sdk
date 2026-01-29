@@ -1,74 +1,72 @@
-import {
-  SDKConfig,
-  GetProviderSchemaResponse,
+import type {
   GetProviderRegistrationStatusResponse,
+  GetProviderSchemaRequest,
+  GetProviderSchemaResponse,
+  OakClient,
   SubmitProviderRegistrationRequest,
   SubmitProviderRegistrationResponse,
-  GetProviderSchemaRequest,
 } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
-import { AuthService } from "./authService";
-import { RetryOptions } from "../utils/defaultRetryConfig";
+import { getErrorBodyMessage } from "./helpers";
 
-export class ProviderService {
-  private config: SDKConfig;
-  private authService: AuthService;
-  private retryOptions: RetryOptions;
+export interface ProviderService {
+  getProviderSchema(
+    request: GetProviderSchemaRequest
+  ): Promise<GetProviderSchemaResponse>;
+  getProviderRegistrationStatus(
+    customerId: string
+  ): Promise<GetProviderRegistrationStatusResponse>;
+  submitProviderRegistration(
+    customerId: string,
+    registration: SubmitProviderRegistrationRequest
+  ): Promise<SubmitProviderRegistrationResponse>;
+}
 
-  constructor(
-    config: SDKConfig,
-    authService: AuthService,
-    retryOptions: RetryOptions
-  ) {
-    this.config = config;
-    this.authService = authService;
-    this.retryOptions = retryOptions;
-  }
-
+export const createProviderService = (client: OakClient): ProviderService => ({
   async getProviderSchema(
-    getProviderSchemaRequest: GetProviderSchemaRequest
+    request: GetProviderSchemaRequest
   ): Promise<GetProviderSchemaResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
 
       const response = await httpClient.get<GetProviderSchemaResponse>(
         `${
-          this.config.baseUrl
+          client.config.baseUrl
         }/api/v1/provider-registration/schema?provider=${encodeURIComponent(
-          getProviderSchemaRequest.provider
+          request.provider
         )}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          retryOptions: this.retryOptions,
+          retryOptions: client.retryOptions,
         }
       );
 
       return response;
     } catch (error) {
       throw new SDKError(
-        `Failed to retrieve provider schema for ${getProviderSchemaRequest.provider}`,
+        `Failed to retrieve provider schema for ${request.provider}`,
         error
       );
     }
-  }
+  },
 
   async getProviderRegistrationStatus(
     customerId: string
   ): Promise<GetProviderRegistrationStatusResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
 
       const response =
         await httpClient.get<GetProviderRegistrationStatusResponse>(
-          `${this.config.baseUrl}/api/v1/provider-registration/${customerId}/status`,
+          `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/status`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-            retryOptions: this.retryOptions,
+            retryOptions: client.retryOptions,
           }
         );
 
@@ -79,34 +77,34 @@ export class ProviderService {
         error
       );
     }
-  }
+  },
 
   async submitProviderRegistration(
     customerId: string,
     registration: SubmitProviderRegistrationRequest
   ): Promise<SubmitProviderRegistrationResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
 
       const response =
         await httpClient.post<SubmitProviderRegistrationResponse>(
-          `${this.config.baseUrl}/api/v1/provider-registration/${customerId}/submit`,
+          `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/submit`,
           registration,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-            retryOptions: this.retryOptions,
+            retryOptions: client.retryOptions,
           }
         );
 
       return response;
-    } catch (error: any) {
-      const msg = error.body?.msg || "Unknown error";
+    } catch (error) {
+      const msg = getErrorBodyMessage(error) || "Unknown error";
       throw new SDKError(
         `Failed to submit provider registration for customer ${customerId}: ${msg}`,
         error
       );
     }
-  }
-}
+  },
+});

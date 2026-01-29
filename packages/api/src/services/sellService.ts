@@ -1,39 +1,28 @@
-import { SDKConfig, CreateSellRequest, CreateSellResponse } from "../types";
-import { httpClient, SDKError } from "../utils";
-import { RetryOptions } from "../utils/defaultRetryConfig";
-import { AuthService } from "./authService";
+import type { CreateSellRequest, CreateSellResponse, OakClient } from "../types";
+import { httpClient } from "../utils/httpClient";
+import { SDKError } from "../utils/errorHandler";
 
-export class SellService {
-  private config: SDKConfig;
-  private authService: AuthService;
-  private retryOptions: RetryOptions;
+export interface SellService {
+  createSell(sellRequest: CreateSellRequest): Promise<CreateSellResponse>;
+}
 
-  constructor(
-    config: SDKConfig,
-    authService: AuthService,
-    retryOptions: RetryOptions
-  ) {
-    this.config = config;
-    this.authService = authService;
-    this.retryOptions = retryOptions;
-  }
-
+export const createSellService = (client: OakClient): SellService => ({
   async createSell(
     sellRequest: CreateSellRequest
   ): Promise<CreateSellResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
       const response = await httpClient.post<CreateSellResponse>(
-        `${this.config.baseUrl}/api/v1/sell`,
+        `${client.config.baseUrl}/api/v1/sell`,
         sellRequest,
         {
           headers: { Authorization: `Bearer ${token}` },
-          retryOptions: this.retryOptions,
+          retryOptions: client.retryOptions,
         }
       );
       return response;
     } catch (error) {
       throw new SDKError("Failed to create sell", error);
     }
-  }
-}
+  },
+});

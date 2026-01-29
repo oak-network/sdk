@@ -1,4 +1,5 @@
 export * from "./config";
+export * from "./client";
 export * from "./token";
 export * from "./payment";
 export * from "./customer";

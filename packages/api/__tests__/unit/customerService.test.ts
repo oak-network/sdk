@@ -1,5 +1,5 @@
-import { CustomerService } from "../../src/services/customerService";
-import { AuthService } from "../../src/services/authService";
+import { createOakClient } from "../../src";
+import { Crowdsplit } from "../../src/products/crowdsplit";
 import { httpClient } from "../../src/utils/httpClient";
 import { SDKError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils/defaultRetryConfig";
@@ -18,8 +18,8 @@ jest.mock("../../src/utils/httpClient", () => ({
 }));
 
 describe("CustomerService - Unit", () => {
-  let customerService: CustomerService;
-  let mockAuthService: jest.Mocked<AuthService>;
+  let customers: ReturnType<typeof Crowdsplit>["customers"];
+  let client: ReturnType<typeof createOakClient>;
   let config: SDKConfig;
   let retryOptions: RetryOptions;
 
@@ -30,15 +30,12 @@ describe("CustomerService - Unit", () => {
       baseUrl: process.env.BASE_URL!, // staging URL
     };
     retryOptions = { maxNumberOfRetries: 1, delay: 100, backoffFactor: 2 };
-    mockAuthService = {
-      getAccessToken: jest.fn().mockResolvedValue("fake-token"),
-    } as any;
-
-    customerService = new CustomerService(
-      config,
-      mockAuthService,
-      retryOptions
-    );
+    client = createOakClient({
+      ...config,
+      retryOptions,
+    });
+    jest.spyOn(client, "getAccessToken").mockResolvedValue("fake-token");
+    customers = Crowdsplit(client).customers;
     jest.clearAllMocks();
   });
 
@@ -48,15 +45,15 @@ describe("CustomerService - Unit", () => {
       const mockResponse = { data: { email: "test@example.com" } };
       (httpClient.post as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await customerService.createCustomer(request);
+      const result = await customers.createCustomer(request);
 
-      expect(mockAuthService.getAccessToken).toHaveBeenCalled();
+      expect(client.getAccessToken).toHaveBeenCalled();
       expect(httpClient.post).toHaveBeenCalledWith(
         `${process.env.BASE_URL}/api/v1/customers`,
         request,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
-          retryOptions,
+          retryOptions: expect.objectContaining(retryOptions),
         })
       );
       expect(result).toBe(mockResponse);
@@ -68,7 +65,7 @@ describe("CustomerService - Unit", () => {
       );
 
       await expect(
-        customerService.createCustomer({ email: "fail@example.com" })
+        customers.createCustomer({ email: "fail@example.com" })
       ).rejects.toThrow(SDKError);
     });
   });
@@ -78,13 +75,13 @@ describe("CustomerService - Unit", () => {
       const mockResponse = { data: { email: "test@example.com" } };
       (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await customerService.getCustomer("123");
+      const result = await customers.getCustomer("123");
 
       expect(httpClient.get).toHaveBeenCalledWith(
         `${process.env.BASE_URL}/api/v1/customers/123`,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
-          retryOptions,
+          retryOptions: expect.objectContaining(retryOptions),
         })
       );
       expect(result).toBe(mockResponse);
@@ -97,13 +94,13 @@ describe("CustomerService - Unit", () => {
       const mockResponse = { data: { count: 1, customer_list: [] } };
       (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await customerService.getAllCustomers(params);
+      const result = await customers.getAllCustomers(params);
 
       expect(httpClient.get).toHaveBeenCalledWith(
         `${process.env.BASE_URL}/api/v1/customers?limit=10&offset=5`,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
-          retryOptions,
+          retryOptions: expect.objectContaining(retryOptions),
         })
       );
       expect(result).toBe(mockResponse);
@@ -116,14 +113,14 @@ describe("CustomerService - Unit", () => {
       const mockResponse = { data: { email: "updated@example.com" } };
       (httpClient.put as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await customerService.updateCustomer("123", updateData);
+      const result = await customers.updateCustomer("123", updateData);
 
       expect(httpClient.put).toHaveBeenCalledWith(
         `${process.env.BASE_URL}/api/v1/customers/123`,
         updateData,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
-          retryOptions,
+          retryOptions: expect.objectContaining(retryOptions),
         })
       );
       expect(result).toBe(mockResponse);

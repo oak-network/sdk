@@ -1,9 +1,27 @@
 {
-  "name": "crowdsplit-sdk",
+  "name": "@oak-network/api",
   "version": "1.0.0",
   "description": "TypeScript SDK for Crowdsplit API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./services": {
+      "types": "./dist/services/index.d.ts",
+      "default": "./dist/services/index.js"
+    },
+    "./services/*": {
+      "types": "./dist/services/*.d.ts",
+      "default": "./dist/services/*.js"
+    },
+    "./products/crowdsplit": {
+      "types": "./dist/products/crowdsplit/index.d.ts",
+      "default": "./dist/products/crowdsplit/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",

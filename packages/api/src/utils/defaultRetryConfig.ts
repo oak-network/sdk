@@ -18,7 +18,7 @@ export const DEFAULT_RETRY_OPTIONS: RetryOptions = {
   retryOnError: (err) => Boolean(err?.isNetworkError),
   onRetry: (attempt, error) =>
     console.warn(
-      `[CrowdsplitSDK] Retry attempt ${attempt} due to:`,
+      `[OakClient] Retry attempt ${attempt} due to:`,
       error.message
     ),
 };

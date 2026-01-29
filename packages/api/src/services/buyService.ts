@@ -1,37 +1,26 @@
-import { SDKConfig, CreateBuyRequest, CreateBuyResponse } from "../types";
-import { httpClient, SDKError } from "../utils";
-import { RetryOptions } from "../utils/defaultRetryConfig";
-import { AuthService } from "./authService";
+import type { CreateBuyRequest, CreateBuyResponse, OakClient } from "../types";
+import { httpClient } from "../utils/httpClient";
+import { SDKError } from "../utils/errorHandler";
 
-export class BuyService {
-  private config: SDKConfig;
-  private authService: AuthService;
-  private retryOptions: RetryOptions;
+export interface BuyService {
+  createBuy(buyRequest: CreateBuyRequest): Promise<CreateBuyResponse>;
+}
 
-  constructor(
-    config: SDKConfig,
-    authService: AuthService,
-    retryOptions: RetryOptions
-  ) {
-    this.config = config;
-    this.authService = authService;
-    this.retryOptions = retryOptions;
-  }
-
-  async createBuy(BuyRequest: CreateBuyRequest): Promise<CreateBuyResponse> {
+export const createBuyService = (client: OakClient): BuyService => ({
+  async createBuy(buyRequest: CreateBuyRequest): Promise<CreateBuyResponse> {
     try {
-      const token = await this.authService.getAccessToken();
+      const token = await client.getAccessToken();
       const response = await httpClient.post<CreateBuyResponse>(
-        `${this.config.baseUrl}/api/v1/buy`,
-        BuyRequest,
+        `${client.config.baseUrl}/api/v1/buy`,
+        buyRequest,
         {
           headers: { Authorization: `Bearer ${token}` },
-          retryOptions: this.retryOptions,
+          retryOptions: client.retryOptions,
         }
       );
       return response;
     } catch (error) {
       throw new SDKError("Failed to create buy", error);
     }
-  }
-}
+  },
+});
