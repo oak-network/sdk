@@ -1,4 +1,4 @@
-import { SDKConfig, TokenRequest, TokenResponse } from "../types";
+import { SDKConfig, TokenRequest, TokenResponse, Result, ok, err } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 import { RetryOptions } from "../utils/defaultRetryConfig";
@@ -14,7 +14,7 @@ export class AuthService {
     this.retryOptions = retryOptions;
   }
 
-  async grantToken(): Promise<TokenResponse> {
+  async grantToken(): Promise<Result<TokenResponse, SDKError>> {
     try {
       const payload: TokenRequest = {
         client_id: this.config.clientId,
@@ -31,13 +31,13 @@ export class AuthService {
       );
       this.accessToken = response.access_token;
       this.tokenExpiration = Date.now() + response.expires_in;
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError("Failed to grant token", error);
+      return err(new SDKError("Failed to grant token", error));
     }
   }
 
-  async getAccessToken(): Promise<string> {
+  async getAccessToken(): Promise<Result<string, SDKError>> {
     const currentTime = Date.now();
     // Assume token is invalid if it doesn't exist or is within 60 seconds of expiring
     if (
@@ -46,8 +46,11 @@ export class AuthService {
       currentTime >= this.tokenExpiration - 60000
     ) {
       const response = await this.grantToken();
-      return response.access_token;
+      if (!response.ok) {
+        return response;
+      }
+      return ok(response.value.access_token);
     }
-    return this.accessToken;
+    return ok(this.accessToken);
   }
 }

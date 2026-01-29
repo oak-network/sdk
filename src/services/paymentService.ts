@@ -10,6 +10,9 @@ import {
   GetAllCustomerPaymentMethodsResponse,
   DeletePaymentMethodResponse,
   GetCustomerPaymentMethodResponse,
+  Result,
+  ok,
+  err,
 } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
@@ -33,72 +36,89 @@ export class PaymentService {
 
   async createPayment(
     payment: CreatePaymentRequest
-  ): Promise<CreatePaymentResponse> {
+  ): Promise<Result<CreatePaymentResponse, SDKError>> {
     try {
       // Proactively ensure a valid token before making the request
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const response = await httpClient.post<CreatePaymentResponse>(
         `${this.config.baseUrl}/api/v1/payments/`,
         payment,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.value}`,
           },
           retryOptions: this.retryOptions,
         }
       );
 
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError("Failed to create payment", error);
+      return err(new SDKError("Failed to create payment", error));
     }
   }
 
-  async confirmPayment(paymentId: string): Promise<ConfirmPaymentResponse> {
+  async confirmPayment(
+    paymentId: string
+  ): Promise<Result<ConfirmPaymentResponse, SDKError>> {
     try {
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const response = await httpClient.post<ConfirmPaymentResponse>(
         `${this.config.baseUrl}/api/v1/payments/${paymentId}/confirm`,
         {}, // usually confirm endpoint has empty body
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.value}`,
           },
           retryOptions: this.retryOptions,
         }
       );
 
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError(
+      return err(
+        new SDKError(
         `Failed to confirm payment with id ${paymentId}`,
         error
+        )
       );
     }
   }
 
-  async cancelPayment(paymentId: string): Promise<CancelPaymentResponse> {
+  async cancelPayment(
+    paymentId: string
+  ): Promise<Result<CancelPaymentResponse, SDKError>> {
     try {
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const response = await httpClient.post<CancelPaymentResponse>(
         `${this.config.baseUrl}/api/v1/payments/${paymentId}/cancel`,
         {},
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.value}`,
           },
           retryOptions: this.retryOptions,
         }
       );
 
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError(
+      return err(
+        new SDKError(
         `Failed to cancel payment with id ${paymentId}`,
         error
+        )
       );
     }
   }
@@ -106,26 +126,31 @@ export class PaymentService {
   async addCustomerPaymentMethod(
     customerId: string,
     paymentMethod: AddCustomerPaymentMethodRequest
-  ): Promise<AddCustomerPaymentMethodResponse> {
+  ): Promise<Result<AddCustomerPaymentMethodResponse, SDKError>> {
     try {
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const response = await httpClient.post<AddCustomerPaymentMethodResponse>(
         `${this.config.baseUrl}/api/v1/customers/${customerId}/payment_methods`,
         paymentMethod,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.value}`,
           },
           retryOptions: this.retryOptions,
         }
       );
 
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError(
+      return err(
+        new SDKError(
         `Failed to add payment method for customer ${customerId}`,
         error
+        )
       );
     }
   }
@@ -133,25 +158,30 @@ export class PaymentService {
   async getCustomerPaymentMethod(
     customerId: string,
     paymentId: string
-  ): Promise<GetCustomerPaymentMethodResponse> {
+  ): Promise<Result<GetCustomerPaymentMethodResponse, SDKError>> {
     try {
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const response = await httpClient.get<GetCustomerPaymentMethodResponse>(
         `${this.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.value}`,
           },
           retryOptions: this.retryOptions,
         }
       );
 
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError(
+      return err(
+        new SDKError(
         `Failed to get payment method for customer ${customerId}`,
         error
+        )
       );
     }
   }
@@ -159,9 +189,12 @@ export class PaymentService {
   async getAllCustomerPaymentMethods(
     customerId: string,
     query?: GetAllCustomerPaymentMethodsQuery
-  ): Promise<GetAllCustomerPaymentMethodsResponse> {
+  ): Promise<Result<GetAllCustomerPaymentMethodsResponse, SDKError>> {
     try {
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const queryString = query
         ? `?${Object.entries(query)
@@ -177,15 +210,17 @@ export class PaymentService {
         await httpClient.get<GetAllCustomerPaymentMethodsResponse>(
           `${this.config.baseUrl}/api/v1/customers/${customerId}/payment_methods?${queryString}`,
           {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token.value}` },
             retryOptions: this.retryOptions,
           }
         );
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError(
+      return err(
+        new SDKError(
         `Failed to get payment method for customer ${customerId}`,
         error
+        )
       );
     }
   }
@@ -193,25 +228,30 @@ export class PaymentService {
   async deleteCustomerPaymentMethod(
     customerId: string,
     paymentMethodId: string
-  ): Promise<DeletePaymentMethodResponse> {
+  ): Promise<Result<DeletePaymentMethodResponse, SDKError>> {
     try {
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const response = await httpClient.delete<DeletePaymentMethodResponse>(
         `${this.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentMethodId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.value}`,
           },
           retryOptions: this.retryOptions,
         }
       );
 
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError(
+      return err(
+        new SDKError(
         `Failed to delete payment method ${paymentMethodId} for customer ${customerId}`,
         error
+        )
       );
     }
   }

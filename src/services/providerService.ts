@@ -5,6 +5,9 @@ import {
   SubmitProviderRegistrationRequest,
   SubmitProviderRegistrationResponse,
   GetProviderSchemaRequest,
+  Result,
+  ok,
+  err,
 } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
@@ -28,9 +31,12 @@ export class ProviderService {
 
   async getProviderSchema(
     getProviderSchemaRequest: GetProviderSchemaRequest
-  ): Promise<GetProviderSchemaResponse> {
+  ): Promise<Result<GetProviderSchemaResponse, SDKError>> {
     try {
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const response = await httpClient.get<GetProviderSchemaResponse>(
         `${
@@ -40,43 +46,50 @@ export class ProviderService {
         )}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.value}`,
           },
           retryOptions: this.retryOptions,
         }
       );
 
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError(
-        `Failed to retrieve provider schema for ${getProviderSchemaRequest.provider}`,
-        error
+      return err(
+        new SDKError(
+          `Failed to retrieve provider schema for ${getProviderSchemaRequest.provider}`,
+          error
+        )
       );
     }
   }
 
   async getProviderRegistrationStatus(
     customerId: string
-  ): Promise<GetProviderRegistrationStatusResponse> {
+  ): Promise<Result<GetProviderRegistrationStatusResponse, SDKError>> {
     try {
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const response =
         await httpClient.get<GetProviderRegistrationStatusResponse>(
           `${this.config.baseUrl}/api/v1/provider-registration/${customerId}/status`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token.value}`,
             },
             retryOptions: this.retryOptions,
           }
         );
 
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError(
-        `Failed to retrieve provider registration status for customer ${customerId}`,
-        error
+      return err(
+        new SDKError(
+          `Failed to retrieve provider registration status for customer ${customerId}`,
+          error
+        )
       );
     }
   }
@@ -84,9 +97,12 @@ export class ProviderService {
   async submitProviderRegistration(
     customerId: string,
     registration: SubmitProviderRegistrationRequest
-  ): Promise<SubmitProviderRegistrationResponse> {
+  ): Promise<Result<SubmitProviderRegistrationResponse, SDKError>> {
     try {
       const token = await this.authService.getAccessToken();
+      if (!token.ok) {
+        return err(token.error);
+      }
 
       const response =
         await httpClient.post<SubmitProviderRegistrationResponse>(
@@ -94,18 +110,20 @@ export class ProviderService {
           registration,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token.value}`,
             },
             retryOptions: this.retryOptions,
           }
         );
 
-      return response;
+      return ok(response);
     } catch (error: any) {
       const msg = error.body?.msg || "Unknown error";
-      throw new SDKError(
-        `Failed to submit provider registration for customer ${customerId}: ${msg}`,
-        error
+      return err(
+        new SDKError(
+          `Failed to submit provider registration for customer ${customerId}: ${msg}`,
+          error
+        )
       );
     }
   }
