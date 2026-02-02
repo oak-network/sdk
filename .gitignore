@@ -1,0 +1,105 @@
+### OS junk
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+
+### Editor/IDE settings
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.history/
+.swiftpm/
+.gradle/
+.cursor/
+.cursorindexingignore
+
+### Logs and diagnostics
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+### Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+### Dependencies
+node_modules/
+jspm_packages/
+bower_components/
+typings/
+
+### Build outputs
+dist/
+build/
+lib/
+lib-cov/
+esm/
+cjs/
+out/
+coverage/
+*.lcov
+.nyc_output/
+.next/
+.nuxt/
+.vuepress/dist/
+.serverless/
+.dynamodb/
+.fusebox/
+.parcel-cache/
+.cache/
+.rollup.cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.turbo/
+.vite/
+
+### TypeScript
+*.tsbuildinfo
+
+### Package manager caches
+.npm/
+.pnpm-store/
+.yarn/
+.yarn-cache/
+.yarn-integrity
+
+### Lint/test caches
+.eslintcache
+.jest-cache/
+
+### Local environment files (keep examples)
+.env
+.env.*
+!.env.example
+!.env.sample
+!**/.env.example
+!**/.env.sample
+!**/.env-sample
+
+### Artifacts and archives
+*.tgz
+*.zip
+*.tar.gz
+
+### Misc
+.node_repl_history
+.lock-wscript
+.tern-port
+storage/
+init-queues.sh
+
+.specstory
+.specstory/** */
