@@ -1,33 +1,25 @@
 {
-  "name": "crowdsplit-sdk",
-  "version": "1.0.0",
-  "description": "TypeScript SDK for Crowdsplit API",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "name": "crowdsplit-sdk-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Crowdsplit SDK Monorepo",
   "scripts": {
-    "build": "tsc",
-    "prepublishOnly": "npm run build",
-    "test": "jest __tests__/unit --coverage",
-    "test:integration": "jest __tests__/integration --coverage",
-    "test:all": "jest --coverage",
-    "test:watch": "jest --watchAll"
+    "build": "pnpm -r build",
+    "test": "pnpm -r test --coverage",
+    "test:ci": "pnpm -r test --coverage",
+    "lint": "pnpm -r lint",
+    "clean": "pnpm -r clean",
+    "changeset": "changeset",
+    "changeset:status": "changeset status --since origin/main",
+    "changeset:version": "changeset version"
   },
   "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "@types/node": "^20.14.11",
-    "jest": "^30.0.5",
-    "ts-jest": "^29.4.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "@changesets/cli": "^2.29.8",
+    "@types/jest": "^30.0.0"
   },
-  "author": "",
-  "license": "MIT",
-  "files": [
-    "dist"
-  ],
-  "dependencies": {
-    "dotenv": "^17.2.1",
-    "nock": "^14.0.10"
-  },
-  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a"
+  "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
 }
