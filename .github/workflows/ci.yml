@@ -39,6 +39,14 @@ jobs:
       
       - name: Build all packages
         run: pnpm -r --workspace-concurrency=Infinity build
+
+      - name: Create API .env from secrets
+        run: |
+          cat <<'EOF' > packages/api/.env
+          CLIENT_ID=${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
+          BASE_URL=${{ secrets.BASE_URL }}
+          EOF
       
       - name: Run tests with coverage (enforces 100% threshold)
         run: pnpm -r --workspace-concurrency=Infinity test --coverage
