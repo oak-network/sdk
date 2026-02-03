@@ -3,11 +3,11 @@ import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 
 export interface BuyService {
-  createBuy(buyRequest: CreateBuyRequest): Promise<CreateBuyResponse>;
+  create(buyRequest: CreateBuyRequest): Promise<CreateBuyResponse>;
 }
 
 export const createBuyService = (client: OakClient): BuyService => ({
-  async createBuy(buyRequest: CreateBuyRequest): Promise<CreateBuyResponse> {
+  async create(buyRequest: CreateBuyRequest): Promise<CreateBuyResponse> {
     try {
       const token = await client.getAccessToken();
       const response = await httpClient.post<CreateBuyResponse>(
@@ -16,7 +16,7 @@ export const createBuyService = (client: OakClient): BuyService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {

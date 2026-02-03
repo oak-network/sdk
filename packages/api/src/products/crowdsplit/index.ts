@@ -2,6 +2,7 @@ import type { OakClient } from "../../types";
 import {
   createBuyService,
   createCustomerService,
+  createPaymentMethodService,
   createPaymentService,
   createPlanService,
   createProviderService,
@@ -14,6 +15,7 @@ import {
 export interface CrowdsplitProduct {
   customers: ReturnType<typeof createCustomerService>;
   payments: ReturnType<typeof createPaymentService>;
+  paymentMethods: ReturnType<typeof createPaymentMethodService>;
   providers: ReturnType<typeof createProviderService>;
   transactions: ReturnType<typeof createTransactionService>;
   webhooks: ReturnType<typeof createWebhookService>;
@@ -26,6 +28,7 @@ export interface CrowdsplitProduct {
 export const Crowdsplit = (client: OakClient): CrowdsplitProduct => ({
   customers: createCustomerService(client),
   payments: createPaymentService(client),
+  paymentMethods: createPaymentMethodService(client),
   providers: createProviderService(client),
   transactions: createTransactionService(client),
   webhooks: createWebhookService(client),
