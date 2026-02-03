@@ -16,27 +16,25 @@ import { SDKError } from "../utils/errorHandler";
 import { buildQueryString, getErrorBodyMessage } from "./helpers";
 
 export interface WebhookService {
-  registerWebhook(
-    webhook: RegisterWebhookRequest
-  ): Promise<RegisterWebhookResponse>;
-  getAllWebhooks(): Promise<GetAllWebhooksResponse>;
-  getWebhook(id: string): Promise<GetWebhookResponse>;
-  updateWebhook(
+  register(webhook: RegisterWebhookRequest): Promise<RegisterWebhookResponse>;
+  list(): Promise<GetAllWebhooksResponse>;
+  get(id: string): Promise<GetWebhookResponse>;
+  update(
     id: string,
-    webhook: UpdateWebhookRequest
+    webhook: UpdateWebhookRequest,
   ): Promise<UpdateWebhookResponse>;
-  toggleWebhook(id: string): Promise<ToggleWebhookResponse>;
-  deleteWebhook(id: string): Promise<DeleteWebhookResponse>;
-  getAllWebhookNotifications(params?: {
+  toggle(id: string): Promise<ToggleWebhookResponse>;
+  delete(id: string): Promise<DeleteWebhookResponse>;
+  listNotifications(params?: {
     limit?: number;
     offset?: number;
   }): Promise<GetAllWebhookNotificationResponse>;
-  getWebhookNotifications(id: string): Promise<GetWebhookNotificationResponse>;
+  getNotification(id: string): Promise<GetWebhookNotificationResponse>;
 }
 
 export const createWebhookService = (client: OakClient): WebhookService => ({
-  async registerWebhook(
-    webhook: RegisterWebhookRequest
+  async register(
+    webhook: RegisterWebhookRequest,
   ): Promise<RegisterWebhookResponse> {
     try {
       const token = await client.getAccessToken();
@@ -46,7 +44,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -57,7 +55,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async getAllWebhooks(): Promise<GetAllWebhooksResponse> {
+  async list(): Promise<GetAllWebhooksResponse> {
     try {
       const token = await client.getAccessToken();
       const response = await httpClient.get<GetAllWebhooksResponse>(
@@ -67,7 +65,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
             Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -75,7 +73,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async getWebhook(id: string): Promise<GetWebhookResponse> {
+  async get(id: string): Promise<GetWebhookResponse> {
     try {
       const token = await client.getAccessToken();
       const response = await httpClient.get<GetWebhookResponse>(
@@ -85,7 +83,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
             Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -93,9 +91,9 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async updateWebhook(
+  async update(
     id: string,
-    webhook: UpdateWebhookRequest
+    webhook: UpdateWebhookRequest,
   ): Promise<UpdateWebhookResponse> {
     try {
       const token = await client.getAccessToken();
@@ -105,7 +103,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -113,7 +111,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async toggleWebhook(id: string): Promise<ToggleWebhookResponse> {
+  async toggle(id: string): Promise<ToggleWebhookResponse> {
     try {
       const token = await client.getAccessToken();
 
@@ -123,7 +121,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -131,7 +129,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async deleteWebhook(id: string): Promise<DeleteWebhookResponse> {
+  async delete(id: string): Promise<DeleteWebhookResponse> {
     try {
       const token = await client.getAccessToken();
 
@@ -140,7 +138,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -148,12 +146,10 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async getAllWebhookNotifications(
-    params?: {
-      limit?: number;
-      offset?: number;
-    }
-  ): Promise<GetAllWebhookNotificationResponse> {
+  async listNotifications(params?: {
+    limit?: number;
+    offset?: number;
+  }): Promise<GetAllWebhookNotificationResponse> {
     try {
       const token = await client.getAccessToken();
       const queryString = buildQueryString(params);
@@ -162,7 +158,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -170,9 +166,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async getWebhookNotifications(
-    id: string
-  ): Promise<GetWebhookNotificationResponse> {
+  async getNotification(id: string): Promise<GetWebhookNotificationResponse> {
     try {
       const token = await client.getAccessToken();
       const response = await httpClient.get<GetWebhookNotificationResponse>(
@@ -180,7 +174,7 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {

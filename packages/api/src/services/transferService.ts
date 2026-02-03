@@ -7,12 +7,12 @@ import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 
 export interface TransferService {
-  createTransfer(transfer: CreateTransferRequest): Promise<CreateTransferResponse>;
+  create(transfer: CreateTransferRequest): Promise<CreateTransferResponse>;
 }
 
 export const createTransferService = (client: OakClient): TransferService => ({
-  async createTransfer(
-    transfer: CreateTransferRequest
+  async create(
+    transfer: CreateTransferRequest,
   ): Promise<CreateTransferResponse> {
     try {
       const token = await client.getAccessToken();
@@ -25,7 +25,7 @@ export const createTransferService = (client: OakClient): TransferService => ({
             Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
-        }
+        },
       );
 
       return response;

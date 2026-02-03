@@ -11,21 +11,19 @@ import { SDKError } from "../utils/errorHandler";
 import { buildQueryString } from "./helpers";
 
 export interface TransactionService {
-  getAllTransactions(
-    query?: GetAllTransactionsQuery
-  ): Promise<GetAllTransactionsResponse>;
-  getTransaction(id: string): Promise<GetTransactionResponse>;
-  settleIndividualTransaction(
+  list(query?: GetAllTransactionsQuery): Promise<GetAllTransactionsResponse>;
+  get(id: string): Promise<GetTransactionResponse>;
+  settle(
     id: string,
-    settlementRequest: SettlementRequest
+    settlementRequest: SettlementRequest,
   ): Promise<SettlementResponse>;
 }
 
 export const createTransactionService = (
-  client: OakClient
+  client: OakClient,
 ): TransactionService => ({
-  async getAllTransactions(
-    query?: GetAllTransactionsQuery
+  async list(
+    query?: GetAllTransactionsQuery,
   ): Promise<GetAllTransactionsResponse> {
     try {
       const token = await client.getAccessToken();
@@ -36,7 +34,7 @@ export const createTransactionService = (
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -44,7 +42,7 @@ export const createTransactionService = (
     }
   },
 
-  async getTransaction(id: string): Promise<GetTransactionResponse> {
+  async get(id: string): Promise<GetTransactionResponse> {
     try {
       const token = await client.getAccessToken();
 
@@ -53,7 +51,7 @@ export const createTransactionService = (
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -61,9 +59,9 @@ export const createTransactionService = (
     }
   },
 
-  async settleIndividualTransaction(
+  async settle(
     id: string,
-    settlementRequest: SettlementRequest
+    settlementRequest: SettlementRequest,
   ): Promise<SettlementResponse> {
     try {
       const token = await client.getAccessToken();
@@ -73,7 +71,7 @@ export const createTransactionService = (
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {

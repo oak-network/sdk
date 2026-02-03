@@ -11,21 +11,21 @@ import { SDKError } from "../utils/errorHandler";
 import { getErrorBodyMessage } from "./helpers";
 
 export interface ProviderService {
-  getProviderSchema(
-    request: GetProviderSchemaRequest
+  getSchema(
+    request: GetProviderSchemaRequest,
   ): Promise<GetProviderSchemaResponse>;
-  getProviderRegistrationStatus(
-    customerId: string
-  ): Promise<GetProviderRegistrationStatusResponse>;
-  submitProviderRegistration(
+  getRegistrationStatus(
     customerId: string,
-    registration: SubmitProviderRegistrationRequest
+  ): Promise<GetProviderRegistrationStatusResponse>;
+  submitRegistration(
+    customerId: string,
+    registration: SubmitProviderRegistrationRequest,
   ): Promise<SubmitProviderRegistrationResponse>;
 }
 
 export const createProviderService = (client: OakClient): ProviderService => ({
-  async getProviderSchema(
-    request: GetProviderSchemaRequest
+  async getSchema(
+    request: GetProviderSchemaRequest,
   ): Promise<GetProviderSchemaResponse> {
     try {
       const token = await client.getAccessToken();
@@ -34,27 +34,27 @@ export const createProviderService = (client: OakClient): ProviderService => ({
         `${
           client.config.baseUrl
         }/api/v1/provider-registration/schema?provider=${encodeURIComponent(
-          request.provider
+          request.provider,
         )}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
-        }
+        },
       );
 
       return response;
     } catch (error) {
       throw new SDKError(
         `Failed to retrieve provider schema for ${request.provider}`,
-        error
+        error,
       );
     }
   },
 
-  async getProviderRegistrationStatus(
-    customerId: string
+  async getRegistrationStatus(
+    customerId: string,
   ): Promise<GetProviderRegistrationStatusResponse> {
     try {
       const token = await client.getAccessToken();
@@ -67,21 +67,21 @@ export const createProviderService = (client: OakClient): ProviderService => ({
               Authorization: `Bearer ${token}`,
             },
             retryOptions: client.retryOptions,
-          }
+          },
         );
 
       return response;
     } catch (error) {
       throw new SDKError(
         `Failed to retrieve provider registration status for customer ${customerId}`,
-        error
+        error,
       );
     }
   },
 
-  async submitProviderRegistration(
+  async submitRegistration(
     customerId: string,
-    registration: SubmitProviderRegistrationRequest
+    registration: SubmitProviderRegistrationRequest,
   ): Promise<SubmitProviderRegistrationResponse> {
     try {
       const token = await client.getAccessToken();
@@ -95,7 +95,7 @@ export const createProviderService = (client: OakClient): ProviderService => ({
               Authorization: `Bearer ${token}`,
             },
             retryOptions: client.retryOptions,
-          }
+          },
         );
 
       return response;
@@ -103,7 +103,7 @@ export const createProviderService = (client: OakClient): ProviderService => ({
       const msg = getErrorBodyMessage(error) || "Unknown error";
       throw new SDKError(
         `Failed to submit provider registration for customer ${customerId}: ${msg}`,
-        error
+        error,
       );
     }
   },
