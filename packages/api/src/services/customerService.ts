@@ -13,18 +13,18 @@ import { SDKError } from "../utils/errorHandler";
 import { buildQueryString } from "./helpers";
 
 export interface CustomerService {
-  createCustomer(customer: CreateCustomerRequest): Promise<CreateCustomerResponse>;
-  getCustomer(id: string): Promise<GetCustomerResponse>;
-  getAllCustomers(params?: CustomerListQueryParams): Promise<GetAllCustomerResponse>;
-  updateCustomer(
+  create(customer: CreateCustomerRequest): Promise<CreateCustomerResponse>;
+  get(id: string): Promise<GetCustomerResponse>;
+  list(params?: CustomerListQueryParams): Promise<GetAllCustomerResponse>;
+  update(
     id: string,
-    customer: UpdateCustomerRequest
+    customer: UpdateCustomerRequest,
   ): Promise<UpdateCustomerResponse>;
 }
 
 export const createCustomerService = (client: OakClient): CustomerService => ({
-  async createCustomer(
-    customer: CreateCustomerRequest
+  async create(
+    customer: CreateCustomerRequest,
   ): Promise<CreateCustomerResponse> {
     try {
       const token = await client.getAccessToken();
@@ -37,7 +37,7 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
             Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
-        }
+        },
       );
 
       return response;
@@ -46,7 +46,7 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     }
   },
 
-  async getCustomer(id: string): Promise<GetCustomerResponse> {
+  async get(id: string): Promise<GetCustomerResponse> {
     try {
       const token = await client.getAccessToken();
 
@@ -57,7 +57,7 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
             Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
-        }
+        },
       );
 
       return response;
@@ -66,8 +66,8 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     }
   },
 
-  async getAllCustomers(
-    params?: CustomerListQueryParams
+  async list(
+    params?: CustomerListQueryParams,
   ): Promise<GetAllCustomerResponse> {
     try {
       const token = await client.getAccessToken();
@@ -80,7 +80,7 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
             Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
-        }
+        },
       );
 
       return response;
@@ -89,9 +89,9 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     }
   },
 
-  async updateCustomer(
+  async update(
     id: string,
-    customer: UpdateCustomerRequest
+    customer: UpdateCustomerRequest,
   ): Promise<UpdateCustomerResponse> {
     try {
       const token = await client.getAccessToken();
@@ -104,7 +104,7 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
             Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
-        }
+        },
       );
 
       return response;

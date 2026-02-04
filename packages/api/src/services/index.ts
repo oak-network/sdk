@@ -7,6 +7,9 @@ export type { CustomerService } from "./customerService";
 export { createPaymentService } from "./paymentService";
 export type { PaymentService } from "./paymentService";
 
+export { createPaymentMethodService } from "./paymentMethodService";
+export type { PaymentMethodService } from "./paymentMethodService";
+
 export { createProviderService } from "./providerService";
 export type { ProviderService } from "./providerService";
 

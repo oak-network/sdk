@@ -1,15 +1,17 @@
-import type { CreateSellRequest, CreateSellResponse, OakClient } from "../types";
+import type {
+  CreateSellRequest,
+  CreateSellResponse,
+  OakClient,
+} from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 
 export interface SellService {
-  createSell(sellRequest: CreateSellRequest): Promise<CreateSellResponse>;
+  create(sellRequest: CreateSellRequest): Promise<CreateSellResponse>;
 }
 
 export const createSellService = (client: OakClient): SellService => ({
-  async createSell(
-    sellRequest: CreateSellRequest
-  ): Promise<CreateSellResponse> {
+  async create(sellRequest: CreateSellRequest): Promise<CreateSellResponse> {
     try {
       const token = await client.getAccessToken();
       const response = await httpClient.post<CreateSellResponse>(
@@ -18,7 +20,7 @@ export const createSellService = (client: OakClient): SellService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {

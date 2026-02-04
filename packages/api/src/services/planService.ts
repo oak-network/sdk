@@ -15,17 +15,20 @@ import { SDKError } from "../utils/errorHandler";
 import { buildQueryString } from "./helpers";
 
 export interface PlanService {
-  createPlan(createPlanRequest: CreatePlanRequest): Promise<CreatePlanResponse>;
-  publishPlan(id: string): Promise<PublishPlanResponse>;
-  planDetails(id: string): Promise<PlanDetailsResponse>;
-  listAvailablePlans(params?: PlansListQueryParams): Promise<PlansListResponse>;
-  updatePlan(id: string, updatePlanRequest: UpdatePlanRequest): Promise<UpdatePlanResponse>;
-  deletePlan(id: string): Promise<DeletePlanResponse>;
+  create(createPlanRequest: CreatePlanRequest): Promise<CreatePlanResponse>;
+  publish(id: string): Promise<PublishPlanResponse>;
+  details(id: string): Promise<PlanDetailsResponse>;
+  list(params?: PlansListQueryParams): Promise<PlansListResponse>;
+  update(
+    id: string,
+    updatePlanRequest: UpdatePlanRequest,
+  ): Promise<UpdatePlanResponse>;
+  delete(id: string): Promise<DeletePlanResponse>;
 }
 
 export const createPlanService = (client: OakClient): PlanService => ({
-  async createPlan(
-    createPlanRequest: CreatePlanRequest
+  async create(
+    createPlanRequest: CreatePlanRequest,
   ): Promise<CreatePlanResponse> {
     try {
       const token = await client.getAccessToken();
@@ -35,7 +38,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -43,7 +46,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
     }
   },
 
-  async publishPlan(id: string): Promise<PublishPlanResponse> {
+  async publish(id: string): Promise<PublishPlanResponse> {
     try {
       const token = await client.getAccessToken();
       const response = await httpClient.patch<PublishPlanResponse>(
@@ -52,7 +55,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -60,7 +63,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
     }
   },
 
-  async planDetails(id: string): Promise<PlanDetailsResponse> {
+  async details(id: string): Promise<PlanDetailsResponse> {
     try {
       const token = await client.getAccessToken();
       const response = await httpClient.get<PlanDetailsResponse>(
@@ -68,7 +71,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -76,9 +79,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
     }
   },
 
-  async listAvailablePlans(
-    params?: PlansListQueryParams
-  ): Promise<PlansListResponse> {
+  async list(params?: PlansListQueryParams): Promise<PlansListResponse> {
     try {
       const token = await client.getAccessToken();
       const queryString = buildQueryString(params);
@@ -87,7 +88,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -95,9 +96,9 @@ export const createPlanService = (client: OakClient): PlanService => ({
     }
   },
 
-  async updatePlan(
+  async update(
     id: string,
-    updatePlanRequest: UpdatePlanRequest
+    updatePlanRequest: UpdatePlanRequest,
   ): Promise<UpdatePlanResponse> {
     try {
       const token = await client.getAccessToken();
@@ -107,7 +108,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
@@ -115,7 +116,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
     }
   },
 
-  async deletePlan(id: string): Promise<DeletePlanResponse> {
+  async delete(id: string): Promise<DeletePlanResponse> {
     try {
       const token = await client.getAccessToken();
       const response = await httpClient.delete<DeletePlanResponse>(
@@ -123,7 +124,7 @@ export const createPlanService = (client: OakClient): PlanService => ({
         {
           headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
-        }
+        },
       );
       return response;
     } catch (error) {
