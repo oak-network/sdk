@@ -1,5 +1,5 @@
 {
-  "name": "@oak-network/api",
+  "name": "@oak-sdk/api",
   "version": "1.0.0",
   "description": "TypeScript SDK for Crowdsplit API",
   "main": "dist/index.js",
@@ -41,6 +41,9 @@
   },
   "author": "",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],

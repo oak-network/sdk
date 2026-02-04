@@ -1,5 +1,5 @@
 {
-  "name": "@crowdsplit/contracts",
+  "name": "@oak-sdk/contracts",
   "version": "1.0.0",
   "description": "Contract definitions and types for Crowdsplit SDK",
   "main": "dist/index.js",
@@ -20,6 +20,9 @@
   },
   "author": "",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],
