@@ -39,13 +39,13 @@ describe("CustomerService - Unit", () => {
     jest.clearAllMocks();
   });
 
-  describe("createCustomer", () => {
+  describe("create", () => {
     it("should call POST /api/v1/customers with correct payload", async () => {
       const request: CreateCustomerRequest = { email: "test@example.com" };
       const mockResponse = { data: { email: "test@example.com" } };
       (httpClient.post as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await customers.createCustomer(request);
+      const result = await customers.create(request);
 
       expect(client.getAccessToken).toHaveBeenCalled();
       expect(httpClient.post).toHaveBeenCalledWith(
@@ -65,17 +65,17 @@ describe("CustomerService - Unit", () => {
       );
 
       await expect(
-        customers.createCustomer({ email: "fail@example.com" })
+        customers.create({ email: "fail@example.com" })
       ).rejects.toThrow(SDKError);
     });
   });
 
-  describe("getCustomer", () => {
+  describe("get", () => {
     it("should call GET /api/v1/customers/:id", async () => {
       const mockResponse = { data: { email: "test@example.com" } };
       (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await customers.getCustomer("123");
+      const result = await customers.get("123");
 
       expect(httpClient.get).toHaveBeenCalledWith(
         `${process.env.BASE_URL}/api/v1/customers/123`,
@@ -88,13 +88,13 @@ describe("CustomerService - Unit", () => {
     });
   });
 
-  describe("getAllCustomers", () => {
+  describe("list", () => {
     it("should call GET /api/v1/customers with query params", async () => {
       const params: CustomerListQueryParams = { limit: 10, offset: 5 };
       const mockResponse = { data: { count: 1, customer_list: [] } };
       (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await customers.getAllCustomers(params);
+      const result = await customers.list(params);
 
       expect(httpClient.get).toHaveBeenCalledWith(
         `${process.env.BASE_URL}/api/v1/customers?limit=10&offset=5`,
@@ -107,13 +107,13 @@ describe("CustomerService - Unit", () => {
     });
   });
 
-  describe("updateCustomer", () => {
+  describe("update", () => {
     it("should call PUT /api/v1/customers/:id", async () => {
       const updateData = { email: "updated@example.com" };
       const mockResponse = { data: { email: "updated@example.com" } };
       (httpClient.put as jest.Mock).mockResolvedValue(mockResponse);
 
-      const result = await customers.updateCustomer("123", updateData);
+      const result = await customers.update("123", updateData);
 
       expect(httpClient.put).toHaveBeenCalledWith(
         `${process.env.BASE_URL}/api/v1/customers/123`,

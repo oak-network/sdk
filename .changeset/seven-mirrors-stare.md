@@ -1,6 +1,6 @@
 ---
-"@crowdsplit/contracts": major
-"@oak-network/api": patch
+"@oaknetwork/contracts": major
+"@oaknetwork/api": patch
 ---
 
 project setup
