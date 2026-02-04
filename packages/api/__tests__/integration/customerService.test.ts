@@ -41,7 +41,7 @@ describe("CustomerService - Integration", () => {
     const document_number = generateCpf();
 
     const email = `test_${Date.now()}@example.com`;
-    const response = await customers.createCustomer({
+    const response = await customers.create({
       document_number,
       document_type: "personal_tax_id",
       email,
@@ -58,26 +58,26 @@ describe("CustomerService - Integration", () => {
   });
 
   it("should get the created customer", async () => {
-    const response = await customers.getCustomer(createdCustomerId);
+    const response = await customers.get(createdCustomerId);
     expect(response.data.id).toEqual(createdCustomerId);
   });
 
   it("should update the customer", async () => {
-    const response = await customers.updateCustomer(createdCustomerId, {
+    const response = await customers.update(createdCustomerId, {
       first_name: "UpdatedName",
     });
     expect(response.data.first_name).toEqual("UpdatedName");
   });
 
   it("should list customers", async () => {
-    const response = await customers.getAllCustomers({ limit: 5 });
+    const response = await customers.list({ limit: 5 });
     expect(Array.isArray(response.data.customer_list)).toBe(true);
     expect(response.data.customer_list.length).toBeGreaterThan(0);
   });
 
   it("should handle invalid customer ID gracefully", async () => {
     await expect(
-      customers.getCustomer("non-existent-id")
+      customers.get("non-existent-id")
     ).rejects.toThrow();
   });
 });
