@@ -29,13 +29,9 @@ jobs:
         with:
           node-version: 20.x
           cache: pnpm
-          registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Ensure npm uses OIDC only
-        run: printf "" > "${RUNNER_TEMP}/.npmrc"
 
       - name: Version and publish packages
         uses: changesets/action@v1
@@ -47,6 +43,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-          NPM_CONFIG_USERCONFIG: ${{ runner.temp }}/.npmrc
-          NPM_TOKEN: ""
-          NODE_AUTH_TOKEN: ""
