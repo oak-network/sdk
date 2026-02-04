@@ -1,6 +1,6 @@
 ---
-"@oak-network/api": minor
-"@crowdsplit/contracts": minor
+"@oaknetwork/api": minor
+"@oaknetwork/contracts": minor
 ---
 
 update changeset
