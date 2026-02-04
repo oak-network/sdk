@@ -1,7 +1,10 @@
 {
-  "name": "@crowdsplit/contracts",
-  "version": "1.0.0",
-  "description": "Contract definitions and types for Crowdsplit SDK",
+  "name": "@oaknetwork/contracts",
+  "version": "0.1.0-dev.0",
+  "description": "TypeScript SDK for Oak Network smart contracts",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -18,7 +21,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   },
-  "author": "",
+  "author": "oaknetwork",
   "license": "MIT",
   "files": [
     "dist"
