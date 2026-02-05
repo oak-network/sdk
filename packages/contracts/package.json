@@ -23,6 +23,11 @@
   },
   "author": "oaknetwork",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oak-network/sdk",
+    "directory": "packages/contracts"
+  },
   "files": [
     "dist"
   ],
