@@ -1,3 +1,6 @@
+# WORK IN PROGRESS
+- Launch expected by March 2026
+
 # Crowdsplit SDK Monorepo
 
 ## Changesets workflow

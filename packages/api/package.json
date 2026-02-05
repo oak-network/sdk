@@ -1,6 +1,6 @@
 {
   "name": "@oaknetwork/api",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "TypeScript SDK for Crowdsplit API",
   "publishConfig": {
     "access": "public"
@@ -44,6 +44,11 @@
   },
   "author": "oaknetwork",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oak-network/sdk",
+    "directory": "packages/api"
+  },
   "files": [
     "dist"
   ],

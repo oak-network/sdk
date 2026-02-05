@@ -5,6 +5,13 @@ import { withRetry } from "../../src/utils/retryHandler";
 import { DEFAULT_RETRY_OPTIONS } from "../../src/utils/defaultRetryConfig";
 import "../../src/utils";
 
+const packageVersion = require("../../package.json").version as string;
+const expectedHeaders = (headers?: Record<string, string>) => ({
+  "Content-Type": "application/json",
+  "Oak-Version": packageVersion,
+  ...(headers ?? {}),
+});
+
 describe("SDKError", () => {
   it("stores message and cause", () => {
     const cause = new Error("root");
@@ -78,9 +85,7 @@ describe("httpClient", () => {
     expect(result).toEqual({ ok: true });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/post", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: expectedHeaders(),
       body: JSON.stringify({ data: 1 }),
     });
   });
@@ -99,10 +104,7 @@ describe("httpClient", () => {
 
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/post", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Test": "yes",
-      },
+      headers: expectedHeaders({ "X-Test": "yes" }),
       body: JSON.stringify({ data: 1 }),
     });
   });
@@ -135,9 +137,7 @@ describe("httpClient", () => {
     expect(result).toEqual({ ok: true });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/get", {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: expectedHeaders(),
     });
   });
 
@@ -154,10 +154,7 @@ describe("httpClient", () => {
 
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/get", {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Test": "yes",
-      },
+      headers: expectedHeaders({ "X-Test": "yes" }),
     });
   });
 
@@ -203,9 +200,7 @@ describe("httpClient", () => {
     expect(result).toEqual({ ok: true });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/put", {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: expectedHeaders(),
       body: JSON.stringify({ data: 2 }),
     });
   });
@@ -224,10 +219,7 @@ describe("httpClient", () => {
 
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/put", {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Test": "yes",
-      },
+      headers: expectedHeaders({ "X-Test": "yes" }),
       body: JSON.stringify({ data: 2 }),
     });
   });
@@ -274,9 +266,7 @@ describe("httpClient", () => {
     expect(result).toEqual({ ok: true });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/patch", {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: expectedHeaders(),
       body: undefined,
     });
   });
@@ -291,9 +281,7 @@ describe("httpClient", () => {
 
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/patch", {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: expectedHeaders(),
       body: JSON.stringify({ data: 9 }),
     });
   });
@@ -312,10 +300,7 @@ describe("httpClient", () => {
 
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/patch", {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Test": "yes",
-      },
+      headers: expectedHeaders({ "X-Test": "yes" }),
       body: JSON.stringify({ data: 9 }),
     });
   });
@@ -360,9 +345,7 @@ describe("httpClient", () => {
     expect(result).toEqual({ ok: true });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/delete", {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: expectedHeaders(),
     });
   });
 
@@ -379,11 +362,71 @@ describe("httpClient", () => {
 
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/delete", {
       method: "DELETE",
+      headers: expectedHeaders({ "X-Test": "yes" }),
+    });
+  });
+
+  it("falls back to 'unknown' when require and OAK_VERSION both fail", async () => {
+    const previousVersion = process.env.OAK_VERSION;
+    delete process.env.OAK_VERSION;
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ ok: true }),
+    });
+
+    let isolatedClient: typeof httpClient;
+    jest.isolateModules(() => {
+      jest.mock("../../package.json", () => {
+        throw new Error("not found");
+      });
+      isolatedClient = require("../../src/utils/httpClient").httpClient;
+    });
+
+    await isolatedClient!.get("https://api.test/get", { retryOptions });
+
+    expect(fetchMock).toHaveBeenCalledWith("https://api.test/get", {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-Test": "yes",
+        "Oak-Version": "unknown",
       },
     });
+
+    if (previousVersion !== undefined) {
+      process.env.OAK_VERSION = previousVersion;
+    }
+  });
+
+  it("uses OAK_VERSION when provided", async () => {
+    const previousVersion = process.env.OAK_VERSION;
+    process.env.OAK_VERSION = "9.9.9";
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ ok: true }),
+    });
+
+    let isolatedClient: typeof httpClient;
+    jest.isolateModules(() => {
+      isolatedClient = require("../../src/utils/httpClient").httpClient;
+    });
+
+    await isolatedClient!.get("https://api.test/get", { retryOptions });
+
+    expect(fetchMock).toHaveBeenCalledWith("https://api.test/get", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Oak-Version": "9.9.9",
+      },
+    });
+
+    if (previousVersion === undefined) {
+      delete process.env.OAK_VERSION;
+    } else {
+      process.env.OAK_VERSION = previousVersion;
+    }
   });
 
   it("delete throws error for non-ok response", async () => {

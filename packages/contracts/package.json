@@ -1,6 +1,6 @@
 {
   "name": "@oaknetwork/contracts",
-  "version": "0.1.0-dev.0",
+  "version": "0.1.0",
   "description": "TypeScript SDK for Oak Network smart contracts",
   "publishConfig": {
     "access": "public"
@@ -23,6 +23,11 @@
   },
   "author": "oaknetwork",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oak-network/sdk",
+    "directory": "packages/contracts"
+  },
   "files": [
     "dist"
   ],
