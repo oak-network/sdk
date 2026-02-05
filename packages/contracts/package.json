@@ -1,6 +1,6 @@
 {
   "name": "@oaknetwork/contracts",
-  "version": "1.0.0",
+  "version": "0.1.0-dev.0",
   "description": "TypeScript SDK for Oak Network smart contracts",
   "publishConfig": {
     "access": "public"
