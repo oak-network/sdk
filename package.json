@@ -11,7 +11,8 @@
     "clean": "pnpm -r clean",
     "changeset": "changeset",
     "changeset:status": "changeset status --since origin/main",
-    "changeset:version": "changeset version"
+    "changeset:version": "changeset version",
+    "changeset:publish": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
