@@ -7,6 +7,7 @@ import {
   SDKConfig,
   CreateCustomerRequest,
   CustomerListQueryParams,
+  ok,
 } from "../../src/types";
 
 jest.mock("../../src/utils/httpClient", () => ({
@@ -31,7 +32,7 @@ describe("CustomerService - Unit", () => {
     };
     retryOptions = { maxNumberOfRetries: 1, delay: 100, backoffFactor: 2 };
     mockAuthService = {
-      getAccessToken: jest.fn().mockResolvedValue("fake-token"),
+      getAccessToken: jest.fn().mockResolvedValue(ok("fake-token")),
     } as any;
 
     customerService = new CustomerService(
@@ -59,17 +60,22 @@ describe("CustomerService - Unit", () => {
           retryOptions,
         })
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toEqual(ok(mockResponse));
     });
 
-    it("should throw SDKError on failure", async () => {
+    it("should return SDKError on failure", async () => {
       (httpClient.post as jest.Mock).mockRejectedValue(
         new Error("Network error")
       );
 
-      await expect(
-        customerService.createCustomer({ email: "fail@example.com" })
-      ).rejects.toThrow(SDKError);
+      const result = await customerService.createCustomer({
+        email: "fail@example.com",
+      });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error).toBeInstanceOf(SDKError);
+      }
     });
   });
 
@@ -87,7 +93,7 @@ describe("CustomerService - Unit", () => {
           retryOptions,
         })
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toEqual(ok(mockResponse));
     });
   });
 
@@ -106,7 +112,7 @@ describe("CustomerService - Unit", () => {
           retryOptions,
         })
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toEqual(ok(mockResponse));
     });
   });
 
@@ -126,7 +132,7 @@ describe("CustomerService - Unit", () => {
           retryOptions,
         })
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toEqual(ok(mockResponse));
     });
   });
 });

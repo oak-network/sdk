@@ -1,7 +1,7 @@
 // __tests__/unit/authService.test.ts
 import { AuthService } from "../../src/services/authService";
 import { httpClient } from "../../src/utils/httpClient";
-import { SDKConfig } from "../../src/types";
+import { SDKConfig, ok } from "../../src/types";
 import { SDKError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils";
 import { getConfigFromEnv } from "../config";
@@ -40,7 +40,7 @@ describe("AuthService (Unit)", () => {
       { retryOptions }
     );
 
-    expect(result).toEqual(mockResponse);
+    expect(result).toEqual(ok(mockResponse));
   });
 
   it("should return cached token if valid", async () => {
@@ -52,8 +52,8 @@ describe("AuthService (Unit)", () => {
     // Second call should return cached token
     const token2 = await authService.getAccessToken();
 
-    expect(token1).toBe("cachedToken");
-    expect(token2).toBe("cachedToken");
+    expect(token1).toEqual(ok("cachedToken"));
+    expect(token2).toEqual(ok("cachedToken"));
     // httpClient.post should have been called only once
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(1);
   });
@@ -72,14 +72,18 @@ describe("AuthService (Unit)", () => {
     // Second call triggers new token request
     const token2 = await authService.getAccessToken();
 
-    expect(token1).toBe("token1");
-    expect(token2).toBe("token2");
+    expect(token1).toEqual(ok("token1"));
+    expect(token2).toEqual(ok("token2"));
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(2);
   });
 
-  it("should throw SDKError if grantToken fails", async () => {
+  it("should return SDKError if grantToken fails", async () => {
     mockedHttpClient.post.mockRejectedValue(new Error("Network Error"));
 
-    await expect(authService.grantToken()).rejects.toThrow(SDKError);
+    const result = await authService.grantToken();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(SDKError);
+    }
   });
 });
