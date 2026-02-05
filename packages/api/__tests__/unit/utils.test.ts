@@ -366,6 +366,38 @@ describe("httpClient", () => {
     });
   });
 
+  it("falls back to 'unknown' when require and OAK_VERSION both fail", async () => {
+    const previousVersion = process.env.OAK_VERSION;
+    delete process.env.OAK_VERSION;
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ ok: true }),
+    });
+
+    let isolatedClient: typeof httpClient;
+    jest.isolateModules(() => {
+      jest.mock("../../package.json", () => {
+        throw new Error("not found");
+      });
+      isolatedClient = require("../../src/utils/httpClient").httpClient;
+    });
+
+    await isolatedClient!.get("https://api.test/get", { retryOptions });
+
+    expect(fetchMock).toHaveBeenCalledWith("https://api.test/get", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Oak-Version": "unknown",
+      },
+    });
+
+    if (previousVersion !== undefined) {
+      process.env.OAK_VERSION = previousVersion;
+    }
+  });
+
   it("uses OAK_VERSION when provided", async () => {
     const previousVersion = process.env.OAK_VERSION;
     process.env.OAK_VERSION = "9.9.9";
