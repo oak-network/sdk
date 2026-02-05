@@ -5,6 +5,8 @@ import { RetryOptions } from "../../src/utils";
 import type { OakClientConfig } from "../../src/types";
 import { ok } from "../../src/types";
 
+const SANDBOX_URL = "https://api.usecrowdpay.xyz";
+
 jest.mock("../../src/utils/httpClient");
 const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
@@ -41,7 +43,7 @@ describe("Auth (Unit)", () => {
     const result = await client.grantToken();
 
     expect(mockedHttpClient.post).toHaveBeenCalledWith(
-      `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/token/grant`,
+      `${SANDBOX_URL}/api/v1/merchant/token/grant`,
       {
         client_id: config.clientId,
         client_secret: config.clientSecret,

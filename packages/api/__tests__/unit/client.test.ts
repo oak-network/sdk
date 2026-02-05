@@ -1,6 +1,9 @@
 import { createOakClient } from "../../src/client";
 import type { OakClientConfig } from "../../src/types/client";
 
+const SANDBOX_URL = "https://api.usecrowdpay.xyz";
+const PRODUCTION_URL = "https://app.usecrowdpay.xyz";
+
 jest.mock("../../src/authManager", () => ({
   AuthManager: jest.fn().mockImplementation(() => ({
     getAccessToken: jest.fn().mockResolvedValue({ ok: true, value: "mock-token" }),
@@ -24,29 +27,18 @@ describe("createOakClient", () => {
         environment: "sandbox",
       });
 
-      expect(client.config.baseUrl).toBe(process.env.CROWDSPLIT_SANDBOX_URL);
+      expect(client.config.baseUrl).toBe(SANDBOX_URL);
       expect(client.config.environment).toBe("sandbox");
     });
 
     it("should resolve production URL for production environment", () => {
-      const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
-      const testProdUrl = originalProd || "https://api.production.example.com";
-
-      if (!originalProd) {
-        process.env.CROWDSPLIT_PRODUCTION_URL = testProdUrl;
-      }
-
       const client = createOakClient({
         ...baseConfig,
         environment: "production",
       });
 
-      expect(client.config.baseUrl).toBe(testProdUrl);
+      expect(client.config.baseUrl).toBe(PRODUCTION_URL);
       expect(client.config.environment).toBe("production");
-
-      if (!originalProd) {
-        delete process.env.CROWDSPLIT_PRODUCTION_URL;
-      }
     });
 
     it("should use customUrl when provided", () => {

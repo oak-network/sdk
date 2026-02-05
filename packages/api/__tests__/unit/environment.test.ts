@@ -11,86 +11,35 @@ import {
 import { SandboxOnly, sandboxOnlyFn } from "../../src/decorators/sandboxOnly";
 import type { ResolvedOakClientConfig } from "../../src/types/client";
 
+const SANDBOX_URL = "https://api.usecrowdpay.xyz";
+const PRODUCTION_URL = "https://app.usecrowdpay.xyz";
+
 describe("Environment Configuration", () => {
   describe("getEnvironmentConfig", () => {
     it("should return sandbox config with test operations allowed", () => {
       const config = getEnvironmentConfig("sandbox");
       expect(config).toBeDefined();
       expect(config.allowsTestOperations).toBe(true);
-      expect(config.apiUrl).toBe(process.env.CROWDSPLIT_SANDBOX_URL);
+      expect(config.apiUrl).toBe(SANDBOX_URL);
     });
 
     it("should return production config with test operations disallowed", () => {
-      const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
-      const testProdUrl = originalProd || "https://api.production.example.com";
-
-      if (!originalProd) {
-        process.env.CROWDSPLIT_PRODUCTION_URL = testProdUrl;
-      }
-
       const config = getEnvironmentConfig("production");
       expect(config).toBeDefined();
       expect(config.allowsTestOperations).toBe(false);
-      expect(config.apiUrl).toBe(testProdUrl);
-
-      if (!originalProd) {
-        delete process.env.CROWDSPLIT_PRODUCTION_URL;
-      }
-    });
-
-    it("should throw error when sandbox env var is missing", () => {
-      const originalSandbox = process.env.CROWDSPLIT_SANDBOX_URL;
-      delete process.env.CROWDSPLIT_SANDBOX_URL;
-
-      expect(() => getEnvironmentConfig("sandbox")).toThrow(
-        "Missing required environment variable: CROWDSPLIT_SANDBOX_URL for sandbox environment"
-      );
-
-      process.env.CROWDSPLIT_SANDBOX_URL = originalSandbox;
-    });
-
-    it("should throw error when production env var is missing", () => {
-      const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
-      delete process.env.CROWDSPLIT_PRODUCTION_URL;
-
-      expect(() => getEnvironmentConfig("production")).toThrow(
-        "Missing required environment variable: CROWDSPLIT_PRODUCTION_URL for production environment"
-      );
-
-      process.env.CROWDSPLIT_PRODUCTION_URL = originalProd;
-    });
-
-    it("should allow sandbox config when only sandbox URL is set", () => {
-      const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
-      delete process.env.CROWDSPLIT_PRODUCTION_URL;
-
-      const config = getEnvironmentConfig("sandbox");
-      expect(config.apiUrl).toBe(process.env.CROWDSPLIT_SANDBOX_URL);
-
-      process.env.CROWDSPLIT_PRODUCTION_URL = originalProd;
+      expect(config.apiUrl).toBe(PRODUCTION_URL);
     });
   });
 
   describe("resolveBaseUrl", () => {
     it("should return sandbox URL for sandbox environment", () => {
       const url = resolveBaseUrl("sandbox");
-      expect(url).toBe(process.env.CROWDSPLIT_SANDBOX_URL);
+      expect(url).toBe(SANDBOX_URL);
     });
 
     it("should return production URL for production environment", () => {
-      const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
-      const testProdUrl = originalProd || "https://api.production.example.com";
-
-      if (!originalProd) {
-        process.env.CROWDSPLIT_PRODUCTION_URL = testProdUrl;
-      }
-
       const url = resolveBaseUrl("production");
-      expect(url).toBe(testProdUrl);
-
-      if (!originalProd) {
-        delete process.env.CROWDSPLIT_PRODUCTION_URL;
-      }
+      expect(url).toBe(PRODUCTION_URL);
     });
 
     it("should return customUrl when provided", () => {
@@ -150,9 +99,7 @@ describe("@SandboxOnly Decorator", () => {
     environment,
     clientId: "test-id",
     clientSecret: "test-secret",
-    baseUrl: environment === "sandbox" 
-      ? process.env.CROWDSPLIT_SANDBOX_URL! 
-      : process.env.CROWDSPLIT_PRODUCTION_URL!,
+    baseUrl: environment === "sandbox" ? SANDBOX_URL : PRODUCTION_URL,
   });
 
   describe("with missing descriptor value", () => {

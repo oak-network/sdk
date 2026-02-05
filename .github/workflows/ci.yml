@@ -47,8 +47,6 @@ jobs:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           OAK_ENVIRONMENT: sandbox
-          CROWDSPLIT_SANDBOX_URL: ${{ secrets.CROWDSPLIT_SANDBOX_URL }}
-          CROWDSPLIT_PRODUCTION_URL: ${{ secrets.CROWDSPLIT_PRODUCTION_URL }}
       
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4

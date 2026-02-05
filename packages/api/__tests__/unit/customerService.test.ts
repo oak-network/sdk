@@ -10,6 +10,8 @@ import {
   ok,
 } from "../../src/types";
 
+const SANDBOX_URL = "https://api.usecrowdpay.xyz";
+
 jest.mock("../../src/utils/httpClient", () => ({
   httpClient: {
     post: jest.fn(),
@@ -52,7 +54,7 @@ describe("CustomerService - Unit", () => {
 
       expect(client.getAccessToken).toHaveBeenCalled();
       expect(httpClient.post).toHaveBeenCalledWith(
-        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers`,
+        `${SANDBOX_URL}/api/v1/customers`,
         request,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
@@ -83,7 +85,7 @@ describe("CustomerService - Unit", () => {
       const result = await customers.get("123");
 
       expect(httpClient.get).toHaveBeenCalledWith(
-        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers/123`,
+        `${SANDBOX_URL}/api/v1/customers/123`,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
@@ -102,7 +104,7 @@ describe("CustomerService - Unit", () => {
       const result = await customers.list(params);
 
       expect(httpClient.get).toHaveBeenCalledWith(
-        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers?limit=10&offset=5`,
+        `${SANDBOX_URL}/api/v1/customers?limit=10&offset=5`,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
@@ -121,7 +123,7 @@ describe("CustomerService - Unit", () => {
       const result = await customers.update("123", updateData);
 
       expect(httpClient.put).toHaveBeenCalledWith(
-        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers/123`,
+        `${SANDBOX_URL}/api/v1/customers/123`,
         updateData,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
