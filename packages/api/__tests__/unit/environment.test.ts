@@ -243,10 +243,10 @@ describe("@SandboxOnly Decorator", () => {
       expect(result).toBe("symbol method completed");
     });
 
-    it("should reject with symbol.toString() as method name in production", async () => {
+    it("should throw with symbol.toString() as method name in production", () => {
       const service = new TestServiceWithSymbol("production");
       try {
-        await service[symbolMethod]();
+        service[symbolMethod]();
         fail("Should have thrown");
       } catch (error) {
         expect(error).toBeInstanceOf(EnvironmentViolationError);
@@ -306,11 +306,11 @@ describe("sandboxOnlyFn", () => {
     expect(fn).toHaveBeenCalled();
   });
 
-  it("should reject with EnvironmentViolationError when environment is production", async () => {
+  it("should throw EnvironmentViolationError when environment is production", () => {
     const fn = jest.fn().mockReturnValue("result");
     const wrapped = sandboxOnlyFn(fn, () => "production", "testFn");
 
-    await expect(wrapped()).rejects.toThrow(EnvironmentViolationError);
+    expect(() => wrapped()).toThrow(EnvironmentViolationError);
     expect(fn).not.toHaveBeenCalled();
   });
 
@@ -324,17 +324,32 @@ describe("sandboxOnlyFn", () => {
     expect(fn).toHaveBeenCalledWith(2, 3);
   });
 
-  it("should include method name in error", async () => {
+  it("should include method name in error", () => {
     const fn = jest.fn();
     const wrapped = sandboxOnlyFn(fn, () => "production", "mySpecialMethod");
 
     try {
-      await wrapped();
+      wrapped();
       fail("Should have thrown");
     } catch (error) {
       expect((error as EnvironmentViolationError).methodName).toBe(
         "mySpecialMethod"
       );
     }
+  });
+
+  it("should reject with EnvironmentViolationError for async function in production", async () => {
+    const asyncFn = async () => "async result";
+    const wrapped = sandboxOnlyFn(asyncFn, () => "production", "asyncTestFn");
+
+    await expect(wrapped()).rejects.toThrow(EnvironmentViolationError);
+  });
+
+  it("should allow async function execution in sandbox", async () => {
+    const asyncFn = async () => "async result";
+    const wrapped = sandboxOnlyFn(asyncFn, () => "sandbox", "asyncTestFn");
+
+    const result = await wrapped();
+    expect(result).toBe("async result");
   });
 });

@@ -63,9 +63,14 @@ export function SandboxOnly<T extends (...args: unknown[]) => unknown>(
         typeof propertyKey === "symbol"
           ? propertyKey.toString()
           : String(propertyKey);
-      return Promise.reject(
-        new EnvironmentViolationError(methodName, environment)
-      ) as ReturnType<T>;
+      const error = new EnvironmentViolationError(methodName, environment);
+
+      const isAsyncFunction =
+        originalMethod.constructor.name === "AsyncFunction";
+      if (isAsyncFunction) {
+        return Promise.reject(error) as ReturnType<T>;
+      }
+      throw error;
     }
 
     return originalMethod.apply(this, args);
@@ -83,9 +88,13 @@ export function sandboxOnlyFn<T extends (...args: unknown[]) => unknown>(
     const environment = getEnvironment();
 
     if (environment === "production") {
-      return Promise.reject(
-        new EnvironmentViolationError(methodName, environment)
-      );
+      const error = new EnvironmentViolationError(methodName, environment);
+
+      const isAsyncFunction = fn.constructor.name === "AsyncFunction";
+      if (isAsyncFunction) {
+        return Promise.reject(error);
+      }
+      throw error;
     }
 
     return fn(...args);
