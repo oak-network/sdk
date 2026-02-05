@@ -1,4 +1,3 @@
-// tests/integration/customerService.integration.test.ts
 import { createOakClient } from "../../src";
 import { Crowdsplit } from "../../src/products/crowdsplit";
 import { getConfigFromEnv } from "../config";
@@ -52,32 +51,43 @@ describe("CustomerService - Integration", () => {
       phone_area_code: "18",
       phone_number: "998121211",
     });
-    expect(response.data.id).toBeDefined();
-    expect(response.data.email).toEqual(email);
-    createdCustomerId = response.data.id as string;
+    expect(response.ok).toBe(true);
+    if (response.ok) {
+      expect(response.value.data.id).toBeDefined();
+      expect(response.value.data.email).toEqual(email);
+      createdCustomerId = response.value.data.id as string;
+    }
   });
 
   it("should get the created customer", async () => {
     const response = await customers.get(createdCustomerId);
-    expect(response.data.id).toEqual(createdCustomerId);
+    expect(response.ok).toBe(true);
+    if (response.ok) {
+      expect(response.value.data.id).toEqual(createdCustomerId);
+    }
   });
 
   it("should update the customer", async () => {
     const response = await customers.update(createdCustomerId, {
       first_name: "UpdatedName",
     });
-    expect(response.data.first_name).toEqual("UpdatedName");
+    expect(response.ok).toBe(true);
+    if (response.ok) {
+      expect(response.value.data.first_name).toEqual("UpdatedName");
+    }
   });
 
   it("should list customers", async () => {
     const response = await customers.list({ limit: 5 });
-    expect(Array.isArray(response.data.customer_list)).toBe(true);
-    expect(response.data.customer_list.length).toBeGreaterThan(0);
+    expect(response.ok).toBe(true);
+    if (response.ok) {
+      expect(Array.isArray(response.value.data.customer_list)).toBe(true);
+      expect(response.value.data.customer_list.length).toBeGreaterThan(0);
+    }
   });
 
   it("should handle invalid customer ID gracefully", async () => {
-    await expect(
-      customers.get("non-existent-id")
-    ).rejects.toThrow();
+    const response = await customers.get("non-existent-id");
+    expect(response.ok).toBe(false);
   });
 });

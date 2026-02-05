@@ -13,14 +13,21 @@ describe("Auth (Integration)", () => {
 
   it("should get a real access token", async () => {
     const response = await client.grantToken();
-    expect(response.access_token).toBeDefined();
-    expect(response.expires_in).toBeGreaterThan(0);
+    expect(response.ok).toBe(true);
+    if (response.ok) {
+      expect(response.value.access_token).toBeDefined();
+      expect(response.value.expires_in).toBeGreaterThan(0);
+    }
   });
 
   it("should return the same token if not expired", async () => {
-    const firstToken = await client.getAccessToken();
-    const secondToken = await client.getAccessToken();
-    expect(secondToken).toBe(firstToken);
+    const firstResult = await client.getAccessToken();
+    const secondResult = await client.getAccessToken();
+    expect(firstResult.ok).toBe(true);
+    expect(secondResult.ok).toBe(true);
+    if (firstResult.ok && secondResult.ok) {
+      expect(secondResult.value).toBe(firstResult.value);
+    }
   });
 
   it("should refresh token if expired", async () => {
@@ -30,14 +37,17 @@ describe("Auth (Integration)", () => {
       .spyOn(Date, "now")
       .mockImplementation(() => originalNow() + 86400000);
 
-    const newToken = await client.getAccessToken();
+    const newTokenResult = await client.getAccessToken();
 
     nowSpy.mockRestore();
-    expect(newToken).toBeDefined();
-    expect(newToken).not.toBeNull();
+    expect(newTokenResult.ok).toBe(true);
+    if (newTokenResult.ok) {
+      expect(newTokenResult.value).toBeDefined();
+      expect(newTokenResult.value).not.toBeNull();
+    }
   });
 
-  it("should throw SDKError on invalid credentials", async () => {
+  it("should return error on invalid credentials", async () => {
     const badClient = createOakClient({
       environment: "sandbox",
       clientId: "invalid",
@@ -49,8 +59,10 @@ describe("Auth (Integration)", () => {
       },
     });
 
-    await expect(badClient.grantToken()).rejects.toThrow(
-      "Failed to grant token"
-    );
+    const result = await badClient.grantToken();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain("Failed to grant token");
+    }
   });
 });
