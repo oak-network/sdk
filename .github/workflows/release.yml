@@ -30,6 +30,7 @@ jobs:
         with:
           node-version: 20.x
           cache: pnpm
+          registry-url: https://registry.npmjs.org/
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -48,12 +49,11 @@ jobs:
         if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm build
 
-      - name: Setup npm for OIDC
+      - name: Update npm for OIDC support
         if: steps.changesets.outputs.hasChangesets == 'false'
         run: |
+          npm install -g npm@latest
           npm --version
-          rm -f ~/.npmrc
-          echo "registry=https://registry.npmjs.org/" > ~/.npmrc
 
       - name: Publish @oaknetwork/contracts
         if: steps.changesets.outputs.hasChangesets == 'false'
