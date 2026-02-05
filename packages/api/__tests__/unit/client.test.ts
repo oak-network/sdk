@@ -3,10 +3,10 @@ import type { OakClientConfig } from "../../src/types/client";
 
 jest.mock("../../src/authManager", () => ({
   AuthManager: jest.fn().mockImplementation(() => ({
-    getAccessToken: jest.fn().mockResolvedValue("mock-token"),
+    getAccessToken: jest.fn().mockResolvedValue({ ok: true, value: "mock-token" }),
     grantToken: jest.fn().mockResolvedValue({
-      access_token: "mock-token",
-      expires_in: 3600,
+      ok: true,
+      value: { access_token: "mock-token", expires_in: 3600 },
     }),
   })),
 }));
@@ -98,8 +98,11 @@ describe("createOakClient", () => {
         environment: "sandbox",
       });
 
-      const token = await client.getAccessToken();
-      expect(token).toBe("mock-token");
+      const result = await client.getAccessToken();
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toBe("mock-token");
+      }
     });
 
     it("should provide grantToken method", async () => {
@@ -108,8 +111,11 @@ describe("createOakClient", () => {
         environment: "sandbox",
       });
 
-      const response = await client.grantToken();
-      expect(response.access_token).toBe("mock-token");
+      const result = await client.grantToken();
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.access_token).toBe("mock-token");
+      }
     });
   });
 });

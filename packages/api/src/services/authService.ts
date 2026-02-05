@@ -1,8 +1,8 @@
-import type { OakClient, TokenResponse } from "../types";
+import type { OakClient, Result, TokenResponse } from "../types";
 
 export interface AuthService {
-  grantToken(): Promise<TokenResponse>;
-  getAccessToken(): Promise<string>;
+  grantToken(): Promise<Result<TokenResponse>>;
+  getAccessToken(): Promise<Result<string>>;
 }
 
 export const createAuthService = (client: OakClient): AuthService => ({

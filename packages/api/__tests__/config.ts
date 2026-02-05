@@ -1,6 +1,11 @@
 import type { OakClientConfig, OakEnvironment } from "../src";
+import type { RetryOptions } from "../src/utils";
 import dotenv from "dotenv";
 dotenv.config();
+
+export interface TestClientConfig extends OakClientConfig {
+  retryOptions?: RetryOptions;
+}
 
 export function getConfigFromEnv(): OakClientConfig {
   if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
