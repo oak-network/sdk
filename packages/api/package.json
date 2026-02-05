@@ -1,6 +1,6 @@
 {
   "name": "@oaknetwork/api",
-  "version": "1.1.0",
+  "version": "0.1.0",
   "description": "TypeScript SDK for Crowdsplit API",
   "publishConfig": {
     "access": "public"
