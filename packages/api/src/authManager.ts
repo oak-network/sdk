@@ -1,7 +1,13 @@
-import type { OakClientConfig, TokenRequest, TokenResponse } from "./types";
+import type {
+  OakClientConfig,
+  Result,
+  TokenRequest,
+  TokenResponse,
+} from "./types";
 import { httpClient } from "./utils/httpClient";
 import { SDKError } from "./utils/errorHandler";
 import { RetryOptions } from "./utils/defaultRetryConfig";
+import { err, ok } from "./types";
 
 export class AuthManager {
   private config: OakClientConfig;
@@ -14,7 +20,7 @@ export class AuthManager {
     this.retryOptions = retryOptions;
   }
 
-  async grantToken(): Promise<TokenResponse> {
+  async grantToken(): Promise<Result<TokenResponse, SDKError>> {
     try {
       const payload: TokenRequest = {
         client_id: this.config.clientId,
@@ -31,13 +37,13 @@ export class AuthManager {
       );
       this.accessToken = response.access_token;
       this.tokenExpiration = Date.now() + response.expires_in;
-      return response;
+      return ok(response);
     } catch (error) {
-      throw new SDKError("Failed to grant token", error);
+      return err(new SDKError("Failed to grant token", error));
     }
   }
 
-  async getAccessToken(): Promise<string> {
+  async getAccessToken(): Promise<Result<string, SDKError>> {
     const currentTime = Date.now();
     // Assume token is invalid if it doesn't exist or is within 60 seconds of expiring
     if (
@@ -46,8 +52,11 @@ export class AuthManager {
       currentTime >= this.tokenExpiration - 60000
     ) {
       const response = await this.grantToken();
-      return response.access_token;
+      if (!response.ok) {
+        return response;
+      }
+      return ok(response.value.access_token);
     }
-    return this.accessToken;
+    return ok(this.accessToken);
   }
 }

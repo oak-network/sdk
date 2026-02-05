@@ -4,6 +4,7 @@ import { httpClient } from "../../src/utils/httpClient";
 import { SDKError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils";
 import { getConfigFromEnv } from "../config";
+import { ok } from "../../src/types";
 
 jest.mock("../../src/utils/httpClient");
 const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
@@ -48,7 +49,7 @@ describe("Auth (Unit)", () => {
       })
     );
 
-    expect(result).toEqual(mockResponse);
+    expect(result).toEqual(ok(mockResponse));
   });
 
   it("should return cached token if valid", async () => {
@@ -64,10 +65,20 @@ describe("Auth (Unit)", () => {
     // Second call should return cached token
     const token2 = await client.getAccessToken();
 
-    expect(token1).toBe("cachedToken");
-    expect(token2).toBe("cachedToken");
+    expect(token1).toEqual(ok("cachedToken"));
+    expect(token2).toEqual(ok("cachedToken"));
     // httpClient.post should have been called only once
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(1);
+  });
+
+  it("should return error result when grantToken fails in getAccessToken", async () => {
+    mockedHttpClient.post.mockRejectedValue(new Error("Network Error"));
+
+    const result = await client.getAccessToken();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(SDKError);
+    }
   });
 
   it("should fetch a new token if expired", async () => {
@@ -92,14 +103,18 @@ describe("Auth (Unit)", () => {
     // Second call triggers new token request
     const token2 = await client.getAccessToken();
 
-    expect(token1).toBe("token1");
-    expect(token2).toBe("token2");
+    expect(token1).toEqual(ok("token1"));
+    expect(token2).toEqual(ok("token2"));
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(2);
   });
 
-  it("should throw SDKError if grantToken fails", async () => {
+  it("should return SDKError if grantToken fails", async () => {
     mockedHttpClient.post.mockRejectedValue(new Error("Network Error"));
 
-    await expect(client.grantToken()).rejects.toThrow(SDKError);
+    const result = await client.grantToken();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(SDKError);
+    }
   });
 });

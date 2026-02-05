@@ -7,6 +7,7 @@ import {
   SDKConfig,
   CreateCustomerRequest,
   CustomerListQueryParams,
+  ok,
 } from "../../src/types";
 
 jest.mock("../../src/utils/httpClient", () => ({
@@ -34,7 +35,9 @@ describe("CustomerService - Unit", () => {
       ...config,
       retryOptions,
     });
-    jest.spyOn(client, "getAccessToken").mockResolvedValue("fake-token");
+    jest
+      .spyOn(client, "getAccessToken")
+      .mockResolvedValue(ok("fake-token"));
     customers = Crowdsplit(client).customers;
     jest.clearAllMocks();
   });
@@ -56,17 +59,19 @@ describe("CustomerService - Unit", () => {
           retryOptions: expect.objectContaining(retryOptions),
         })
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toEqual(ok(mockResponse));
     });
 
-    it("should throw SDKError on failure", async () => {
+    it("should return SDKError on failure", async () => {
       (httpClient.post as jest.Mock).mockRejectedValue(
         new Error("Network error")
       );
 
-      await expect(
-        customers.create({ email: "fail@example.com" })
-      ).rejects.toThrow(SDKError);
+      const result = await customers.create({ email: "fail@example.com" });
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error).toBeInstanceOf(SDKError);
+      }
     });
   });
 
@@ -84,7 +89,7 @@ describe("CustomerService - Unit", () => {
           retryOptions: expect.objectContaining(retryOptions),
         })
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toEqual(ok(mockResponse));
     });
   });
 
@@ -103,7 +108,7 @@ describe("CustomerService - Unit", () => {
           retryOptions: expect.objectContaining(retryOptions),
         })
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toEqual(ok(mockResponse));
     });
   });
 
@@ -123,7 +128,7 @@ describe("CustomerService - Unit", () => {
           retryOptions: expect.objectContaining(retryOptions),
         })
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toEqual(ok(mockResponse));
     });
   });
 });
