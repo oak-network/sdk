@@ -38,6 +38,16 @@ const makeClient = (): OakClient => ({
   grantToken: jest.fn(),
 });
 
+const makeClientWithTokenError = (): OakClient => {
+  const tokenError = new SDKError("Token error");
+  return {
+    config: { baseUrl, clientId: "id", clientSecret: "secret" },
+    retryOptions,
+    getAccessToken: jest.fn().mockResolvedValue(err(tokenError)),
+    grantToken: jest.fn(),
+  };
+};
+
 const getAuthConfig = (client: OakClient) =>
   expect.objectContaining({
     headers: { Authorization: "Bearer token" },
@@ -79,6 +89,17 @@ const expectFailure = async (options: {
     if (!typedResult.ok && typedResult.error) {
       expect(typedResult.error).toBeInstanceOf(SDKError);
       expect(typedResult.error.message).toContain(options.errorMessage);
+    }
+  }
+};
+
+const expectTokenFailure = async (call: () => Promise<unknown>) => {
+  const result = await call();
+  expect(result).toEqual(err(expect.any(SDKError)));
+  if (result && typeof result === "object" && "ok" in result) {
+    const typedResult = result as { ok: boolean; error?: SDKError };
+    if (!typedResult.ok && typedResult.error) {
+      expect(typedResult.error.message).toContain("Token error");
     }
   }
 };
@@ -164,6 +185,15 @@ describe("Crowdsplit services (Unit)", () => {
       httpMethod: "put",
       errorMessage: "Failed to update customer",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createCustomerService(tokenErrorClient);
+    await expectTokenFailure(() => tokenErrorService.create({ email: "t@t.com" }));
+    await expectTokenFailure(() => tokenErrorService.get("cust-1"));
+    await expectTokenFailure(() => tokenErrorService.list({ limit: 1 }));
+    await expectTokenFailure(() =>
+      tokenErrorService.update("cust-1", { email: "t@t.com" })
+    );
   });
 
   it("payment service methods", async () => {
@@ -282,6 +312,25 @@ describe("Crowdsplit services (Unit)", () => {
       httpMethod: "delete",
       errorMessage: "Failed to delete payment method pm-1 for customer cust-1",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenPaymentService = createPaymentService(tokenErrorClient);
+    const tokenPaymentMethodService = createPaymentMethodService(tokenErrorClient);
+    await expectTokenFailure(() => tokenPaymentService.create(payment));
+    await expectTokenFailure(() => tokenPaymentService.confirm("pay-1"));
+    await expectTokenFailure(() => tokenPaymentService.cancel("pay-1"));
+    await expectTokenFailure(() =>
+      tokenPaymentMethodService.add("cust-1", paymentMethod)
+    );
+    await expectTokenFailure(() =>
+      tokenPaymentMethodService.get("cust-1", "pay-1")
+    );
+    await expectTokenFailure(() =>
+      tokenPaymentMethodService.list("cust-1", { type: "pix" })
+    );
+    await expectTokenFailure(() =>
+      tokenPaymentMethodService.delete("cust-1", "pm-1")
+    );
   });
 
   it("provider service methods", async () => {
@@ -352,6 +401,16 @@ describe("Crowdsplit services (Unit)", () => {
         "Failed to submit provider registration for customer cust-1: Unknown error"
       );
     }
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createProviderService(tokenErrorClient);
+    await expectTokenFailure(() => tokenErrorService.getSchema(request));
+    await expectTokenFailure(() =>
+      tokenErrorService.getRegistrationStatus("cust-1")
+    );
+    await expectTokenFailure(() =>
+      tokenErrorService.submitRegistration("cust-1", registration)
+    );
   });
 
   it("transaction service methods", async () => {
@@ -403,6 +462,16 @@ describe("Crowdsplit services (Unit)", () => {
       httpMethod: "patch",
       errorMessage: "Failed to settle transaction",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createTransactionService(tokenErrorClient);
+    await expectTokenFailure(() =>
+      tokenErrorService.list({ type_list: "refund" })
+    );
+    await expectTokenFailure(() => tokenErrorService.get("txn-1"));
+    await expectTokenFailure(() =>
+      tokenErrorService.settle("txn-1", settlement)
+    );
   });
 
   it("transfer, sell, buy services", async () => {
@@ -450,6 +519,14 @@ describe("Crowdsplit services (Unit)", () => {
       httpMethod: "post",
       errorMessage: "Failed to create buy",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenTransferService = createTransferService(tokenErrorClient);
+    const tokenSellService = createSellService(tokenErrorClient);
+    const tokenBuyService = createBuyService(tokenErrorClient);
+    await expectTokenFailure(() => tokenTransferService.create(transfer));
+    await expectTokenFailure(() => tokenSellService.create(sell));
+    await expectTokenFailure(() => tokenBuyService.create(buy));
   });
 
   it("plan service methods", async () => {
@@ -560,6 +637,15 @@ describe("Crowdsplit services (Unit)", () => {
       httpMethod: "delete",
       errorMessage: "Failed to delete plan",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createPlanService(tokenErrorClient);
+    await expectTokenFailure(() => tokenErrorService.create(planRequest));
+    await expectTokenFailure(() => tokenErrorService.publish("plan-1"));
+    await expectTokenFailure(() => tokenErrorService.details("plan-1"));
+    await expectTokenFailure(() => tokenErrorService.list({ page_no: 1 }));
+    await expectTokenFailure(() => tokenErrorService.update("plan-1", planRequest));
+    await expectTokenFailure(() => tokenErrorService.delete("plan-1"));
   });
 
   it("webhook service methods", async () => {
@@ -700,5 +786,18 @@ describe("Crowdsplit services (Unit)", () => {
       httpMethod: "get",
       errorMessage: "Failed getting webhook notificaiton ",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createWebhookService(tokenErrorClient);
+    await expectTokenFailure(() => tokenErrorService.register(webhook));
+    await expectTokenFailure(() => tokenErrorService.list());
+    await expectTokenFailure(() => tokenErrorService.get("wh-1"));
+    await expectTokenFailure(() => tokenErrorService.update("wh-1", webhook));
+    await expectTokenFailure(() => tokenErrorService.toggle("wh-1"));
+    await expectTokenFailure(() => tokenErrorService.delete("wh-1"));
+    await expectTokenFailure(() =>
+      tokenErrorService.listNotifications({ limit: 1 })
+    );
+    await expectTokenFailure(() => tokenErrorService.getNotification("wh-1"));
   });
 });

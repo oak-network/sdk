@@ -71,6 +71,16 @@ describe("Auth (Unit)", () => {
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(1);
   });
 
+  it("should return error result when grantToken fails in getAccessToken", async () => {
+    mockedHttpClient.post.mockRejectedValue(new Error("Network Error"));
+
+    const result = await client.getAccessToken();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(SDKError);
+    }
+  });
+
   it("should fetch a new token if expired", async () => {
     const mockResponse1 = {
       access_token: "token1",
