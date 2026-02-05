@@ -55,27 +55,31 @@ jobs:
           npm install -g npm@latest
           npm --version
 
-      - name: Publish @oaknetwork/contracts
+      - name: Publish packages
         if: steps.changesets.outputs.hasChangesets == 'false'
-        working-directory: packages/contracts
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          if [[ "$VERSION" == *-* ]]; then
-            npm publish --provenance --access public --tag dev
-          else
-            npm publish --provenance --access public
-          fi
+          for pkg in packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              NAME=$(node -p "require('./$pkg/package.json').name")
+              VERSION=$(node -p "require('./$pkg/package.json').version")
 
-      - name: Publish @oaknetwork/api
-        if: steps.changesets.outputs.hasChangesets == 'false'
-        working-directory: packages/api
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          if [[ "$VERSION" == *-* ]]; then
-            npm publish --provenance --access public --tag dev
-          else
-            npm publish --provenance --access public
-          fi
+              # Check if this version is already published
+              if npm view "${NAME}@${VERSION}" version 2>/dev/null; then
+                echo "⏭️  ${NAME}@${VERSION} already published, skipping."
+                continue
+              fi
+
+              # Use --tag dev for prerelease versions
+              if [[ "$VERSION" == *-* ]]; then
+                TAG="--tag dev"
+              else
+                TAG=""
+              fi
+
+              echo "📦 Publishing ${NAME}@${VERSION}..."
+              (cd "$pkg" && npm publish --provenance --access public $TAG)
+            fi
+          done
 
       - name: Create GitHub releases
         if: steps.changesets.outputs.hasChangesets == 'false'
