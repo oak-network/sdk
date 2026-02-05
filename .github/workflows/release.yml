@@ -13,8 +13,9 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -22,62 +23,30 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
+          version: 10
           run_install: false
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
           cache: pnpm
+          registry-url: https://registry.npmjs.org/
 
-      - name: Install dependencies
+      - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      - name: Create release PR or publish
+      - name: Build
+        run: pnpm -r build
+
+      - name: Create Release PR or Publish
         id: changesets
         uses: changesets/action@v1
         with:
-          version: pnpm changeset:version
+          version: npx changeset version
+          publish: npx changeset publish
           commit: "chore: version packages"
           title: "Release packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build packages
-        if: steps.changesets.outputs.hasChangesets == 'false'
-        run: pnpm build
-
-      - name: Prepare npm for OIDC publishing
-        if: steps.changesets.outputs.hasChangesets == 'false'
-        run: |
-          npm install -g npm@latest
-          rm -f ~/.npmrc
-          echo "registry=https://registry.npmjs.org/" > ~/.npmrc
-
-      - name: Publish @oaknetwork/contracts
-        if: steps.changesets.outputs.hasChangesets == 'false'
-        working-directory: packages/contracts
-        run: npm publish --provenance --access public
-
-      - name: Publish @oaknetwork/api
-        if: steps.changesets.outputs.hasChangesets == 'false'
-        working-directory: packages/api
-        run: npm publish --provenance --access public
-
-      - name: Create GitHub releases
-        if: steps.changesets.outputs.hasChangesets == 'false'
-        run: |
-          for pkg in packages/*/; do
-            if [ -f "$pkg/package.json" ]; then
-              name=$(jq -r .name "$pkg/package.json")
-              version=$(jq -r .version "$pkg/package.json")
-              tag="${name}@${version}"
-              if ! git tag -l | grep -q "^${tag}$"; then
-                git tag "$tag"
-                git push origin "$tag" || true
-                gh release create "$tag" --title "$tag" --notes "Release $tag" || true
-              fi
-            fi
-          done
+          createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
