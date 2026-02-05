@@ -58,12 +58,24 @@ jobs:
       - name: Publish @oaknetwork/contracts
         if: steps.changesets.outputs.hasChangesets == 'false'
         working-directory: packages/contracts
-        run: npm publish --provenance --access public
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *-* ]]; then
+            npm publish --provenance --access public --tag dev
+          else
+            npm publish --provenance --access public
+          fi
 
       - name: Publish @oaknetwork/api
         if: steps.changesets.outputs.hasChangesets == 'false'
         working-directory: packages/api
-        run: npm publish --provenance --access public
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *-* ]]; then
+            npm publish --provenance --access public --tag dev
+          else
+            npm publish --provenance --access public
+          fi
 
       - name: Create GitHub releases
         if: steps.changesets.outputs.hasChangesets == 'false'
