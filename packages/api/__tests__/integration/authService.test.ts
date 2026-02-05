@@ -20,7 +20,7 @@ describe("Auth (Integration)", () => {
   it("should return the same token if not expired", async () => {
     const firstToken = await client.getAccessToken();
     const secondToken = await client.getAccessToken();
-    expect(secondToken).toBe(firstToken); // token cached and reused
+    expect(secondToken).toBe(firstToken);
   });
 
   it("should refresh token if expired", async () => {
@@ -38,13 +38,10 @@ describe("Auth (Integration)", () => {
   });
 
   it("should throw SDKError on invalid credentials", async () => {
-    const badConfig = {
+    const badClient = createOakClient({
+      environment: "sandbox",
       clientId: "invalid",
       clientSecret: "invalid",
-      baseUrl: getConfigFromEnv().baseUrl,
-    };
-    const badClient = createOakClient({
-      ...badConfig,
       retryOptions: {
         maxNumberOfRetries: 1,
         delay: 100,

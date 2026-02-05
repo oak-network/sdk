@@ -1,15 +1,18 @@
-// __tests__/unit/authService.test.ts
 import { createOakClient } from "../../src";
 import { httpClient } from "../../src/utils/httpClient";
 import { SDKError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils";
-import { getConfigFromEnv } from "../config";
+import type { OakClientConfig } from "../../src/types";
 
 jest.mock("../../src/utils/httpClient");
 const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
 describe("Auth (Unit)", () => {
-  const config = getConfigFromEnv();
+  const config: OakClientConfig = {
+    environment: "sandbox",
+    clientId: "test-client-id",
+    clientSecret: "test-client-secret",
+  };
   const retryOptions: RetryOptions = {
     maxNumberOfRetries: 1,
     delay: 100,
@@ -37,7 +40,7 @@ describe("Auth (Unit)", () => {
     const result = await client.grantToken();
 
     expect(mockedHttpClient.post).toHaveBeenCalledWith(
-      `${config.baseUrl}/api/v1/merchant/token/grant`,
+      `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/token/grant`,
       {
         client_id: config.clientId,
         client_secret: config.clientSecret,
@@ -59,14 +62,11 @@ describe("Auth (Unit)", () => {
     };
     mockedHttpClient.post.mockResolvedValue(mockResponse);
 
-    // First call to fetch token
     const token1 = await client.getAccessToken();
-    // Second call should return cached token
     const token2 = await client.getAccessToken();
 
     expect(token1).toBe("cachedToken");
     expect(token2).toBe("cachedToken");
-    // httpClient.post should have been called only once
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(1);
   });
 
@@ -75,7 +75,7 @@ describe("Auth (Unit)", () => {
       access_token: "token1",
       expires_in: 1,
       token_type: "bearer",
-    }; // expires in 1ms
+    };
     const mockResponse2 = {
       access_token: "token2",
       expires_in: 3600,
@@ -85,11 +85,8 @@ describe("Auth (Unit)", () => {
       .mockResolvedValueOnce(mockResponse1)
       .mockResolvedValueOnce(mockResponse2);
 
-    // First call
     const token1 = await client.getAccessToken();
-    // wait to expire token
     await new Promise((r) => setTimeout(r, 10));
-    // Second call triggers new token request
     const token2 = await client.getAccessToken();
 
     expect(token1).toBe("token1");

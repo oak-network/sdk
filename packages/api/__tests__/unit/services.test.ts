@@ -27,11 +27,15 @@ jest.mock("../../src/utils/httpClient", () => ({
 
 const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
-const baseUrl = "https://api.test";
-const retryOptions = { maxNumberOfRetries: 0, delay: 0 };
+const retryOptions = { maxNumberOfRetries: 0, delay: 0, backoffFactor: 2 };
 
 const makeClient = (): OakClient => ({
-  config: { baseUrl, clientId: "id", clientSecret: "secret" },
+  config: {
+    environment: "sandbox",
+    clientId: "id",
+    clientSecret: "secret",
+    baseUrl: process.env.CROWDSPLIT_SANDBOX_URL!,
+  },
   retryOptions,
   getAccessToken: jest.fn().mockResolvedValue("token"),
   grantToken: jest.fn(),
@@ -100,7 +104,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.create({ email: "test@example.com" }),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers`,
         { email: "test@example.com" },
         authConfig,
       ],
@@ -115,7 +119,7 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => service.get("cust-1"),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/customers/cust-1`, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers/cust-1`, authConfig],
     });
     await expectFailure({
       call: () => service.get("cust-1"),
@@ -127,13 +131,13 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => service.list({ limit: 10, offset: undefined }),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/customers?limit=10`, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers?limit=10`, authConfig],
     });
     await expectSuccess({
       client,
       call: () => service.list({ limit: undefined }),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/customers`, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers`, authConfig],
     });
     await expectFailure({
       call: () => service.list({ limit: 10 }),
@@ -146,7 +150,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.update("cust-1", { email: "new@example.com" }),
       httpMethod: "put",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers/cust-1`,
         { email: "new@example.com" },
         authConfig,
       ],
@@ -168,7 +172,7 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => service.create(payment),
       httpMethod: "post",
-      expectedArgs: [`${baseUrl}/api/v1/payments/`, payment, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/payments/`, payment, authConfig],
     });
     await expectFailure({
       call: () => service.create(payment),
@@ -181,7 +185,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.confirm("pay-1"),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/payments/pay-1/confirm`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/payments/pay-1/confirm`,
         {},
         authConfig,
       ],
@@ -197,7 +201,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.cancel("pay-1"),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/payments/pay-1/cancel`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/payments/pay-1/cancel`,
         {},
         authConfig,
       ],
@@ -215,7 +219,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => paymentMethodService.add("cust-1", paymentMethod),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1/payment_methods`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers/cust-1/payment_methods`,
         paymentMethod,
         authConfig,
       ],
@@ -231,7 +235,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => paymentMethodService.get("cust-1", "pay-1"),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1/payment_methods/pay-1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers/cust-1/payment_methods/pay-1`,
         authConfig,
       ],
     });
@@ -250,7 +254,7 @@ describe("Crowdsplit services (Unit)", () => {
         }),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1/payment_methods?type=pix`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers/cust-1/payment_methods?type=pix`,
         authConfig,
       ],
     });
@@ -265,7 +269,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => paymentMethodService.delete("cust-1", "pm-1"),
       httpMethod: "delete",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1/payment_methods/pm-1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/customers/cust-1/payment_methods/pm-1`,
         authConfig,
       ],
     });
@@ -287,7 +291,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.getSchema(request),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/provider-registration/schema?provider=stripe`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/provider-registration/schema?provider=stripe`,
         authConfig,
       ],
     });
@@ -302,7 +306,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.getRegistrationStatus("cust-1"),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/provider-registration/cust-1/status`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/provider-registration/cust-1/status`,
         authConfig,
       ],
     });
@@ -319,7 +323,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.submitRegistration("cust-1", registration),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/provider-registration/cust-1/submit`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/provider-registration/cust-1/submit`,
         registration,
         authConfig,
       ],
@@ -352,7 +356,7 @@ describe("Crowdsplit services (Unit)", () => {
         service.list({ type_list: "refund", status: undefined }),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/transactions?type_list=refund`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/transactions?type_list=refund`,
         authConfig,
       ],
     });
@@ -366,7 +370,7 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => service.get("txn-1"),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/transactions/txn-1`, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/transactions/txn-1`, authConfig],
     });
     await expectFailure({
       call: () => service.get("txn-1"),
@@ -379,7 +383,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.settle("txn-1", settlement),
       httpMethod: "patch",
       expectedArgs: [
-        `${baseUrl}/api/v1/transactions/txn-1/settle`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/transactions/txn-1/settle`,
         settlement,
         authConfig,
       ],
@@ -403,7 +407,7 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => transferService.create(transfer),
       httpMethod: "post",
-      expectedArgs: [`${baseUrl}/api/v1/transfer`, transfer, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/transfer`, transfer, authConfig],
     });
     await expectFailure({
       call: () => transferService.create(transfer),
@@ -416,7 +420,7 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => sellService.create(sell),
       httpMethod: "post",
-      expectedArgs: [`${baseUrl}/api/v1/sell`, sell, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/sell`, sell, authConfig],
     });
     await expectFailure({
       call: () => sellService.create(sell),
@@ -429,7 +433,7 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => buyService.create(buy),
       httpMethod: "post",
-      expectedArgs: [`${baseUrl}/api/v1/buy`, buy, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/buy`, buy, authConfig],
     });
     await expectFailure({
       call: () => buyService.create(buy),
@@ -459,7 +463,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.create(planRequest),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/subscription/plans`,
         planRequest,
         authConfig,
       ],
@@ -475,7 +479,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.publish("plan-1"),
       httpMethod: "patch",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans/plan-1/publish`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/subscription/plans/plan-1/publish`,
         undefined,
         authConfig,
       ],
@@ -491,7 +495,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.details("plan-1"),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans/plan-1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/subscription/plans/plan-1`,
         authConfig,
       ],
     });
@@ -506,7 +510,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.list({ page_no: 1, per_page: undefined }),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans?page_no=1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/subscription/plans?page_no=1`,
         authConfig,
       ],
     });
@@ -521,7 +525,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.update("plan-1", planRequest),
       httpMethod: "patch",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans/plan-1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/subscription/plans/plan-1`,
         planRequest,
         authConfig,
       ],
@@ -537,7 +541,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.delete("plan-1"),
       httpMethod: "delete",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans/plan-1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/subscription/plans/plan-1`,
         authConfig,
       ],
     });
@@ -559,7 +563,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.register(webhook),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/webhooks`,
         webhook,
         authConfig,
       ],
@@ -581,7 +585,7 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => service.list(),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/merchant/webhooks`, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/webhooks`, authConfig],
     });
     await expectFailure({
       call: () => service.list(),
@@ -593,7 +597,7 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => service.get("wh-1"),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/merchant/webhooks/wh-1`, authConfig],
+      expectedArgs: [`${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/webhooks/wh-1`, authConfig],
     });
     await expectFailure({
       call: () => service.get("wh-1"),
@@ -606,7 +610,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.update("wh-1", webhook),
       httpMethod: "put",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/wh-1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/webhooks/wh-1`,
         webhook,
         authConfig,
       ],
@@ -622,7 +626,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.toggle("wh-1"),
       httpMethod: "patch",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/wh-1/toggle`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/webhooks/wh-1/toggle`,
         undefined,
         authConfig,
       ],
@@ -638,7 +642,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.delete("wh-1"),
       httpMethod: "delete",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/wh-1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/webhooks/wh-1`,
         authConfig,
       ],
     });
@@ -654,7 +658,7 @@ describe("Crowdsplit services (Unit)", () => {
         service.listNotifications({ limit: 1, offset: undefined }),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/notifications?limit=1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/webhooks/notifications?limit=1`,
         authConfig,
       ],
     });
@@ -669,7 +673,7 @@ describe("Crowdsplit services (Unit)", () => {
       call: () => service.getNotification("wh-1"),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/notifications/wh-1`,
+        `${process.env.CROWDSPLIT_SANDBOX_URL}/api/v1/merchant/webhooks/notifications/wh-1`,
         authConfig,
       ],
     });
