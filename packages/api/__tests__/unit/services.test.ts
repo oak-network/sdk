@@ -14,6 +14,7 @@ import {
 import { httpClient } from "../../src/utils/httpClient";
 import { SDKError } from "../../src/utils/errorHandler";
 import type { OakClient } from "../../src/types";
+import { err, ok } from "../../src/types";
 
 jest.mock("../../src/utils/httpClient", () => ({
   httpClient: {
@@ -33,7 +34,7 @@ const retryOptions = { maxNumberOfRetries: 0, delay: 0 };
 const makeClient = (): OakClient => ({
   config: { baseUrl, clientId: "id", clientSecret: "secret" },
   retryOptions,
-  getAccessToken: jest.fn().mockResolvedValue("token"),
+  getAccessToken: jest.fn().mockResolvedValue(ok("token")),
   grantToken: jest.fn(),
 });
 
@@ -54,7 +55,7 @@ const expectSuccess = async (options: {
 
   const result = await options.call();
 
-  expect(result).toBe(response);
+  expect(result).toEqual(ok(response));
   expect(mockedHttpClient[options.httpMethod]).toHaveBeenCalledWith(
     ...options.expectedArgs
   );
@@ -71,8 +72,15 @@ const expectFailure = async (options: {
     options.error ?? new Error("fail")
   );
 
-  await expect(options.call()).rejects.toThrow(SDKError);
-  await expect(options.call()).rejects.toThrow(options.errorMessage);
+  const result = await options.call();
+  expect(result).toEqual(err(expect.any(SDKError)));
+  if (result && typeof result === "object" && "ok" in result) {
+    const typedResult = result as { ok: boolean; error?: SDKError };
+    if (!typedResult.ok && typedResult.error) {
+      expect(typedResult.error).toBeInstanceOf(SDKError);
+      expect(typedResult.error.message).toContain(options.errorMessage);
+    }
+  }
 };
 
 describe("Crowdsplit services (Unit)", () => {
@@ -326,18 +334,24 @@ describe("Crowdsplit services (Unit)", () => {
     });
 
     mockedHttpClient.post.mockRejectedValueOnce({ body: { msg: "Bad" } });
-    await expect(
-      service.submitRegistration("cust-1", registration)
-    ).rejects.toThrow(
-      "Failed to submit provider registration for customer cust-1: Bad"
-    );
+    const badResult = await service.submitRegistration("cust-1", registration);
+    expect(badResult).toEqual(err(expect.any(SDKError)));
+    if ("ok" in badResult && !badResult.ok) {
+      const error = (badResult as { error: SDKError }).error;
+      expect(error.message).toContain(
+        "Failed to submit provider registration for customer cust-1: Bad"
+      );
+    }
 
     mockedHttpClient.post.mockRejectedValueOnce("boom");
-    await expect(
-      service.submitRegistration("cust-1", registration)
-    ).rejects.toThrow(
-      "Failed to submit provider registration for customer cust-1: Unknown error"
-    );
+    const boomResult = await service.submitRegistration("cust-1", registration);
+    expect(boomResult).toEqual(err(expect.any(SDKError)));
+    if ("ok" in boomResult && !boomResult.ok) {
+      const error = (boomResult as { error: SDKError }).error;
+      expect(error.message).toContain(
+        "Failed to submit provider registration for customer cust-1: Unknown error"
+      );
+    }
   });
 
   it("transaction service methods", async () => {
@@ -568,14 +582,22 @@ describe("Crowdsplit services (Unit)", () => {
     mockedHttpClient.post.mockRejectedValueOnce({
       body: { msg: "This URL is Already Registered!" },
     });
-    await expect(service.register(webhook)).rejects.toThrow(
-      "Webhook URL is already registered."
-    );
+    const duplicateResult = await service.register(webhook);
+    expect(duplicateResult).toEqual(err(expect.any(SDKError)));
+    if ("ok" in duplicateResult && !duplicateResult.ok) {
+      const error = (duplicateResult as { error: SDKError }).error;
+      expect(error.message).toContain(
+        "Webhook URL is already registered."
+      );
+    }
 
     mockedHttpClient.post.mockRejectedValueOnce(new Error("fail"));
-    await expect(service.register(webhook)).rejects.toThrow(
-      "Failed to create webhook"
-    );
+    const failResult = await service.register(webhook);
+    expect(failResult).toEqual(err(expect.any(SDKError)));
+    if ("ok" in failResult && !failResult.ok) {
+      const error = (failResult as { error: SDKError }).error;
+      expect(error.message).toContain("Failed to create webhook");
+    }
 
     await expectSuccess({
       client,
