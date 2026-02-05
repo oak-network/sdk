@@ -63,7 +63,9 @@ export function SandboxOnly<T extends (...args: unknown[]) => unknown>(
         typeof propertyKey === "symbol"
           ? propertyKey.toString()
           : String(propertyKey);
-      throw new EnvironmentViolationError(methodName, environment);
+      return Promise.reject(
+        new EnvironmentViolationError(methodName, environment)
+      ) as ReturnType<T>;
     }
 
     return originalMethod.apply(this, args);
@@ -81,7 +83,9 @@ export function sandboxOnlyFn<T extends (...args: unknown[]) => unknown>(
     const environment = getEnvironment();
 
     if (environment === "production") {
-      throw new EnvironmentViolationError(methodName, environment);
+      return Promise.reject(
+        new EnvironmentViolationError(methodName, environment)
+      );
     }
 
     return fn(...args);

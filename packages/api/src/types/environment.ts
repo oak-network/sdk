@@ -5,25 +5,28 @@ export interface EnvironmentConfig {
   allowsTestOperations: boolean;
 }
 
-export function getEnvironmentConfigs(): Record<OakEnvironment, EnvironmentConfig> {
-  const sandboxUrl = process.env.CROWDSPLIT_SANDBOX_URL;
-  const productionUrl = process.env.CROWDSPLIT_PRODUCTION_URL;
+const ENVIRONMENT_VAR_NAMES: Record<OakEnvironment, string> = {
+  sandbox: "CROWDSPLIT_SANDBOX_URL",
+  production: "CROWDSPLIT_PRODUCTION_URL",
+};
 
-  if (!sandboxUrl || !productionUrl) {
+function getEnvironmentUrl(environment: OakEnvironment): string {
+  const envVarName = ENVIRONMENT_VAR_NAMES[environment];
+  const url = process.env[envVarName];
+
+  if (!url) {
     throw new Error(
-      "Missing required environment variables: CROWDSPLIT_SANDBOX_URL, CROWDSPLIT_PRODUCTION_URL"
+      `Missing required environment variable: ${envVarName} for ${environment} environment`
     );
   }
 
+  return url;
+}
+
+export function getEnvironmentConfig(environment: OakEnvironment): EnvironmentConfig {
   return {
-    sandbox: {
-      apiUrl: sandboxUrl,
-      allowsTestOperations: true,
-    },
-    production: {
-      apiUrl: productionUrl,
-      allowsTestOperations: false,
-    },
+    apiUrl: getEnvironmentUrl(environment),
+    allowsTestOperations: environment === "sandbox",
   };
 }
 
@@ -34,9 +37,9 @@ export function resolveBaseUrl(
   if (customUrl) {
     return customUrl;
   }
-  return getEnvironmentConfigs()[environment].apiUrl;
+  return getEnvironmentUrl(environment);
 }
 
 export function isTestEnvironment(environment: OakEnvironment): boolean {
-  return getEnvironmentConfigs()[environment].allowsTestOperations;
+  return environment === "sandbox";
 }

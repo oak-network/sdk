@@ -29,13 +29,24 @@ describe("createOakClient", () => {
     });
 
     it("should resolve production URL for production environment", () => {
+      const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
+      const testProdUrl = originalProd || "https://api.production.example.com";
+
+      if (!originalProd) {
+        process.env.CROWDSPLIT_PRODUCTION_URL = testProdUrl;
+      }
+
       const client = createOakClient({
         ...baseConfig,
         environment: "production",
       });
 
-      expect(client.config.baseUrl).toBe(process.env.CROWDSPLIT_PRODUCTION_URL);
+      expect(client.config.baseUrl).toBe(testProdUrl);
       expect(client.config.environment).toBe("production");
+
+      if (!originalProd) {
+        delete process.env.CROWDSPLIT_PRODUCTION_URL;
+      }
     });
 
     it("should use customUrl when provided", () => {

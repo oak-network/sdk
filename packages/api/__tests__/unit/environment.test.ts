@@ -1,7 +1,7 @@
 import {
   resolveBaseUrl,
   isTestEnvironment,
-  getEnvironmentConfigs,
+  getEnvironmentConfig,
   OakEnvironment,
 } from "../../src/types/environment";
 import {
@@ -12,32 +12,61 @@ import { SandboxOnly, sandboxOnlyFn } from "../../src/decorators/sandboxOnly";
 import type { ResolvedOakClientConfig } from "../../src/types/client";
 
 describe("Environment Configuration", () => {
-  describe("getEnvironmentConfigs", () => {
-    it("should have sandbox config with test operations allowed", () => {
-      const configs = getEnvironmentConfigs();
-      expect(configs.sandbox).toBeDefined();
-      expect(configs.sandbox.allowsTestOperations).toBe(true);
-      expect(configs.sandbox.apiUrl).toBe(process.env.CROWDSPLIT_SANDBOX_URL);
+  describe("getEnvironmentConfig", () => {
+    it("should return sandbox config with test operations allowed", () => {
+      const config = getEnvironmentConfig("sandbox");
+      expect(config).toBeDefined();
+      expect(config.allowsTestOperations).toBe(true);
+      expect(config.apiUrl).toBe(process.env.CROWDSPLIT_SANDBOX_URL);
     });
 
-    it("should have production config with test operations disallowed", () => {
-      const configs = getEnvironmentConfigs();
-      expect(configs.production).toBeDefined();
-      expect(configs.production.allowsTestOperations).toBe(false);
-      expect(configs.production.apiUrl).toBe(process.env.CROWDSPLIT_PRODUCTION_URL);
-    });
-
-    it("should throw error when env vars are missing", () => {
-      const originalSandbox = process.env.CROWDSPLIT_SANDBOX_URL;
+    it("should return production config with test operations disallowed", () => {
       const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
-      delete process.env.CROWDSPLIT_SANDBOX_URL;
-      delete process.env.CROWDSPLIT_PRODUCTION_URL;
+      const testProdUrl = originalProd || "https://api.production.example.com";
 
-      expect(() => getEnvironmentConfigs()).toThrow(
-        "Missing required environment variables"
+      if (!originalProd) {
+        process.env.CROWDSPLIT_PRODUCTION_URL = testProdUrl;
+      }
+
+      const config = getEnvironmentConfig("production");
+      expect(config).toBeDefined();
+      expect(config.allowsTestOperations).toBe(false);
+      expect(config.apiUrl).toBe(testProdUrl);
+
+      if (!originalProd) {
+        delete process.env.CROWDSPLIT_PRODUCTION_URL;
+      }
+    });
+
+    it("should throw error when sandbox env var is missing", () => {
+      const originalSandbox = process.env.CROWDSPLIT_SANDBOX_URL;
+      delete process.env.CROWDSPLIT_SANDBOX_URL;
+
+      expect(() => getEnvironmentConfig("sandbox")).toThrow(
+        "Missing required environment variable: CROWDSPLIT_SANDBOX_URL for sandbox environment"
       );
 
       process.env.CROWDSPLIT_SANDBOX_URL = originalSandbox;
+    });
+
+    it("should throw error when production env var is missing", () => {
+      const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
+      delete process.env.CROWDSPLIT_PRODUCTION_URL;
+
+      expect(() => getEnvironmentConfig("production")).toThrow(
+        "Missing required environment variable: CROWDSPLIT_PRODUCTION_URL for production environment"
+      );
+
+      process.env.CROWDSPLIT_PRODUCTION_URL = originalProd;
+    });
+
+    it("should allow sandbox config when only sandbox URL is set", () => {
+      const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
+      delete process.env.CROWDSPLIT_PRODUCTION_URL;
+
+      const config = getEnvironmentConfig("sandbox");
+      expect(config.apiUrl).toBe(process.env.CROWDSPLIT_SANDBOX_URL);
+
       process.env.CROWDSPLIT_PRODUCTION_URL = originalProd;
     });
   });
@@ -49,8 +78,19 @@ describe("Environment Configuration", () => {
     });
 
     it("should return production URL for production environment", () => {
+      const originalProd = process.env.CROWDSPLIT_PRODUCTION_URL;
+      const testProdUrl = originalProd || "https://api.production.example.com";
+
+      if (!originalProd) {
+        process.env.CROWDSPLIT_PRODUCTION_URL = testProdUrl;
+      }
+
       const url = resolveBaseUrl("production");
-      expect(url).toBe(process.env.CROWDSPLIT_PRODUCTION_URL);
+      expect(url).toBe(testProdUrl);
+
+      if (!originalProd) {
+        delete process.env.CROWDSPLIT_PRODUCTION_URL;
+      }
     });
 
     it("should return customUrl when provided", () => {
@@ -157,17 +197,17 @@ describe("@SandboxOnly Decorator", () => {
       expect(result).toBe("sync completed");
     });
 
-    it("should throw EnvironmentViolationError in production", () => {
+    it("should reject with EnvironmentViolationError in production", async () => {
       const service = new TestServiceWithConfig("production");
-      expect(() => service.destructiveOperation()).toThrow(
+      await expect(service.destructiveOperation()).rejects.toThrow(
         EnvironmentViolationError
       );
     });
 
-    it("should throw with correct method name in error", () => {
+    it("should reject with correct method name in error", async () => {
       const service = new TestServiceWithConfig("production");
       try {
-        service.destructiveOperation();
+        await service.destructiveOperation();
         fail("Should have thrown");
       } catch (error) {
         expect(error).toBeInstanceOf(EnvironmentViolationError);
@@ -203,10 +243,10 @@ describe("@SandboxOnly Decorator", () => {
       expect(result).toBe("symbol method completed");
     });
 
-    it("should throw with symbol.toString() as method name in production", () => {
+    it("should reject with symbol.toString() as method name in production", async () => {
       const service = new TestServiceWithSymbol("production");
       try {
-        service[symbolMethod]();
+        await service[symbolMethod]();
         fail("Should have thrown");
       } catch (error) {
         expect(error).toBeInstanceOf(EnvironmentViolationError);
@@ -232,9 +272,11 @@ describe("@SandboxOnly Decorator", () => {
       await expect(service.resetAccount()).resolves.toBeUndefined();
     });
 
-    it("should throw EnvironmentViolationError in production", () => {
+    it("should reject with EnvironmentViolationError in production", async () => {
       const service = new TestServiceWithClient("production");
-      expect(() => service.resetAccount()).toThrow(EnvironmentViolationError);
+      await expect(service.resetAccount()).rejects.toThrow(
+        EnvironmentViolationError
+      );
     });
   });
 
@@ -264,11 +306,11 @@ describe("sandboxOnlyFn", () => {
     expect(fn).toHaveBeenCalled();
   });
 
-  it("should throw EnvironmentViolationError when environment is production", () => {
+  it("should reject with EnvironmentViolationError when environment is production", async () => {
     const fn = jest.fn().mockReturnValue("result");
     const wrapped = sandboxOnlyFn(fn, () => "production", "testFn");
 
-    expect(() => wrapped()).toThrow(EnvironmentViolationError);
+    await expect(wrapped()).rejects.toThrow(EnvironmentViolationError);
     expect(fn).not.toHaveBeenCalled();
   });
 
@@ -282,12 +324,12 @@ describe("sandboxOnlyFn", () => {
     expect(fn).toHaveBeenCalledWith(2, 3);
   });
 
-  it("should include method name in error", () => {
+  it("should include method name in error", async () => {
     const fn = jest.fn();
     const wrapped = sandboxOnlyFn(fn, () => "production", "mySpecialMethod");
 
     try {
-      wrapped();
+      await wrapped();
       fail("Should have thrown");
     } catch (error) {
       expect((error as EnvironmentViolationError).methodName).toBe(
