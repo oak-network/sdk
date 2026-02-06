@@ -7,8 +7,7 @@ import type {
   Result,
 } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { SDKError } from "../utils/errorHandler";
-import { err, ok } from "../types";
+import { err } from "../types";
 
 export interface PaymentService {
   create(payment: CreatePaymentRequest): Promise<Result<CreatePaymentResponse>>;
@@ -19,83 +18,61 @@ export interface PaymentService {
 export const createPaymentService = (client: OakClient): PaymentService => ({
   async create(
     payment: CreatePaymentRequest,
-  ): Promise<Result<CreatePaymentResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.post<CreatePaymentResponse>(
-        `${client.config.baseUrl}/api/v1/payments/`,
-        payment,
-        {
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
-          retryOptions: client.retryOptions,
-        },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(new SDKError("Failed to create payment", error));
+  ): Promise<Result<CreatePaymentResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.post<CreatePaymentResponse>(
+      `${client.config.baseUrl}/api/v1/payments/`,
+      payment,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 
   async confirm(
     paymentId: string,
-  ): Promise<Result<ConfirmPaymentResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.post<ConfirmPaymentResponse>(
-        `${client.config.baseUrl}/api/v1/payments/${paymentId}/confirm`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
-          retryOptions: client.retryOptions,
-        },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(
-        new SDKError(`Failed to confirm payment with id ${paymentId}`, error),
-      );
+  ): Promise<Result<ConfirmPaymentResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.post<ConfirmPaymentResponse>(
+      `${client.config.baseUrl}/api/v1/payments/${paymentId}/confirm`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 
   async cancel(
     paymentId: string,
-  ): Promise<Result<CancelPaymentResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.post<CancelPaymentResponse>(
-        `${client.config.baseUrl}/api/v1/payments/${paymentId}/cancel`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
-          retryOptions: client.retryOptions,
-        },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(
-        new SDKError(`Failed to cancel payment with id ${paymentId}`, error),
-      );
+  ): Promise<Result<CancelPaymentResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.post<CancelPaymentResponse>(
+      `${client.config.baseUrl}/api/v1/payments/${paymentId}/cancel`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 });

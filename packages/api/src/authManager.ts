@@ -5,7 +5,7 @@ import type {
   TokenResponse,
 } from "./types";
 import { httpClient } from "./utils/httpClient";
-import { SDKError } from "./utils/errorHandler";
+import { OakError } from "./utils/errorHandler";
 import { RetryOptions } from "./utils/defaultRetryConfig";
 import { err, ok } from "./types";
 
@@ -20,30 +20,29 @@ export class AuthManager {
     this.retryOptions = retryOptions;
   }
 
-  async grantToken(): Promise<Result<TokenResponse, SDKError>> {
-    try {
-      const payload: TokenRequest = {
-        client_id: this.config.clientId,
-        client_secret: this.config.clientSecret,
-        grant_type: "client_credentials",
-      };
+  async grantToken(): Promise<Result<TokenResponse, OakError>> {
+    const payload: TokenRequest = {
+      client_id: this.config.clientId,
+      client_secret: this.config.clientSecret,
+      grant_type: "client_credentials",
+    };
 
-      const response = await httpClient.post<TokenResponse>(
-        `${this.config.baseUrl}/api/v1/merchant/token/grant`,
-        payload,
-        {
-          retryOptions: this.retryOptions,
-        }
-      );
-      this.accessToken = response.access_token;
-      this.tokenExpiration = Date.now() + response.expires_in;
-      return ok(response);
-    } catch (error) {
-      return err(new SDKError("Failed to grant token", error));
+    const response = await httpClient.post<TokenResponse>(
+      `${this.config.baseUrl}/api/v1/merchant/token/grant`,
+      payload,
+      {
+        retryOptions: this.retryOptions,
+      }
+    );
+    if (!response.ok) {
+      return err(response.error);
     }
+    this.accessToken = response.value.access_token;
+    this.tokenExpiration = Date.now() + response.value.expires_in;
+    return ok(response.value);
   }
 
-  async getAccessToken(): Promise<Result<string, SDKError>> {
+  async getAccessToken(): Promise<Result<string, OakError>> {
     const currentTime = Date.now();
     if (
       !this.accessToken ||
