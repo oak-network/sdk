@@ -46,7 +46,7 @@ jobs:
           CI: true
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          BASE_URL: ${{ secrets.BASE_URL }}
+          OAK_ENVIRONMENT: sandbox
       
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4

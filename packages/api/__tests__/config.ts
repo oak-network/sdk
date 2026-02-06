@@ -1,4 +1,5 @@
-import type { OakClientConfig, RetryOptions } from "../src";
+import type { OakClientConfig, OakEnvironment } from "../src";
+import type { RetryOptions } from "../src/utils";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -6,10 +7,25 @@ export interface TestClientConfig extends OakClientConfig {
   retryOptions?: RetryOptions;
 }
 
-export function getConfigFromEnv(): TestClientConfig {
+export function getConfigFromEnv(): OakClientConfig {
+  if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
+    throw new Error(
+      "Missing required environment variables: CLIENT_ID, CLIENT_SECRET"
+    );
+  }
+
+  const environment: OakEnvironment =
+    (process.env.OAK_ENVIRONMENT as OakEnvironment) || "sandbox";
+
+  if (environment !== "sandbox" && environment !== "production") {
+    throw new Error(
+      `Invalid OAK_ENVIRONMENT: ${environment}. Must be 'sandbox' or 'production'.`
+    );
+  }
+
   return {
-    clientId: process.env.CLIENT_ID ?? "test-client-id",
-    clientSecret: process.env.CLIENT_SECRET ?? "test-client-secret",
-    baseUrl: process.env.BASE_URL ?? "https://api.test",
+    environment,
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
   };
 }

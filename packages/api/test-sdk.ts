@@ -8,12 +8,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 async function testSDK() {
-  console.log(process.env.BASE_URL);
   // Initialize the SDK with your backend's configuration
   const client = createOakClient({
-    baseUrl: process.env.BASE_URL as string, // Replace with your actual API base URL
-    clientId: process.env.CLIENT_ID as string, // Replace with your actual client ID
-    clientSecret: process.env.CLIENT_SECRET as string, // Replace with your actual client secret
+    environment: (process.env.OAK_ENVIRONMENT as "sandbox" | "production") || "sandbox",
+    clientId: process.env.CLIENT_ID as string,
+    clientSecret: process.env.CLIENT_SECRET as string,
   });
   const cs = Crowdsplit(client);
 
@@ -249,10 +248,10 @@ async function testSDK() {
   // }
 
   try {
-    const response = await cs.transactions.getAllTransactions();
-    console.log("Webhook found :", response);
+    const response = await cs.transactions.list();
+    console.log("Transactions:", response);
   } catch (err) {
-    console.error("Error getting Webhook:", err);
+    console.error("Error getting transactions:", err);
   }
 }
 

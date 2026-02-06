@@ -1,5 +1,5 @@
 import type {
-  OakClientConfig,
+  ResolvedOakClientConfig,
   Result,
   TokenRequest,
   TokenResponse,
@@ -10,12 +10,12 @@ import { RetryOptions } from "./utils/defaultRetryConfig";
 import { err, ok } from "./types";
 
 export class AuthManager {
-  private config: OakClientConfig;
+  private config: ResolvedOakClientConfig;
   private accessToken: string | null = null;
   private tokenExpiration: number | null = null;
   private retryOptions: RetryOptions;
 
-  constructor(config: OakClientConfig, retryOptions: RetryOptions) {
+  constructor(config: ResolvedOakClientConfig, retryOptions: RetryOptions) {
     this.config = config;
     this.retryOptions = retryOptions;
   }
@@ -45,7 +45,6 @@ export class AuthManager {
 
   async getAccessToken(): Promise<Result<string, SDKError>> {
     const currentTime = Date.now();
-    // Assume token is invalid if it doesn't exist or is within 60 seconds of expiring
     if (
       !this.accessToken ||
       !this.tokenExpiration ||
