@@ -44,6 +44,13 @@ export class NetworkError extends OakError {
   }
 }
 
+export class AbortError extends OakError {
+  constructor(message: string, cause?: unknown) {
+    super(message, cause);
+    this.name = "AbortError";
+  }
+}
+
 export class ParseError extends OakError {
   constructor(message: string, cause?: unknown) {
     super(message, cause);

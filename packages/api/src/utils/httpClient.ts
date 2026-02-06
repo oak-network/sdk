@@ -1,7 +1,7 @@
 import { RetryOptions } from "./defaultRetryConfig";
 import { withRetry } from "./retryHandler";
 import { err, ok, Result } from "../types";
-import { ApiError, NetworkError, OakError, ParseError } from "./errorHandler";
+import { AbortError, ApiError, NetworkError, OakError, ParseError } from "./errorHandler";
 
 export interface HttpClientConfig {
   headers?: Record<string, string>;
@@ -74,6 +74,12 @@ const request = async <T>(
           signal: config.signal,
         });
       } catch (error) {
+        if (
+          config.signal?.aborted ||
+          (error instanceof Error && error.name === "AbortError")
+        ) {
+          throw new AbortError("Request aborted", error);
+        }
         throw new NetworkError("Network error", error);
       }
 
@@ -89,7 +95,7 @@ const request = async <T>(
       }
 
       return parsedBody as T;
-    }, config.retryOptions);
+    }, { ...config.retryOptions, signal: config.signal });
 
     return ok(responseBody);
   } catch (error) {

@@ -1,5 +1,6 @@
 import { buildQueryString, getErrorBodyMessage } from "../../src/services/helpers";
 import {
+  AbortError,
   ApiError,
   NetworkError,
   ParseError,
@@ -563,6 +564,22 @@ describe("httpClient", () => {
     if (!result.ok) {
       expect(result.error).toBeInstanceOf(NetworkError);
       expect(result.error.message).toBe("Network error");
+    }
+  });
+
+  it("post returns AbortError when request is aborted", async () => {
+    const abortError = new Error("aborted");
+    abortError.name = "AbortError";
+    fetchMock.mockRejectedValue(abortError);
+
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions: { maxNumberOfRetries: 1, delay: 0 },
+      signal: new AbortController().signal,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(AbortError);
+      expect(result.error.message).toBe("Request aborted");
     }
   });
 
