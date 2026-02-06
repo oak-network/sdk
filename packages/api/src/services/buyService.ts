@@ -1,16 +1,16 @@
-import type { CreateBuyRequest, CreateBuyResponse, OakClient } from "../types";
+import type { Buy, OakClient } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 
 export interface BuyService {
-  create(buyRequest: CreateBuyRequest): Promise<CreateBuyResponse>;
+  create(buyRequest: Buy.Request): Promise<Buy.Response>;
 }
 
 export const createBuyService = (client: OakClient): BuyService => ({
-  async create(buyRequest: CreateBuyRequest): Promise<CreateBuyResponse> {
+  async create(buyRequest: Buy.Request): Promise<Buy.Response> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.post<CreateBuyResponse>(
+      const response = await httpClient.post<Buy.Response>(
         `${client.config.baseUrl}/api/v1/buy`,
         buyRequest,
         {

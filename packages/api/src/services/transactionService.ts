@@ -1,35 +1,26 @@
-import type {
-  GetAllTransactionsQuery,
-  GetAllTransactionsResponse,
-  GetTransactionResponse,
-  OakClient,
-  SettlementRequest,
-  SettlementResponse,
-} from "../types";
+import type { Transaction, OakClient } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 import { buildQueryString } from "./helpers";
 
 export interface TransactionService {
-  list(query?: GetAllTransactionsQuery): Promise<GetAllTransactionsResponse>;
-  get(id: string): Promise<GetTransactionResponse>;
+  list(query?: Transaction.ListQuery): Promise<Transaction.ListResponse>;
+  get(id: string): Promise<Transaction.GetResponse>;
   settle(
     id: string,
-    settlementRequest: SettlementRequest,
-  ): Promise<SettlementResponse>;
+    settlementRequest: Transaction.SettlementRequest,
+  ): Promise<Transaction.SettlementResponse>;
 }
 
 export const createTransactionService = (
   client: OakClient,
 ): TransactionService => ({
-  async list(
-    query?: GetAllTransactionsQuery,
-  ): Promise<GetAllTransactionsResponse> {
+  async list(query?: Transaction.ListQuery): Promise<Transaction.ListResponse> {
     try {
       const token = await client.getAccessToken();
       const queryString = buildQueryString(query);
 
-      const response = await httpClient.get<GetAllTransactionsResponse>(
+      const response = await httpClient.get<Transaction.ListResponse>(
         `${client.config.baseUrl}/api/v1/transactions${queryString}`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -42,11 +33,11 @@ export const createTransactionService = (
     }
   },
 
-  async get(id: string): Promise<GetTransactionResponse> {
+  async get(id: string): Promise<Transaction.GetResponse> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.get<GetTransactionResponse>(
+      const response = await httpClient.get<Transaction.GetResponse>(
         `${client.config.baseUrl}/api/v1/transactions/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -61,11 +52,11 @@ export const createTransactionService = (
 
   async settle(
     id: string,
-    settlementRequest: SettlementRequest,
-  ): Promise<SettlementResponse> {
+    settlementRequest: Transaction.SettlementRequest,
+  ): Promise<Transaction.SettlementResponse> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.patch<SettlementResponse>(
+      const response = await httpClient.patch<Transaction.SettlementResponse>(
         `${client.config.baseUrl}/api/v1/transactions/${id}/settle`,
         settlementRequest,
         {

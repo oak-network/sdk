@@ -1,71 +1,68 @@
-// ----------------------
-// Common Types
-
 import { ApiResponse } from "./common";
 
-// ----------------------
-interface Customer {
-  id: string;
-}
+export namespace Transfer {
+  // ----------------------
+  // Common
+  // ----------------------
+  export interface CustomerRef {
+    id: string;
+  }
 
-interface Source {
-  amount: number;
-  currency: string;
-  customer?: Customer;
-}
+  export interface Source {
+    amount: number;
+    currency: string;
+    customer?: CustomerRef;
+  }
 
-interface PaymentMethod {
-  id?: string;
-  type: string;
-  chain?: string;
-  evm_address?: string;
-}
+  export interface PaymentMethod {
+    id?: string;
+    type: string;
+    chain?: string;
+    evm_address?: string;
+  }
 
-interface Destination {
-  customer?: Customer;
-  payment_method?: PaymentMethod;
-}
+  export interface Destination {
+    customer?: CustomerRef;
+    payment_method?: PaymentMethod;
+  }
 
-type Metadata = Record<string, any>;
+  export type Metadata = Record<string, any>;
 
-// ----------------------
-// Provider-specific Requests
-// ----------------------
-export interface BrlaTransferRequest {
-  provider: "brla";
-  source: Source & { currency: "brla" };
-  destination: Destination;
-  metadata?: Metadata;
-}
+  // ----------------------
+  // Provider-specific requests
+  // ----------------------
+  export interface BrlaRequest {
+    provider: "brla";
+    source: Source & { currency: "brla" };
+    destination: Destination;
+    metadata?: Metadata;
+  }
 
-export interface StripeTransferRequest {
-  provider: "stripe";
-  source: Source & { currency: "usd" };
-  destination: Destination & {
-    customer: Customer;
-    payment_method: { id: string; type: "bank" };
-  };
-  metadata?: Metadata;
-  provider_data?: { statement_descriptor?: string };
-}
+  export interface StripeRequest {
+    provider: "stripe";
+    source: Source & { currency: "usd" };
+    destination: Destination & {
+      customer: CustomerRef;
+      payment_method: { id: string; type: "bank" };
+    };
+    metadata?: Metadata;
+    provider_data?: { statement_descriptor?: string };
+  }
 
-// ----------------------
-// Union Request Type
-// ----------------------
-export type CreateTransferRequest = BrlaTransferRequest | StripeTransferRequest;
+  export type Request = BrlaRequest | StripeRequest;
 
-// ----------------------
-// API Response
-// ----------------------
+  // ----------------------
+  // Response
+  // ----------------------
+  export interface Data {
+    id: string;
+    status: string; // e.g. "created"
+    type: "transfer";
+    source: Source;
+    destination: Destination;
+    metadata?: Metadata;
+    provider: string;
+  }
 
-export type CreateTransferResponse = ApiResponse<TransferData>;
-
-export interface TransferData {
-  id: string;
-  status: string; // e.g., "created"
-  type: "transfer";
-  source: Source;
-  destination: Destination;
-  metadata?: Metadata;
-  provider: string;
+  export type Response = ApiResponse<Data>;
 }

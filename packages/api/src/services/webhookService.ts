@@ -1,44 +1,27 @@
-import type {
-  DeleteWebhookResponse,
-  GetAllWebhookNotificationResponse,
-  GetAllWebhooksResponse,
-  GetWebhookNotificationResponse,
-  GetWebhookResponse,
-  OakClient,
-  RegisterWebhookRequest,
-  RegisterWebhookResponse,
-  ToggleWebhookResponse,
-  UpdateWebhookRequest,
-  UpdateWebhookResponse,
-} from "../types";
+import type { Webhook, OakClient } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 import { buildQueryString, getErrorBodyMessage } from "./helpers";
 
 export interface WebhookService {
-  register(webhook: RegisterWebhookRequest): Promise<RegisterWebhookResponse>;
-  list(): Promise<GetAllWebhooksResponse>;
-  get(id: string): Promise<GetWebhookResponse>;
-  update(
-    id: string,
-    webhook: UpdateWebhookRequest,
-  ): Promise<UpdateWebhookResponse>;
-  toggle(id: string): Promise<ToggleWebhookResponse>;
-  delete(id: string): Promise<DeleteWebhookResponse>;
+  register(webhook: Webhook.RegisterRequest): Promise<Webhook.Response>;
+  list(): Promise<Webhook.ListResponse>;
+  get(id: string): Promise<Webhook.GetResponse>;
+  update(id: string, webhook: Webhook.UpdateRequest): Promise<Webhook.Response>;
+  toggle(id: string): Promise<Webhook.Response>;
+  delete(id: string): Promise<Webhook.Response>;
   listNotifications(params?: {
     limit?: number;
     offset?: number;
-  }): Promise<GetAllWebhookNotificationResponse>;
-  getNotification(id: string): Promise<GetWebhookNotificationResponse>;
+  }): Promise<Webhook.ListNotificationsResponse>;
+  getNotification(id: string): Promise<Webhook.GetNotificationResponse>;
 }
 
 export const createWebhookService = (client: OakClient): WebhookService => ({
-  async register(
-    webhook: RegisterWebhookRequest,
-  ): Promise<RegisterWebhookResponse> {
+  async register(webhook: Webhook.RegisterRequest): Promise<Webhook.Response> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.post<RegisterWebhookResponse>(
+      const response = await httpClient.post<Webhook.Response>(
         `${client.config.baseUrl}/api/v1/merchant/webhooks`,
         webhook,
         {
@@ -55,10 +38,10 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async list(): Promise<GetAllWebhooksResponse> {
+  async list(): Promise<Webhook.ListResponse> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.get<GetAllWebhooksResponse>(
+      const response = await httpClient.get<Webhook.ListResponse>(
         `${client.config.baseUrl}/api/v1/merchant/webhooks`,
         {
           headers: {
@@ -73,10 +56,10 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async get(id: string): Promise<GetWebhookResponse> {
+  async get(id: string): Promise<Webhook.GetResponse> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.get<GetWebhookResponse>(
+      const response = await httpClient.get<Webhook.GetResponse>(
         `${client.config.baseUrl}/api/v1/merchant/webhooks/${id}`,
         {
           headers: {
@@ -93,11 +76,11 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
 
   async update(
     id: string,
-    webhook: UpdateWebhookRequest,
-  ): Promise<UpdateWebhookResponse> {
+    webhook: Webhook.UpdateRequest,
+  ): Promise<Webhook.Response> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.put<UpdateWebhookResponse>(
+      const response = await httpClient.put<Webhook.Response>(
         `${client.config.baseUrl}/api/v1/merchant/webhooks/${id}`,
         webhook,
         {
@@ -111,11 +94,11 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async toggle(id: string): Promise<ToggleWebhookResponse> {
+  async toggle(id: string): Promise<Webhook.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.patch<ToggleWebhookResponse>(
+      const response = await httpClient.patch<Webhook.Response>(
         `${client.config.baseUrl}/api/v1/merchant/webhooks/${id}/toggle`,
         undefined,
         {
@@ -129,11 +112,11 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async delete(id: string): Promise<DeleteWebhookResponse> {
+  async delete(id: string): Promise<Webhook.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.delete<DeleteWebhookResponse>(
+      const response = await httpClient.delete<Webhook.Response>(
         `${client.config.baseUrl}/api/v1/merchant/webhooks/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -149,11 +132,11 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
   async listNotifications(params?: {
     limit?: number;
     offset?: number;
-  }): Promise<GetAllWebhookNotificationResponse> {
+  }): Promise<Webhook.ListNotificationsResponse> {
     try {
       const token = await client.getAccessToken();
       const queryString = buildQueryString(params);
-      const response = await httpClient.get<GetAllWebhookNotificationResponse>(
+      const response = await httpClient.get<Webhook.ListNotificationsResponse>(
         `${client.config.baseUrl}/api/v1/merchant/webhooks/notifications${queryString}`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -166,10 +149,10 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async getNotification(id: string): Promise<GetWebhookNotificationResponse> {
+  async getNotification(id: string): Promise<Webhook.GetNotificationResponse> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.get<GetWebhookNotificationResponse>(
+      const response = await httpClient.get<Webhook.GetNotificationResponse>(
         `${client.config.baseUrl}/api/v1/merchant/webhooks/notifications/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },

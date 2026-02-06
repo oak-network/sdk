@@ -1,13 +1,6 @@
 import { ApiResponse } from "./common";
 
-export namespace Payment {
-  // ----------------------------------------
-  // Common
-  // ----------------------------------------
-  export interface CustomerRef {
-    id: string;
-  }
-
+export namespace PaymentMethod {
   export interface Metadata {
     [key: string]: string;
   }
@@ -133,92 +126,7 @@ export namespace Payment {
     | LiquidationAddressMethod
     | PlaidMethod;
 
-  // ----------------------------------------
-  // Source / destination
-  // ----------------------------------------
-  export interface Source {
-    amount: number;
-    currency: string;
-    customer?: CustomerRef;
-    payment_method: MethodData;
-    installments?: number;
-    float_rate?: number;
-    capture_method?: "automatic" | "manual";
-    fraud_check?: FraudCheck;
-  }
-
-  export interface Destination {
-    amount?: number;
-    currency?: string;
-    customer?: CustomerRef;
-  }
-
-  // ----------------------------------------
-  // Create payment (provider-specific requests)
-  // ----------------------------------------
-  export interface MercadoPagoRequest {
-    provider: "mercado_pago";
-    source: Source & {
-      currency: "COP";
-      customer: CustomerRef;
-      payment_method: { type: "card"; card_token: string };
-      capture_method: "automatic";
-    };
-    confirm?: boolean;
-    metadata?: Metadata;
-  }
-
-  export interface PagarMeRequest {
-    provider: "pagar_me";
-    source: Source & {
-      currency: "brl";
-      customer: CustomerRef;
-      payment_method: {
-        type: "card" | "pix";
-        card_token?: string;
-        expiry_date?: string;
-      };
-      capture_method: "automatic" | "manual";
-      fraud_check: FraudCheck & { provider?: "konduto" };
-    };
-    confirm?: boolean;
-    metadata?: Metadata;
-  }
-
-  export interface StripeRequest {
-    provider: "stripe";
-    source: Source & {
-      payment_method: { type: "card"; id?: string };
-      capture_method: "automatic";
-      fraud_check?: { enabled: false };
-    };
-    destination?: Destination;
-    confirm?: boolean;
-    metadata?: Metadata;
-  }
-
-  export type Request = MercadoPagoRequest | PagarMeRequest | StripeRequest;
-
-  // ----------------------------------------
-  // Payment responses (create / confirm / cancel)
-  // ----------------------------------------
-  export interface TransactionPayload {
-    id: string;
-    status: string;
-    type: string;
-    source: Source;
-    confirm: boolean;
-    metadata?: Metadata;
-    provider: string;
-    provider_response?: ProviderResponse;
-  }
-
-  export type Response = ApiResponse<TransactionPayload>;
-
-  // ----------------------------------------
-  // Customer payment methods (add / get / list / delete)
-  // ----------------------------------------
-  export type AddMethodRequest =
+  export type Request =
     | Omit<BankMethod, "id" | "status">
     | Omit<CardMethod, "id" | "status">
     | Omit<PixMethod, "id" | "status">
@@ -227,16 +135,16 @@ export namespace Payment {
     | Omit<LiquidationAddressMethod, "id" | "status">
     | Omit<PlaidMethod, "id" | "status">;
 
-  export type MethodResponse = ApiResponse<MethodData>;
-  export type ListMethodsResponse = ApiResponse<MethodData[]>;
+  export type Response = ApiResponse<MethodData>;
+  export type ListResponse = ApiResponse<MethodData[]>;
 
-  export interface ListMethodsQuery {
+  export interface ListQuery {
     type?: string;
     status?: string;
     platform?: string;
   }
 
-  export interface DeleteMethodResponse {
+  export interface DeleteResponse {
     msg: string;
   }
 }

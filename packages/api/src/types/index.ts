@@ -2,6 +2,7 @@ export * from "./config";
 export * from "./client";
 export * from "./token";
 export * from "./payment";
+export * from "./paymentMethod";
 export * from "./customer";
 export * from "./provider";
 export * from "./transactions";

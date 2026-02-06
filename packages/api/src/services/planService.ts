@@ -1,38 +1,22 @@
-import type {
-  CreatePlanRequest,
-  CreatePlanResponse,
-  DeletePlanResponse,
-  OakClient,
-  PlanDetailsResponse,
-  PlansListQueryParams,
-  PlansListResponse,
-  PublishPlanResponse,
-  UpdatePlanRequest,
-  UpdatePlanResponse,
-} from "../types";
+import type { Plan, OakClient } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 import { buildQueryString } from "./helpers";
 
 export interface PlanService {
-  create(createPlanRequest: CreatePlanRequest): Promise<CreatePlanResponse>;
-  publish(id: string): Promise<PublishPlanResponse>;
-  details(id: string): Promise<PlanDetailsResponse>;
-  list(params?: PlansListQueryParams): Promise<PlansListResponse>;
-  update(
-    id: string,
-    updatePlanRequest: UpdatePlanRequest,
-  ): Promise<UpdatePlanResponse>;
-  delete(id: string): Promise<DeletePlanResponse>;
+  create(createPlanRequest: Plan.Request): Promise<Plan.Response>;
+  publish(id: string): Promise<Plan.Response>;
+  details(id: string): Promise<Plan.DetailsResponse>;
+  list(params?: Plan.ListQuery): Promise<Plan.ListResponse>;
+  update(id: string, updatePlanRequest: Plan.Request): Promise<Plan.Response>;
+  delete(id: string): Promise<Plan.Response>;
 }
 
 export const createPlanService = (client: OakClient): PlanService => ({
-  async create(
-    createPlanRequest: CreatePlanRequest,
-  ): Promise<CreatePlanResponse> {
+  async create(createPlanRequest: Plan.Request): Promise<Plan.Response> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.post<CreatePlanResponse>(
+      const response = await httpClient.post<Plan.Response>(
         `${client.config.baseUrl}/api/v1/subscription/plans`,
         createPlanRequest,
         {
@@ -46,10 +30,10 @@ export const createPlanService = (client: OakClient): PlanService => ({
     }
   },
 
-  async publish(id: string): Promise<PublishPlanResponse> {
+  async publish(id: string): Promise<Plan.Response> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.patch<PublishPlanResponse>(
+      const response = await httpClient.patch<Plan.Response>(
         `${client.config.baseUrl}/api/v1/subscription/plans/${id}/publish`,
         undefined,
         {
@@ -63,10 +47,10 @@ export const createPlanService = (client: OakClient): PlanService => ({
     }
   },
 
-  async details(id: string): Promise<PlanDetailsResponse> {
+  async details(id: string): Promise<Plan.DetailsResponse> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.get<PlanDetailsResponse>(
+      const response = await httpClient.get<Plan.DetailsResponse>(
         `${client.config.baseUrl}/api/v1/subscription/plans/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -79,11 +63,11 @@ export const createPlanService = (client: OakClient): PlanService => ({
     }
   },
 
-  async list(params?: PlansListQueryParams): Promise<PlansListResponse> {
+  async list(params?: Plan.ListQuery): Promise<Plan.ListResponse> {
     try {
       const token = await client.getAccessToken();
       const queryString = buildQueryString(params);
-      const response = await httpClient.get<PlansListResponse>(
+      const response = await httpClient.get<Plan.ListResponse>(
         `${client.config.baseUrl}/api/v1/subscription/plans${queryString}`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -98,11 +82,11 @@ export const createPlanService = (client: OakClient): PlanService => ({
 
   async update(
     id: string,
-    updatePlanRequest: UpdatePlanRequest,
-  ): Promise<UpdatePlanResponse> {
+    updatePlanRequest: Plan.Request,
+  ): Promise<Plan.Response> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.patch<UpdatePlanResponse>(
+      const response = await httpClient.patch<Plan.Response>(
         `${client.config.baseUrl}/api/v1/subscription/plans/${id}`,
         updatePlanRequest,
         {
@@ -116,10 +100,10 @@ export const createPlanService = (client: OakClient): PlanService => ({
     }
   },
 
-  async delete(id: string): Promise<DeletePlanResponse> {
+  async delete(id: string): Promise<Plan.Response> {
     try {
       const token = await client.getAccessToken();
-      const response = await httpClient.delete<DeletePlanResponse>(
+      const response = await httpClient.delete<Plan.Response>(
         `${client.config.baseUrl}/api/v1/subscription/plans/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },

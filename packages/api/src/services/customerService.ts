@@ -1,35 +1,21 @@
-import type {
-  CreateCustomerRequest,
-  CreateCustomerResponse,
-  CustomerListQueryParams,
-  GetAllCustomerResponse,
-  GetCustomerResponse,
-  OakClient,
-  UpdateCustomerRequest,
-  UpdateCustomerResponse,
-} from "../types";
+import type { Customer, OakClient } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 import { buildQueryString } from "./helpers";
 
 export interface CustomerService {
-  create(customer: CreateCustomerRequest): Promise<CreateCustomerResponse>;
-  get(id: string): Promise<GetCustomerResponse>;
-  list(params?: CustomerListQueryParams): Promise<GetAllCustomerResponse>;
-  update(
-    id: string,
-    customer: UpdateCustomerRequest,
-  ): Promise<UpdateCustomerResponse>;
+  create(customer: Customer.Request): Promise<Customer.Response>;
+  get(id: string): Promise<Customer.Response>;
+  list(params?: Customer.ListQueryParams): Promise<Customer.ListResponse>;
+  update(id: string, customer: Customer.Request): Promise<Customer.Response>;
 }
 
 export const createCustomerService = (client: OakClient): CustomerService => ({
-  async create(
-    customer: CreateCustomerRequest,
-  ): Promise<CreateCustomerResponse> {
+  async create(customer: Customer.Request): Promise<Customer.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.post<CreateCustomerResponse>(
+      const response = await httpClient.post<Customer.Response>(
         `${client.config.baseUrl}/api/v1/customers`,
         customer,
         {
@@ -46,11 +32,11 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     }
   },
 
-  async get(id: string): Promise<GetCustomerResponse> {
+  async get(id: string): Promise<Customer.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.get<GetCustomerResponse>(
+      const response = await httpClient.get<Customer.Response>(
         `${client.config.baseUrl}/api/v1/customers/${id}`,
         {
           headers: {
@@ -67,13 +53,13 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
   },
 
   async list(
-    params?: CustomerListQueryParams,
-  ): Promise<GetAllCustomerResponse> {
+    params?: Customer.ListQueryParams,
+  ): Promise<Customer.ListResponse> {
     try {
       const token = await client.getAccessToken();
       const queryString = buildQueryString(params);
 
-      const response = await httpClient.get<GetAllCustomerResponse>(
+      const response = await httpClient.get<Customer.ListResponse>(
         `${client.config.baseUrl}/api/v1/customers${queryString}`,
         {
           headers: {
@@ -91,12 +77,12 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
 
   async update(
     id: string,
-    customer: UpdateCustomerRequest,
-  ): Promise<UpdateCustomerResponse> {
+    customer: Customer.Request,
+  ): Promise<Customer.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.put<UpdateCustomerResponse>(
+      const response = await httpClient.put<Customer.Response>(
         `${client.config.baseUrl}/api/v1/customers/${id}`,
         customer,
         {

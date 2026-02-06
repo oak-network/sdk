@@ -1,25 +1,19 @@
-import type {
-  CancelPaymentResponse,
-  ConfirmPaymentResponse,
-  CreatePaymentRequest,
-  CreatePaymentResponse,
-  OakClient,
-} from "../types";
+import type { Payment, OakClient } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 
 export interface PaymentService {
-  create(payment: CreatePaymentRequest): Promise<CreatePaymentResponse>;
-  confirm(paymentId: string): Promise<ConfirmPaymentResponse>;
-  cancel(paymentId: string): Promise<CancelPaymentResponse>;
+  create(payment: Payment.Request): Promise<Payment.Response>;
+  confirm(paymentId: string): Promise<Payment.Response>;
+  cancel(paymentId: string): Promise<Payment.Response>;
 }
 
 export const createPaymentService = (client: OakClient): PaymentService => ({
-  async create(payment: CreatePaymentRequest): Promise<CreatePaymentResponse> {
+  async create(payment: Payment.Request): Promise<Payment.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.post<CreatePaymentResponse>(
+      const response = await httpClient.post<Payment.Response>(
         `${client.config.baseUrl}/api/v1/payments/`,
         payment,
         {
@@ -36,11 +30,11 @@ export const createPaymentService = (client: OakClient): PaymentService => ({
     }
   },
 
-  async confirm(paymentId: string): Promise<ConfirmPaymentResponse> {
+  async confirm(paymentId: string): Promise<Payment.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.post<ConfirmPaymentResponse>(
+      const response = await httpClient.post<Payment.Response>(
         `${client.config.baseUrl}/api/v1/payments/${paymentId}/confirm`,
         {},
         {
@@ -60,11 +54,11 @@ export const createPaymentService = (client: OakClient): PaymentService => ({
     }
   },
 
-  async cancel(paymentId: string): Promise<CancelPaymentResponse> {
+  async cancel(paymentId: string): Promise<Payment.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.post<CancelPaymentResponse>(
+      const response = await httpClient.post<Payment.Response>(
         `${client.config.baseUrl}/api/v1/payments/${paymentId}/cancel`,
         {},
         {

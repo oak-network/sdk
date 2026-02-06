@@ -1,12 +1,4 @@
-import type {
-  AddCustomerPaymentMethodRequest,
-  AddCustomerPaymentMethodResponse,
-  DeletePaymentMethodResponse,
-  GetAllCustomerPaymentMethodsQuery,
-  GetAllCustomerPaymentMethodsResponse,
-  GetCustomerPaymentMethodResponse,
-  OakClient,
-} from "../types";
+import type { PaymentMethod, OakClient } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { SDKError } from "../utils/errorHandler";
 import { buildQueryString } from "./helpers";
@@ -14,20 +6,17 @@ import { buildQueryString } from "./helpers";
 export interface PaymentMethodService {
   add(
     customerId: string,
-    paymentMethod: AddCustomerPaymentMethodRequest,
-  ): Promise<AddCustomerPaymentMethodResponse>;
-  get(
-    customerId: string,
-    paymentId: string,
-  ): Promise<GetCustomerPaymentMethodResponse>;
+    paymentMethod: PaymentMethod.Request,
+  ): Promise<PaymentMethod.Response>;
+  get(customerId: string, paymentId: string): Promise<PaymentMethod.Response>;
   list(
     customerId: string,
-    query?: GetAllCustomerPaymentMethodsQuery,
-  ): Promise<GetAllCustomerPaymentMethodsResponse>;
+    query?: PaymentMethod.ListQuery,
+  ): Promise<PaymentMethod.ListResponse>;
   delete(
     customerId: string,
     paymentMethodId: string,
-  ): Promise<DeletePaymentMethodResponse>;
+  ): Promise<PaymentMethod.DeleteResponse>;
 }
 
 export const createPaymentMethodService = (
@@ -35,12 +24,12 @@ export const createPaymentMethodService = (
 ): PaymentMethodService => ({
   async add(
     customerId: string,
-    paymentMethod: AddCustomerPaymentMethodRequest,
-  ): Promise<AddCustomerPaymentMethodResponse> {
+    paymentMethod: PaymentMethod.Request,
+  ): Promise<PaymentMethod.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.post<AddCustomerPaymentMethodResponse>(
+      const response = await httpClient.post<PaymentMethod.Response>(
         `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods`,
         paymentMethod,
         {
@@ -63,11 +52,11 @@ export const createPaymentMethodService = (
   async get(
     customerId: string,
     paymentId: string,
-  ): Promise<GetCustomerPaymentMethodResponse> {
+  ): Promise<PaymentMethod.Response> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.get<GetCustomerPaymentMethodResponse>(
+      const response = await httpClient.get<PaymentMethod.Response>(
         `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentId}`,
         {
           headers: {
@@ -88,20 +77,19 @@ export const createPaymentMethodService = (
 
   async list(
     customerId: string,
-    query?: GetAllCustomerPaymentMethodsQuery,
-  ): Promise<GetAllCustomerPaymentMethodsResponse> {
+    query?: PaymentMethod.ListQuery,
+  ): Promise<PaymentMethod.ListResponse> {
     try {
       const token = await client.getAccessToken();
       const queryString = buildQueryString(query);
 
-      const response =
-        await httpClient.get<GetAllCustomerPaymentMethodsResponse>(
-          `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods${queryString}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-            retryOptions: client.retryOptions,
-          },
-        );
+      const response = await httpClient.get<PaymentMethod.ListResponse>(
+        `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods${queryString}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          retryOptions: client.retryOptions,
+        },
+      );
       return response;
     } catch (error) {
       throw new SDKError(
@@ -114,11 +102,11 @@ export const createPaymentMethodService = (
   async delete(
     customerId: string,
     paymentMethodId: string,
-  ): Promise<DeletePaymentMethodResponse> {
+  ): Promise<PaymentMethod.DeleteResponse> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.delete<DeletePaymentMethodResponse>(
+      const response = await httpClient.delete<PaymentMethod.DeleteResponse>(
         `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentMethodId}`,
         {
           headers: {
