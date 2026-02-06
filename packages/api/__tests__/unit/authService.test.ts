@@ -1,9 +1,9 @@
 import { createOakClient } from "../../src";
 import { httpClient } from "../../src/utils/httpClient";
-import { SDKError } from "../../src/utils/errorHandler";
+import { ApiError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils";
 import type { OakClientConfig } from "../../src/types";
-import { ok } from "../../src/types";
+import { err, ok } from "../../src/types";
 
 const SANDBOX_URL = "https://api.usecrowdpay.xyz";
 
@@ -38,7 +38,7 @@ describe("Auth (Unit)", () => {
       expires_in: 3300000,
       token_type: "bearer",
     };
-    mockedHttpClient.post.mockResolvedValue(mockResponse);
+    mockedHttpClient.post.mockResolvedValue(ok(mockResponse) as never);
 
     const result = await client.grantToken();
 
@@ -63,7 +63,7 @@ describe("Auth (Unit)", () => {
       expires_in: 3300000,
       token_type: "bearer",
     };
-    mockedHttpClient.post.mockResolvedValue(mockResponse);
+    mockedHttpClient.post.mockResolvedValue(ok(mockResponse) as never);
 
     const token1 = await client.getAccessToken();
     const token2 = await client.getAccessToken();
@@ -74,12 +74,14 @@ describe("Auth (Unit)", () => {
   });
 
   it("should return error result when grantToken fails in getAccessToken", async () => {
-    mockedHttpClient.post.mockRejectedValue(new Error("Network Error"));
+    mockedHttpClient.post.mockResolvedValue(
+      err(new ApiError("HTTP error", 500, null)) as never
+    );
 
     const result = await client.getAccessToken();
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toBeInstanceOf(SDKError);
+      expect(result.error).toBeInstanceOf(ApiError);
     }
   });
 
@@ -95,8 +97,8 @@ describe("Auth (Unit)", () => {
       token_type: "bearer",
     };
     mockedHttpClient.post
-      .mockResolvedValueOnce(mockResponse1)
-      .mockResolvedValueOnce(mockResponse2);
+      .mockResolvedValueOnce(ok(mockResponse1) as never)
+      .mockResolvedValueOnce(ok(mockResponse2) as never);
 
     const token1 = await client.getAccessToken();
     await new Promise((r) => setTimeout(r, 10));
@@ -107,13 +109,15 @@ describe("Auth (Unit)", () => {
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(2);
   });
 
-  it("should return SDKError if grantToken fails", async () => {
-    mockedHttpClient.post.mockRejectedValue(new Error("Network Error"));
+  it("should return ApiError if grantToken fails", async () => {
+    mockedHttpClient.post.mockResolvedValue(
+      err(new ApiError("HTTP error", 500, null)) as never
+    );
 
     const result = await client.grantToken();
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toBeInstanceOf(SDKError);
+      expect(result.error).toBeInstanceOf(ApiError);
     }
   });
 });

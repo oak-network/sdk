@@ -1,5 +1,6 @@
 import { createOakClient } from "../../src";
 import { getConfigFromEnv } from "../config";
+import { ApiError } from "../../src/utils/errorHandler";
 
 describe("Auth (Integration)", () => {
   const client = createOakClient({
@@ -62,7 +63,7 @@ describe("Auth (Integration)", () => {
     const result = await badClient.grantToken();
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.message).toContain("Failed to grant token");
+      expect(result.error).toBeInstanceOf(ApiError);
     }
   });
 });

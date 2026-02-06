@@ -1,7 +1,12 @@
 import { buildQueryString, getErrorBodyMessage } from "../../src/services/helpers";
-import { SDKError } from "../../src/utils/errorHandler";
+import {
+  ApiError,
+  NetworkError,
+  ParseError,
+  SDKError,
+} from "../../src/utils/errorHandler";
 import { httpClient } from "../../src/utils/httpClient";
-import { withRetry } from "../../src/utils/retryHandler";
+import * as retryHandler from "../../src/utils/retryHandler";
 import { DEFAULT_RETRY_OPTIONS } from "../../src/utils/defaultRetryConfig";
 import "../../src/utils";
 
@@ -82,7 +87,7 @@ describe("httpClient", () => {
       { retryOptions }
     );
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, value: { ok: true } });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/post", {
       method: "POST",
       headers: expectedHeaders(),
@@ -96,12 +101,13 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ ok: true }),
     });
 
-    await httpClient.post(
+    const result = await httpClient.post(
       "https://api.test/post",
       { data: 1 },
       { retryOptions, headers: { "X-Test": "yes" } }
     );
 
+    expect(result.ok).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/post", {
       method: "POST",
       headers: expectedHeaders({ "X-Test": "yes" }),
@@ -116,12 +122,33 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ msg: "bad" }),
     });
 
-    await expect(
-      httpClient.post("https://api.test/post", { data: 1 }, { retryOptions })
-    ).rejects.toMatchObject({
-      status: 400,
-      body: { msg: "bad" },
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions,
     });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect((result.error as ApiError).status).toBe(400);
+      expect((result.error as ApiError).body).toEqual({ msg: "bad" });
+    }
+  });
+
+  it("post includes response headers in ApiError", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 400,
+      headers: new Headers({ "retry-after": "1" }),
+      json: jest.fn().mockResolvedValue({ msg: "bad" }),
+    });
+
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect((result.error as ApiError).headers).toEqual({ "retry-after": "1" });
+    }
   });
 
   it("get returns response body", async () => {
@@ -134,7 +161,7 @@ describe("httpClient", () => {
       retryOptions,
     });
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, value: { ok: true } });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/get", {
       method: "GET",
       headers: expectedHeaders(),
@@ -147,11 +174,12 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ ok: true }),
     });
 
-    await httpClient.get("https://api.test/get", {
+    const result = await httpClient.get("https://api.test/get", {
       retryOptions,
       headers: { "X-Test": "yes" },
     });
 
+    expect(result.ok).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/get", {
       method: "GET",
       headers: expectedHeaders({ "X-Test": "yes" }),
@@ -165,12 +193,15 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ msg: "missing" }),
     });
 
-    await expect(
-      httpClient.get("https://api.test/get", { retryOptions })
-    ).rejects.toMatchObject({
-      status: 404,
-      body: { msg: "missing" },
+    const result = await httpClient.get("https://api.test/get", {
+      retryOptions,
     });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect((result.error as ApiError).status).toBe(404);
+      expect((result.error as ApiError).body).toEqual({ msg: "missing" });
+    }
   });
 
   it("get uses fallback error message when missing", async () => {
@@ -180,9 +211,14 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue(null),
     });
 
-    await expect(
-      httpClient.get("https://api.test/get", { retryOptions })
-    ).rejects.toThrow("HTTP error");
+    const result = await httpClient.get("https://api.test/get", {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect(result.error.message).toBe("HTTP error");
+    }
   });
 
   it("put returns response body", async () => {
@@ -197,7 +233,7 @@ describe("httpClient", () => {
       { retryOptions }
     );
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, value: { ok: true } });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/put", {
       method: "PUT",
       headers: expectedHeaders(),
@@ -211,12 +247,13 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ ok: true }),
     });
 
-    await httpClient.put(
+    const result = await httpClient.put(
       "https://api.test/put",
       { data: 2 },
       { retryOptions, headers: { "X-Test": "yes" } }
     );
 
+    expect(result.ok).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/put", {
       method: "PUT",
       headers: expectedHeaders({ "X-Test": "yes" }),
@@ -231,12 +268,15 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ msg: "boom" }),
     });
 
-    await expect(
-      httpClient.put("https://api.test/put", { data: 2 }, { retryOptions })
-    ).rejects.toMatchObject({
-      status: 500,
-      body: { msg: "boom" },
+    const result = await httpClient.put("https://api.test/put", { data: 2 }, {
+      retryOptions,
     });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect((result.error as ApiError).status).toBe(500);
+      expect((result.error as ApiError).body).toEqual({ msg: "boom" });
+    }
   });
 
   it("put uses fallback error message when missing", async () => {
@@ -246,9 +286,14 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue(null),
     });
 
-    await expect(
-      httpClient.put("https://api.test/put", { data: 2 }, { retryOptions })
-    ).rejects.toThrow("HTTP error");
+    const result = await httpClient.put("https://api.test/put", { data: 2 }, {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect(result.error.message).toBe("HTTP error");
+    }
   });
 
   it("patch returns response body and omits body when undefined", async () => {
@@ -263,7 +308,7 @@ describe("httpClient", () => {
       { retryOptions }
     );
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, value: { ok: true } });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/patch", {
       method: "PATCH",
       headers: expectedHeaders(),
@@ -277,8 +322,9 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ ok: true }),
     });
 
-    await httpClient.patch("https://api.test/patch", { data: 9 }, { retryOptions });
+    const result = await httpClient.patch("https://api.test/patch", { data: 9 }, { retryOptions });
 
+    expect(result.ok).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/patch", {
       method: "PATCH",
       headers: expectedHeaders(),
@@ -292,12 +338,13 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ ok: true }),
     });
 
-    await httpClient.patch(
+    const result = await httpClient.patch(
       "https://api.test/patch",
       { data: 9 },
       { retryOptions, headers: { "X-Test": "yes" } }
     );
 
+    expect(result.ok).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/patch", {
       method: "PATCH",
       headers: expectedHeaders({ "X-Test": "yes" }),
@@ -312,12 +359,15 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ msg: "invalid" }),
     });
 
-    await expect(
-      httpClient.patch("https://api.test/patch", { data: 3 }, { retryOptions })
-    ).rejects.toMatchObject({
-      status: 422,
-      body: { msg: "invalid" },
+    const result = await httpClient.patch("https://api.test/patch", { data: 3 }, {
+      retryOptions,
     });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect((result.error as ApiError).status).toBe(422);
+      expect((result.error as ApiError).body).toEqual({ msg: "invalid" });
+    }
   });
 
   it("patch uses fallback error message when missing", async () => {
@@ -327,9 +377,14 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue(null),
     });
 
-    await expect(
-      httpClient.patch("https://api.test/patch", { data: 3 }, { retryOptions })
-    ).rejects.toThrow("HTTP error");
+    const result = await httpClient.patch("https://api.test/patch", { data: 3 }, {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect(result.error.message).toBe("HTTP error");
+    }
   });
 
   it("delete returns response body", async () => {
@@ -342,7 +397,7 @@ describe("httpClient", () => {
       retryOptions,
     });
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, value: { ok: true } });
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/delete", {
       method: "DELETE",
       headers: expectedHeaders(),
@@ -355,11 +410,12 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ ok: true }),
     });
 
-    await httpClient.delete("https://api.test/delete", {
+    const result = await httpClient.delete("https://api.test/delete", {
       retryOptions,
       headers: { "X-Test": "yes" },
     });
 
+    expect(result.ok).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith("https://api.test/delete", {
       method: "DELETE",
       headers: expectedHeaders({ "X-Test": "yes" }),
@@ -436,12 +492,15 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue({ msg: "unauthorized" }),
     });
 
-    await expect(
-      httpClient.delete("https://api.test/delete", { retryOptions })
-    ).rejects.toMatchObject({
-      status: 401,
-      body: { msg: "unauthorized" },
+    const result = await httpClient.delete("https://api.test/delete", {
+      retryOptions,
     });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect((result.error as ApiError).status).toBe(401);
+      expect((result.error as ApiError).body).toEqual({ msg: "unauthorized" });
+    }
   });
 
   it("delete uses fallback error message when missing", async () => {
@@ -451,9 +510,14 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue(null),
     });
 
-    await expect(
-      httpClient.delete("https://api.test/delete", { retryOptions })
-    ).rejects.toThrow("HTTP error");
+    const result = await httpClient.delete("https://api.test/delete", {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect(result.error.message).toBe("HTTP error");
+    }
   });
 
   it("post uses fallback error message when missing", async () => {
@@ -463,9 +527,71 @@ describe("httpClient", () => {
       json: jest.fn().mockResolvedValue(null),
     });
 
-    await expect(
-      httpClient.post("https://api.test/post", { data: 1 }, { retryOptions })
-    ).rejects.toThrow("HTTP error");
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect(result.error.message).toBe("HTTP error");
+    }
+  });
+
+  it("post returns ParseError when response body parsing fails", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockRejectedValue(new Error("bad json")),
+    });
+
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ParseError);
+      expect(result.error.message).toBe("Failed to parse response body");
+    }
+  });
+
+  it("post returns NetworkError when fetch fails", async () => {
+    fetchMock.mockRejectedValue(new Error("socket hang up"));
+
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions: { maxNumberOfRetries: 0, delay: 0 },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(NetworkError);
+      expect(result.error.message).toBe("Network error");
+    }
+  });
+
+  it("post wraps unexpected errors as OakError", async () => {
+    const spy = jest
+      .spyOn(retryHandler, "withRetry")
+      .mockRejectedValueOnce("boom");
+
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toBe("Unknown error");
+    }
+
+    spy.mockRestore();
+  });
+
+  it("post wraps Error values as OakError", async () => {
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions: { maxNumberOfRetries: -1, delay: 0 },
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toBe("Retry failed after maximum attempts");
+    }
   });
 });
 
@@ -477,7 +603,10 @@ describe("withRetry", () => {
 
   it("returns on first try", async () => {
     const fn = jest.fn().mockResolvedValue("ok");
-    const result = await withRetry(fn, { maxNumberOfRetries: 1, delay: 1 });
+    const result = await retryHandler.withRetry(fn, {
+      maxNumberOfRetries: 1,
+      delay: 1,
+    });
     expect(result).toBe("ok");
     expect(fn).toHaveBeenCalledTimes(1);
   });
@@ -490,7 +619,7 @@ describe("withRetry", () => {
       .mockResolvedValueOnce("ok");
     const onRetry = jest.fn();
 
-    const promise = withRetry(fn, {
+    const promise = retryHandler.withRetry(fn, {
       maxNumberOfRetries: 1,
       delay: 10,
       retryOnStatus: [500],
@@ -510,7 +639,7 @@ describe("withRetry", () => {
       .mockRejectedValueOnce({ status: 500 })
       .mockResolvedValueOnce("ok");
 
-    const promise = withRetry(fn, {
+    const promise = retryHandler.withRetry(fn, {
       maxNumberOfRetries: 1,
       delay: 100,
       retryOnStatus: [500],
@@ -527,7 +656,7 @@ describe("withRetry", () => {
       .mockRejectedValueOnce({ isNetworkError: true })
       .mockResolvedValueOnce("ok");
 
-    const promise = withRetry(fn, {
+    const promise = retryHandler.withRetry(fn, {
       maxNumberOfRetries: 1,
       delay: 10,
       retryOnStatus: [],
@@ -540,7 +669,7 @@ describe("withRetry", () => {
   it("does not retry with default retryOnError when no network flag", async () => {
     const fn = jest.fn().mockRejectedValueOnce({ status: 500 });
     await expect(
-      withRetry(fn, {
+      retryHandler.withRetry(fn, {
         maxNumberOfRetries: 1,
         delay: 1,
         retryOnStatus: [],
@@ -552,7 +681,7 @@ describe("withRetry", () => {
   it("does not retry with default retryOnError when error is undefined", async () => {
     const fn = jest.fn().mockRejectedValueOnce(undefined);
     await expect(
-      withRetry(fn, {
+      retryHandler.withRetry(fn, {
         maxNumberOfRetries: 0,
         delay: 1,
         retryOnStatus: [],
@@ -567,7 +696,7 @@ describe("withRetry", () => {
       .mockRejectedValueOnce({ isNetworkError: true })
       .mockResolvedValueOnce("ok");
 
-    const promise = withRetry(fn, {
+    const promise = retryHandler.withRetry(fn, {
       maxNumberOfRetries: 1,
       delay: 10,
       retryOnStatus: [],
@@ -581,7 +710,7 @@ describe("withRetry", () => {
   it("does not retry when retryOnError returns false", async () => {
     const fn = jest.fn().mockRejectedValueOnce({ status: 500 });
     await expect(
-      withRetry(fn, {
+      retryHandler.withRetry(fn, {
         maxNumberOfRetries: 1,
         delay: 1,
         retryOnStatus: [],
@@ -598,7 +727,7 @@ describe("withRetry", () => {
       .mockRejectedValueOnce(undefined)
       .mockResolvedValueOnce("ok");
 
-    const promise = withRetry(fn, {
+    const promise = retryHandler.withRetry(fn, {
       maxNumberOfRetries: 1,
       delay: 10,
       retryOnStatus: [],
@@ -612,7 +741,7 @@ describe("withRetry", () => {
   it("throws when max retries reached", async () => {
     const fn = jest.fn().mockRejectedValue({ status: 400 });
     await expect(
-      withRetry(fn, {
+      retryHandler.withRetry(fn, {
         maxNumberOfRetries: 0,
         delay: 1,
         retryOnStatus: [400],
@@ -623,7 +752,7 @@ describe("withRetry", () => {
   it("handles undefined error values", async () => {
     const fn = jest.fn().mockRejectedValueOnce(undefined);
     await expect(
-      withRetry(fn, {
+      retryHandler.withRetry(fn, {
         maxNumberOfRetries: 0,
         delay: 1,
         retryOnStatus: [],
@@ -638,7 +767,7 @@ describe("withRetry", () => {
     const fn = jest.fn().mockResolvedValue("ok");
 
     await expect(
-      withRetry(fn, {
+      retryHandler.withRetry(fn, {
         maxNumberOfRetries: 1,
         delay: 1,
         signal: controller.signal,
@@ -649,7 +778,7 @@ describe("withRetry", () => {
 
   it("throws final error when retries are negative", async () => {
     await expect(
-      withRetry(async () => "ok", {
+      retryHandler.withRetry(async () => "ok", {
         maxNumberOfRetries: -1,
         delay: 1,
       })

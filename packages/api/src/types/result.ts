@@ -1,6 +1,6 @@
-import { SDKError } from "../utils/errorHandler";
+import { OakError } from "../utils/errorHandler";
 
-export type Result<T, E = SDKError> =
+export type Result<T, E = OakError> =
   | { ok: true; value: T }
   | { ok: false; error: E };
 

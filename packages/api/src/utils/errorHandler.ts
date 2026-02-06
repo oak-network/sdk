@@ -1,10 +1,53 @@
-export class SDKError extends Error {
+export class OakError extends Error {
   public cause?: unknown;
 
   constructor(message: string, cause?: unknown) {
     super(message);
-    this.name = "SDKError";
+    this.name = "OakError";
     this.cause = cause;
+  }
+}
+
+export class SDKError extends OakError {
+  constructor(message: string, cause?: unknown) {
+    super(message, cause);
+    this.name = "SDKError";
+  }
+}
+
+export class ApiError extends OakError {
+  public readonly status: number;
+  public readonly body: unknown;
+  public readonly headers?: Record<string, string>;
+
+  constructor(
+    message: string,
+    status: number,
+    body: unknown,
+    headers?: Record<string, string>,
+    cause?: unknown
+  ) {
+    super(message, cause);
+    this.name = "ApiError";
+    this.status = status;
+    this.body = body;
+    this.headers = headers;
+  }
+}
+
+export class NetworkError extends OakError {
+  public readonly isNetworkError = true;
+
+  constructor(message: string, cause?: unknown) {
+    super(message, cause);
+    this.name = "NetworkError";
+  }
+}
+
+export class ParseError extends OakError {
+  constructor(message: string, cause?: unknown) {
+    super(message, cause);
+    this.name = "ParseError";
   }
 }
 
