@@ -9,7 +9,7 @@ export interface WebhookService {
   get(id: string): Promise<Webhook.GetResponse>;
   update(id: string, webhook: Webhook.UpdateRequest): Promise<Webhook.Response>;
   toggle(id: string): Promise<Webhook.Response>;
-  delete(id: string): Promise<Webhook.Response>;
+  delete(id: string): Promise<Webhook.DeleteResponse>;
   listNotifications(params?: {
     limit?: number;
     offset?: number;
@@ -112,11 +112,11 @@ export const createWebhookService = (client: OakClient): WebhookService => ({
     }
   },
 
-  async delete(id: string): Promise<Webhook.Response> {
+  async delete(id: string): Promise<Webhook.DeleteResponse> {
     try {
       const token = await client.getAccessToken();
 
-      const response = await httpClient.delete<Webhook.Response>(
+      const response = await httpClient.delete<Webhook.DeleteResponse>(
         `${client.config.baseUrl}/api/v1/merchant/webhooks/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
