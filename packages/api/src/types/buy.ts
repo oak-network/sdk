@@ -1,23 +1,22 @@
 import { ApiResponse } from "./common";
 
 export namespace Buy {
-  export interface WalletDetails {
-    address: string;
-  }
-
   export interface PaymentMethod {
-    wallet_details: WalletDetails;
+    type: "customer_wallet";
+    chain?: "ethereum" | "polygon" | "arbitrum" | "solana";
+    evm_address: string;
   }
 
-  export interface CurrencyInfo {
-    currency: string;
+  export interface Source {
+    currency: "usd";
+    amount?: number;
   }
 
-  export interface Source extends CurrencyInfo {
-    customer_id: string;
-  }
-
-  export interface Destination extends CurrencyInfo {
+  export interface Destination {
+    currency: "usdc" | "usdt" | "usdb";
+    customer: {
+      id: string;
+    };
     payment_method: PaymentMethod;
   }
 
@@ -26,34 +25,33 @@ export namespace Buy {
   }
 
   export interface ProviderResponse {
-    currency: string;
-    bank_name: string;
-    bank_address: string;
-    bank_routing_number: string;
-    bank_account_number: string;
-    bank_beneficiary_name: string;
-    bank_beneficiary_address: string;
-    payment_rails: string[]; // e.g., ["ach_push", "wire"]
-    deposit_message: string;
+    [key: string]: any;
   }
 
   export interface Transaction {
     id: string;
     status: string; // e.g., "captured"
-    type: string; // e.g., "buy"
+    type: "buy";
     source: Source;
-    provider: string;
+    provider: "bridge" | "brla";
     destination: Destination;
-    provider_data: ProviderData;
     provider_response: ProviderResponse;
+    created_at: string;
+    updated_at: string;
   }
 
-  export interface Request {
-    provider: string; // e.g., "bridge"
+  export interface Metadata {
+    [key: string]: any;
+  }
+
+  export interface Bridge {
+    provider: "bridge";
     source: Source;
     destination: Destination;
-    provider_data: ProviderData;
+    metadata?: Metadata;
   }
+
+  export type Request = Bridge;
 
   export type Response = ApiResponse<Transaction>;
 }

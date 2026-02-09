@@ -1,4 +1,5 @@
 import { ApiResponse } from "./common";
+import { PaymentMethod } from "./paymentMethod";
 
 export namespace Payment {
   // ----------------------------------------
@@ -9,20 +10,7 @@ export namespace Payment {
   }
 
   export interface Metadata {
-    [key: string]: string;
-  }
-
-  export interface BillingAddress {
-    house_number?: string;
-    street_number?: string;
-    street_name?: string;
-    postal_code?: string;
-    city?: string;
-    state?: string;
-    country_code?: string;
-    address_line1?: string;
-    address_line2?: string;
-    zip_code?: string;
+    [key: string]: any;
   }
 
   export interface FraudCheckData {
@@ -45,112 +33,23 @@ export namespace Payment {
   }
 
   export interface ProviderResponse {
-    qr_code?: string;
-    qr_code_url?: string;
     [key: string]: any;
   }
 
-  // ----------------------------------------
-  // Payment methods
-  // ----------------------------------------
-  export interface MethodBase {
-    id?: string;
-    type:
-      | "bank"
-      | "card"
-      | "pix"
-      | "customer_wallet"
-      | "virtual_account"
-      | "liquidation_address"
-      | "plaid";
-    status?: string;
-    provider?: string;
-    metadata?: Metadata;
-  }
-
-  export interface BankMethod extends MethodBase {
-    type: "bank";
-    bank_name?: string;
-    bank_account_name?: string;
-    bank_account_number?: string;
-    bank_branch_code?: string;
-    bank_swift_code?: string;
-    bank_account_type?: string;
-    bank_routing_number?: string;
-  }
-
-  export interface CardMethod extends MethodBase {
+  export interface PaymentMethod {
     type: "card";
-    card_token?: string;
-    billing_address?: BillingAddress;
-    provider_response?: ProviderResponse;
+    id?: string;
   }
 
-  export interface PixMethod extends MethodBase {
-    type: "pix";
-    pix_string?: string;
-  }
-
-  export interface CustomerWalletMethod extends MethodBase {
-    type: "customer_wallet";
-    evm_address?: string;
-    chain?: string;
-    currency?: string;
-  }
-
-  export interface VirtualAccountMethod extends MethodBase {
-    type: "virtual_account";
-    source_currency?: string;
-    destination_currency?: string;
-    chain?: string;
-    provider_response?: { source_deposit_instructions?: Record<string, any> };
-    provider_data?: Record<string, any>;
-    destination_payment_method_id?: string;
-  }
-
-  export interface LiquidationAddressMethod extends MethodBase {
-    type: "liquidation_address";
-    source_currency?: string;
-    destination_currency?: string;
-    liquidation_address?: string;
-    provider_data?: Record<string, any>;
-    destination_payment_method_id?: string;
-  }
-
-  export interface PlaidMethod extends MethodBase {
-    type: "plaid";
-    link_token?: string;
-    callback_url?: string;
-    link_token_expires_at?: string;
-  }
-
-  export type MethodData =
-    | BankMethod
-    | CardMethod
-    | PixMethod
-    | CustomerWalletMethod
-    | VirtualAccountMethod
-    | LiquidationAddressMethod
-    | PlaidMethod;
-
-  // ----------------------------------------
-  // Source / destination
-  // ----------------------------------------
   export interface Source {
     amount: number;
     currency: string;
     customer?: CustomerRef;
-    payment_method: MethodData;
+    payment_method: PaymentMethod;
     installments?: number;
     float_rate?: number;
-    capture_method?: "automatic" | "manual";
+    capture_method: "automatic";
     fraud_check?: FraudCheck;
-  }
-
-  export interface Destination {
-    amount?: number;
-    currency?: string;
-    customer?: CustomerRef;
   }
 
   // ----------------------------------------
@@ -158,43 +57,98 @@ export namespace Payment {
   // ----------------------------------------
   export interface MercadoPagoRequest {
     provider: "mercado_pago";
-    source: Source & {
+    source: {
+      amount: number;
       currency: "COP";
-      customer: CustomerRef;
-      payment_method: { type: "card"; card_token: string };
+      customer: {
+        id: string; // UUID
+      };
+      payment_method: {
+        type: "card";
+        card_token: string;
+      };
       capture_method: "automatic";
     };
     confirm?: boolean;
-    metadata?: Metadata;
+    metadata?: Record<string, string>;
   }
 
   export interface PagarMeRequest {
     provider: "pagar_me";
-    source: Source & {
-      currency: "brl";
-      customer: CustomerRef;
-      payment_method: {
-        type: "card" | "pix";
-        card_token?: string;
-        expiry_date?: string;
+    source: {
+      amount: number;
+      currency: "BRL";
+      customer: {
+        id: string; // UUID
       };
-      capture_method: "automatic" | "manual";
-      fraud_check: FraudCheck & { provider?: "konduto" };
+      payment_method: {
+        type: "card";
+        id?: string; // if present, card_token and billing_address are forbidden
+        card_token?: string; // required when id is absent
+        billing_address?: {
+          house_number: string;
+          street_number: string;
+          street_name: string;
+          postal_code: string;
+          city: string;
+          state: string;
+          country_code: string;
+        }; // required when id is absent
+      };
+      capture_method: "automatic" | "manual"; // from CARD_CAPTURE_METHOD
+      fraud_check: {
+        enabled: boolean;
+        provider?: "konduto"; // required when enabled=true
+        config?: {
+          sequence: string; // from FRAUD_SEQUENCE keys
+          threshold: string;
+        }; // required when enabled=true
+        data?: {
+          last_four_digits: string; // length 4
+          card_expiration_date: string; // pattern MM/YYYY
+          card_holder_name: string;
+        }; // required when enabled=true
+      };
     };
+    total_installments?: number; // integer, min 1
     confirm?: boolean;
-    metadata?: Metadata;
+    metadata?: Record<string, string>;
   }
 
   export interface StripeRequest {
     provider: "stripe";
-    source: Source & {
-      payment_method: { type: "card"; id?: string };
+    source: {
+      amount: number;
+      currency: string;
+      customer?: { id?: string };
+      payment_method: {
+        type: "card";
+        id?: string;
+      };
+      installments?: number;
+      float_rate?: number;
       capture_method: "automatic";
       fraud_check?: { enabled: false };
     };
-    destination?: Destination;
+    destination?: {
+      amount?: number;
+      currency?: "usd";
+      customer?: { id?: string };
+    };
+    fee?: {
+      bearer: "platform" | "connected_account";
+    };
+    flow?: "platform" | "destination";
+    allocations?: Array<{
+      type?: string;
+      receiver: {
+        type?: "platform" | "connected_account";
+        id?: string;
+      };
+      amount: number;
+    }>;
     confirm?: boolean;
-    metadata?: Metadata;
+    metadata?: Record<string, string>;
   }
 
   export type Request = MercadoPagoRequest | PagarMeRequest | StripeRequest;
@@ -202,33 +156,16 @@ export namespace Payment {
   // ----------------------------------------
   // Payment responses (create / confirm / cancel)
   // ----------------------------------------
-  export interface TransactionPayload {
+  export type Transaction = Request & {
     id: string;
     status: string;
-    type: string;
-    source: Source;
-    confirm: boolean;
-    metadata?: Metadata;
-    provider: string;
+    type: "payment";
+    created_at: string;
+    updated_at: string;
     provider_response?: ProviderResponse;
-  }
+  };
 
-  export type Response = ApiResponse<TransactionPayload>;
-
-  // ----------------------------------------
-  // Customer payment methods (add / get / list / delete)
-  // ----------------------------------------
-  export type AddMethodRequest =
-    | Omit<BankMethod, "id" | "status">
-    | Omit<CardMethod, "id" | "status">
-    | Omit<PixMethod, "id" | "status">
-    | Omit<CustomerWalletMethod, "id" | "status">
-    | Omit<VirtualAccountMethod, "id" | "status">
-    | Omit<LiquidationAddressMethod, "id" | "status">
-    | Omit<PlaidMethod, "id" | "status">;
-
-  export type MethodResponse = ApiResponse<MethodData>;
-  export type ListMethodsResponse = ApiResponse<MethodData[]>;
+  export type Response = ApiResponse<Transaction>;
 
   export interface ListMethodsQuery {
     type?: string;

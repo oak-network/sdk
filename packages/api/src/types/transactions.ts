@@ -40,6 +40,8 @@ export namespace Transaction {
     confirm: boolean;
     metadata?: Payment.Metadata;
     provider: string;
+    created_at: string;
+    updated_at: string;
   }
 
   // ----------------------

@@ -50,11 +50,13 @@ export namespace Sell {
 
   export interface Transaction {
     id: string;
-    status: "created" | string;
+    status: string; // e.g., "created"
     type: "sell";
     source: TransactionSource;
-    provider: "avenia";
+    provider: string;
     destination: TransactionDestination;
+    created_at: string;
+    updated_at: string;
   }
 
   // ----------------------

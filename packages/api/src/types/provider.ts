@@ -54,10 +54,13 @@ export namespace Provider {
   // ----------------------
   export interface RegistrationStatus {
     provider: string;
-    status: string;
+    status: string; // e.g., "created"
     target_role: string | null;
     provider_response: any | null;
     rejection_reason: string | null;
+    readiness: any | null;
+    created_at: string;
+    updated_at: string;
   }
 
   export type GetRegistrationStatusResponse = ApiResponse<RegistrationStatus[]>;
@@ -85,7 +88,12 @@ export namespace Provider {
     status: string;
     provider: string;
     target_role: string;
+    provider_response: any | null;
+    rejection_reason: string | null;
+    readiness: any | null;
+    created_at: string;
+    updated_at: string;
   }
 
-  export type Response = ApiResponse<SubmitResponse>;
+  export type Response = ApiResponse<SubmitResponse[]>;
 }
