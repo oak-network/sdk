@@ -1,13 +1,14 @@
 import { createOakClient } from "../../src";
 import { Crowdsplit } from "../../src/products/crowdsplit";
 import { httpClient } from "../../src/utils/httpClient";
-import { SDKError } from "../../src/utils/errorHandler";
+import { ApiError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils/defaultRetryConfig";
 import {
   OakClientConfig,
   CreateCustomerRequest,
   CustomerListQueryParams,
   ok,
+  err,
 } from "../../src/types";
 
 const SANDBOX_URL = "https://api.usecrowdpay.xyz";
@@ -48,7 +49,7 @@ describe("CustomerService - Unit", () => {
     it("should call POST /api/v1/customers with correct payload", async () => {
       const request: CreateCustomerRequest = { email: "test@example.com" };
       const mockResponse = { data: { email: "test@example.com" } };
-      (httpClient.post as jest.Mock).mockResolvedValue(mockResponse);
+      (httpClient.post as jest.Mock).mockResolvedValue(ok(mockResponse));
 
       const result = await customers.create(request);
 
@@ -64,15 +65,14 @@ describe("CustomerService - Unit", () => {
       expect(result).toEqual(ok(mockResponse));
     });
 
-    it("should return SDKError on failure", async () => {
-      (httpClient.post as jest.Mock).mockRejectedValue(
-        new Error("Network error")
-      );
+    it("should return ApiError on failure", async () => {
+      const apiError = new ApiError("HTTP error", 500, { msg: "fail" });
+      (httpClient.post as jest.Mock).mockResolvedValue(err(apiError));
 
       const result = await customers.create({ email: "fail@example.com" });
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error).toBeInstanceOf(SDKError);
+        expect(result.error).toBeInstanceOf(ApiError);
       }
     });
   });
@@ -80,7 +80,7 @@ describe("CustomerService - Unit", () => {
   describe("get", () => {
     it("should call GET /api/v1/customers/:id", async () => {
       const mockResponse = { data: { email: "test@example.com" } };
-      (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+      (httpClient.get as jest.Mock).mockResolvedValue(ok(mockResponse));
 
       const result = await customers.get("123");
 
@@ -99,7 +99,7 @@ describe("CustomerService - Unit", () => {
     it("should call GET /api/v1/customers with query params", async () => {
       const params: CustomerListQueryParams = { limit: 10, offset: 5 };
       const mockResponse = { data: { count: 1, customer_list: [] } };
-      (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+      (httpClient.get as jest.Mock).mockResolvedValue(ok(mockResponse));
 
       const result = await customers.list(params);
 
@@ -118,7 +118,7 @@ describe("CustomerService - Unit", () => {
     it("should call PUT /api/v1/customers/:id", async () => {
       const updateData = { email: "updated@example.com" };
       const mockResponse = { data: { email: "updated@example.com" } };
-      (httpClient.put as jest.Mock).mockResolvedValue(mockResponse);
+      (httpClient.put as jest.Mock).mockResolvedValue(ok(mockResponse));
 
       const result = await customers.update("123", updateData);
 
