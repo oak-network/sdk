@@ -1,7 +1,10 @@
 {
-  "name": "@oak-network/api",
-  "version": "1.0.0",
+  "name": "@oaknetwork/api",
+  "version": "0.1.0",
   "description": "TypeScript SDK for Crowdsplit API",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -23,7 +26,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build",
     "test": "jest __tests__/unit --coverage",
     "test:unit": "jest __tests__/unit --coverage",
@@ -39,8 +42,13 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   },
-  "author": "",
+  "author": "oaknetwork",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oak-network/sdk",
+    "directory": "packages/api"
+  },
   "files": [
     "dist"
   ],

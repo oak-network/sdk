@@ -2,6 +2,7 @@ import {
   createAuthService,
   createBuyService,
   createCustomerService,
+  createPaymentMethodService,
   createPaymentService,
   createPlanService,
   createProviderService,
@@ -11,8 +12,11 @@ import {
   createWebhookService,
 } from "../../src/services";
 import { httpClient } from "../../src/utils/httpClient";
-import { SDKError } from "../../src/utils/errorHandler";
+import { ApiError, SDKError } from "../../src/utils/errorHandler";
 import type { OakClient } from "../../src/types";
+import { err, ok } from "../../src/types";
+
+const SANDBOX_URL = "https://api.usecrowdpay.xyz";
 
 jest.mock("../../src/utils/httpClient", () => ({
   httpClient: {
@@ -26,15 +30,34 @@ jest.mock("../../src/utils/httpClient", () => ({
 
 const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
-const baseUrl = "https://api.test";
-const retryOptions = { maxNumberOfRetries: 0, delay: 0 };
+const retryOptions = { maxNumberOfRetries: 0, delay: 0, backoffFactor: 2 };
 
 const makeClient = (): OakClient => ({
-  config: { baseUrl, clientId: "id", clientSecret: "secret" },
+  config: {
+    environment: "sandbox",
+    clientId: "id",
+    clientSecret: "secret",
+    baseUrl: SANDBOX_URL,
+  },
   retryOptions,
-  getAccessToken: jest.fn().mockResolvedValue("token"),
+  getAccessToken: jest.fn().mockResolvedValue(ok("token")),
   grantToken: jest.fn(),
 });
+
+const makeClientWithTokenError = (): OakClient => {
+  const tokenError = new SDKError("Token error");
+  return {
+    config: {
+      environment: "sandbox",
+      clientId: "id",
+      clientSecret: "secret",
+      baseUrl: SANDBOX_URL,
+    },
+    retryOptions,
+    getAccessToken: jest.fn().mockResolvedValue(err(tokenError)),
+    grantToken: jest.fn(),
+  };
+};
 
 const getAuthConfig = (client: OakClient) =>
   expect.objectContaining({
@@ -49,11 +72,11 @@ const expectSuccess = async (options: {
   expectedArgs: unknown[];
 }) => {
   const response = { ok: true };
-  mockedHttpClient[options.httpMethod].mockResolvedValue(response as never);
+  mockedHttpClient[options.httpMethod].mockResolvedValue(ok(response) as never);
 
   const result = await options.call();
 
-  expect(result).toBe(response);
+  expect(result).toEqual(ok(response));
   expect(mockedHttpClient[options.httpMethod]).toHaveBeenCalledWith(
     ...options.expectedArgs
   );
@@ -66,12 +89,35 @@ const expectFailure = async (options: {
   errorMessage: string;
   error?: unknown;
 }) => {
-  mockedHttpClient[options.httpMethod].mockRejectedValue(
-    options.error ?? new Error("fail")
+  const apiError = new ApiError(
+    options.errorMessage,
+    400,
+    { msg: options.errorMessage },
+    undefined,
+    options.error
   );
+  mockedHttpClient[options.httpMethod].mockResolvedValue(err(apiError) as never);
 
-  await expect(options.call()).rejects.toThrow(SDKError);
-  await expect(options.call()).rejects.toThrow(options.errorMessage);
+  const result = await options.call();
+  expect(result).toEqual(err(expect.any(ApiError)));
+  if (result && typeof result === "object" && "ok" in result) {
+    const typedResult = result as { ok: boolean; error?: ApiError };
+    if (!typedResult.ok && typedResult.error) {
+      expect(typedResult.error).toBeInstanceOf(ApiError);
+      expect(typedResult.error.message).toContain(options.errorMessage);
+    }
+  }
+};
+
+const expectTokenFailure = async (call: () => Promise<unknown>) => {
+  const result = await call();
+  expect(result).toEqual(err(expect.any(SDKError)));
+  if (result && typeof result === "object" && "ok" in result) {
+    const typedResult = result as { ok: boolean; error?: SDKError };
+    if (!typedResult.ok && typedResult.error) {
+      expect(typedResult.error.message).toContain("Token error");
+    }
+  }
 };
 
 describe("Crowdsplit services (Unit)", () => {
@@ -96,65 +142,74 @@ describe("Crowdsplit services (Unit)", () => {
 
     await expectSuccess({
       client,
-      call: () => service.createCustomer({ email: "test@example.com" }),
+      call: () => service.create({ email: "test@example.com" }),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers`,
+        `${SANDBOX_URL}/api/v1/customers`,
         { email: "test@example.com" },
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.createCustomer({ email: "test@example.com" }),
+      call: () => service.create({ email: "test@example.com" }),
       httpMethod: "post",
       errorMessage: "Failed to create customer",
     });
 
     await expectSuccess({
       client,
-      call: () => service.getCustomer("cust-1"),
+      call: () => service.get("cust-1"),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/customers/cust-1`, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/customers/cust-1`, authConfig],
     });
     await expectFailure({
-      call: () => service.getCustomer("cust-1"),
+      call: () => service.get("cust-1"),
       httpMethod: "get",
       errorMessage: "Failed to retrieve customer",
     });
 
     await expectSuccess({
       client,
-      call: () => service.getAllCustomers({ limit: 10, offset: undefined }),
+      call: () => service.list({ limit: 10, offset: undefined }),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/customers?limit=10`, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/customers?limit=10`, authConfig],
     });
     await expectSuccess({
       client,
-      call: () => service.getAllCustomers({ limit: undefined }),
+      call: () => service.list({ limit: undefined }),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/customers`, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/customers`, authConfig],
     });
     await expectFailure({
-      call: () => service.getAllCustomers({ limit: 10 }),
+      call: () => service.list({ limit: 10 }),
       httpMethod: "get",
       errorMessage: "Failed to list customers",
     });
 
     await expectSuccess({
       client,
-      call: () => service.updateCustomer("cust-1", { email: "new@example.com" }),
+      call: () => service.update("cust-1", { email: "new@example.com" }),
       httpMethod: "put",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1`,
+        `${SANDBOX_URL}/api/v1/customers/cust-1`,
         { email: "new@example.com" },
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.updateCustomer("cust-1", { email: "new@example.com" }),
+      call: () => service.update("cust-1", { email: "new@example.com" }),
       httpMethod: "put",
       errorMessage: "Failed to update customer",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createCustomerService(tokenErrorClient);
+    await expectTokenFailure(() => tokenErrorService.create({ email: "t@t.com" }));
+    await expectTokenFailure(() => tokenErrorService.get("cust-1"));
+    await expectTokenFailure(() => tokenErrorService.list({ limit: 1 }));
+    await expectTokenFailure(() =>
+      tokenErrorService.update("cust-1", { email: "t@t.com" })
+    );
   });
 
   it("payment service methods", async () => {
@@ -165,76 +220,77 @@ describe("Crowdsplit services (Unit)", () => {
 
     await expectSuccess({
       client,
-      call: () => service.createPayment(payment),
+      call: () => service.create(payment),
       httpMethod: "post",
-      expectedArgs: [`${baseUrl}/api/v1/payments/`, payment, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/payments/`, payment, authConfig],
     });
     await expectFailure({
-      call: () => service.createPayment(payment),
+      call: () => service.create(payment),
       httpMethod: "post",
       errorMessage: "Failed to create payment",
     });
 
     await expectSuccess({
       client,
-      call: () => service.confirmPayment("pay-1"),
+      call: () => service.confirm("pay-1"),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/payments/pay-1/confirm`,
+        `${SANDBOX_URL}/api/v1/payments/pay-1/confirm`,
         {},
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.confirmPayment("pay-1"),
+      call: () => service.confirm("pay-1"),
       httpMethod: "post",
       errorMessage: "Failed to confirm payment with id pay-1",
     });
 
     await expectSuccess({
       client,
-      call: () => service.cancelPayment("pay-1"),
+      call: () => service.cancel("pay-1"),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/payments/pay-1/cancel`,
+        `${SANDBOX_URL}/api/v1/payments/pay-1/cancel`,
         {},
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.cancelPayment("pay-1"),
+      call: () => service.cancel("pay-1"),
       httpMethod: "post",
       errorMessage: "Failed to cancel payment with id pay-1",
     });
 
+    const paymentMethodService = createPaymentMethodService(client);
     const paymentMethod = { type: "bank" } as any;
     await expectSuccess({
       client,
-      call: () => service.addCustomerPaymentMethod("cust-1", paymentMethod),
+      call: () => paymentMethodService.add("cust-1", paymentMethod),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1/payment_methods`,
+        `${SANDBOX_URL}/api/v1/customers/cust-1/payment_methods`,
         paymentMethod,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.addCustomerPaymentMethod("cust-1", paymentMethod),
+      call: () => paymentMethodService.add("cust-1", paymentMethod),
       httpMethod: "post",
       errorMessage: "Failed to add payment method for customer cust-1",
     });
 
     await expectSuccess({
       client,
-      call: () => service.getCustomerPaymentMethod("cust-1", "pay-1"),
+      call: () => paymentMethodService.get("cust-1", "pay-1"),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1/payment_methods/pay-1`,
+        `${SANDBOX_URL}/api/v1/customers/cust-1/payment_methods/pay-1`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.getCustomerPaymentMethod("cust-1", "pay-1"),
+      call: () => paymentMethodService.get("cust-1", "pay-1"),
       httpMethod: "get",
       errorMessage: "Failed to get payment method for customer cust-1",
     });
@@ -242,36 +298,55 @@ describe("Crowdsplit services (Unit)", () => {
     await expectSuccess({
       client,
       call: () =>
-        service.getAllCustomerPaymentMethods("cust-1", {
+        paymentMethodService.list("cust-1", {
           type: "pix",
           status: undefined,
         }),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1/payment_methods?type=pix`,
+        `${SANDBOX_URL}/api/v1/customers/cust-1/payment_methods?type=pix`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.getAllCustomerPaymentMethods("cust-1"),
+      call: () => paymentMethodService.list("cust-1"),
       httpMethod: "get",
       errorMessage: "Failed to get payment method for customer cust-1",
     });
 
     await expectSuccess({
       client,
-      call: () => service.deleteCustomerPaymentMethod("cust-1", "pm-1"),
+      call: () => paymentMethodService.delete("cust-1", "pm-1"),
       httpMethod: "delete",
       expectedArgs: [
-        `${baseUrl}/api/v1/customers/cust-1/payment_methods/pm-1`,
+        `${SANDBOX_URL}/api/v1/customers/cust-1/payment_methods/pm-1`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.deleteCustomerPaymentMethod("cust-1", "pm-1"),
+      call: () => paymentMethodService.delete("cust-1", "pm-1"),
       httpMethod: "delete",
       errorMessage: "Failed to delete payment method pm-1 for customer cust-1",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenPaymentService = createPaymentService(tokenErrorClient);
+    const tokenPaymentMethodService = createPaymentMethodService(tokenErrorClient);
+    await expectTokenFailure(() => tokenPaymentService.create(payment));
+    await expectTokenFailure(() => tokenPaymentService.confirm("pay-1"));
+    await expectTokenFailure(() => tokenPaymentService.cancel("pay-1"));
+    await expectTokenFailure(() =>
+      tokenPaymentMethodService.add("cust-1", paymentMethod)
+    );
+    await expectTokenFailure(() =>
+      tokenPaymentMethodService.get("cust-1", "pay-1")
+    );
+    await expectTokenFailure(() =>
+      tokenPaymentMethodService.list("cust-1", { type: "pix" })
+    );
+    await expectTokenFailure(() =>
+      tokenPaymentMethodService.delete("cust-1", "pm-1")
+    );
   });
 
   it("provider service methods", async () => {
@@ -282,30 +357,30 @@ describe("Crowdsplit services (Unit)", () => {
 
     await expectSuccess({
       client,
-      call: () => service.getProviderSchema(request),
+      call: () => service.getSchema(request),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/provider-registration/schema?provider=stripe`,
+        `${SANDBOX_URL}/api/v1/provider-registration/schema?provider=stripe`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.getProviderSchema(request),
+      call: () => service.getSchema(request),
       httpMethod: "get",
       errorMessage: "Failed to retrieve provider schema for stripe",
     });
 
     await expectSuccess({
       client,
-      call: () => service.getProviderRegistrationStatus("cust-1"),
+      call: () => service.getRegistrationStatus("cust-1"),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/provider-registration/cust-1/status`,
+        `${SANDBOX_URL}/api/v1/provider-registration/cust-1/status`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.getProviderRegistrationStatus("cust-1"),
+      call: () => service.getRegistrationStatus("cust-1"),
       httpMethod: "get",
       errorMessage:
         "Failed to retrieve provider registration status for customer cust-1",
@@ -314,27 +389,45 @@ describe("Crowdsplit services (Unit)", () => {
     const registration = { provider: "stripe", target_role: "customer" } as any;
     await expectSuccess({
       client,
-      call: () => service.submitProviderRegistration("cust-1", registration),
+      call: () => service.submitRegistration("cust-1", registration),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/provider-registration/cust-1/submit`,
+        `${SANDBOX_URL}/api/v1/provider-registration/cust-1/submit`,
         registration,
         authConfig,
       ],
     });
 
-    mockedHttpClient.post.mockRejectedValueOnce({ body: { msg: "Bad" } });
-    await expect(
-      service.submitProviderRegistration("cust-1", registration)
-    ).rejects.toThrow(
-      "Failed to submit provider registration for customer cust-1: Bad"
+    mockedHttpClient.post.mockResolvedValueOnce(
+      err(new ApiError("Bad", 400, { msg: "Bad" })) as never
     );
+    const badResult = await service.submitRegistration("cust-1", registration);
+    expect(badResult).toEqual(err(expect.any(ApiError)));
+    if ("ok" in badResult && !badResult.ok) {
+      if (badResult.error instanceof ApiError) {
+        expect(badResult.error.message).toContain("Bad");
+      }
+    }
 
-    mockedHttpClient.post.mockRejectedValueOnce("boom");
-    await expect(
-      service.submitProviderRegistration("cust-1", registration)
-    ).rejects.toThrow(
-      "Failed to submit provider registration for customer cust-1: Unknown error"
+    mockedHttpClient.post.mockResolvedValueOnce(
+      err(new ApiError("HTTP error", 500, null)) as never
+    );
+    const boomResult = await service.submitRegistration("cust-1", registration);
+    expect(boomResult).toEqual(err(expect.any(ApiError)));
+    if ("ok" in boomResult && !boomResult.ok) {
+      if (boomResult.error instanceof ApiError) {
+        expect(boomResult.error.message).toContain("HTTP error");
+      }
+    }
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createProviderService(tokenErrorClient);
+    await expectTokenFailure(() => tokenErrorService.getSchema(request));
+    await expectTokenFailure(() =>
+      tokenErrorService.getRegistrationStatus("cust-1")
+    );
+    await expectTokenFailure(() =>
+      tokenErrorService.submitRegistration("cust-1", registration)
     );
   });
 
@@ -347,46 +440,56 @@ describe("Crowdsplit services (Unit)", () => {
     await expectSuccess({
       client,
       call: () =>
-        service.getAllTransactions({ type_list: "refund", status: undefined }),
+        service.list({ type_list: "refund", status: undefined }),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/transactions?type_list=refund`,
+        `${SANDBOX_URL}/api/v1/transactions?type_list=refund`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.getAllTransactions({ type_list: "refund" }),
+      call: () => service.list({ type_list: "refund" }),
       httpMethod: "get",
       errorMessage: "Failed to get all transaction",
     });
 
     await expectSuccess({
       client,
-      call: () => service.getTransaction("txn-1"),
+      call: () => service.get("txn-1"),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/transactions/txn-1`, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/transactions/txn-1`, authConfig],
     });
     await expectFailure({
-      call: () => service.getTransaction("txn-1"),
+      call: () => service.get("txn-1"),
       httpMethod: "get",
       errorMessage: "Failed to get transaction",
     });
 
     await expectSuccess({
       client,
-      call: () => service.settleIndividualTransaction("txn-1", settlement),
+      call: () => service.settle("txn-1", settlement),
       httpMethod: "patch",
       expectedArgs: [
-        `${baseUrl}/api/v1/transactions/txn-1/settle`,
+        `${SANDBOX_URL}/api/v1/transactions/txn-1/settle`,
         settlement,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.settleIndividualTransaction("txn-1", settlement),
+      call: () => service.settle("txn-1", settlement),
       httpMethod: "patch",
       errorMessage: "Failed to settle transaction",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createTransactionService(tokenErrorClient);
+    await expectTokenFailure(() =>
+      tokenErrorService.list({ type_list: "refund" })
+    );
+    await expectTokenFailure(() => tokenErrorService.get("txn-1"));
+    await expectTokenFailure(() =>
+      tokenErrorService.settle("txn-1", settlement)
+    );
   });
 
   it("transfer, sell, buy services", async () => {
@@ -399,12 +502,12 @@ describe("Crowdsplit services (Unit)", () => {
     const transfer = { amount: 1 } as any;
     await expectSuccess({
       client,
-      call: () => transferService.createTransfer(transfer),
+      call: () => transferService.create(transfer),
       httpMethod: "post",
-      expectedArgs: [`${baseUrl}/api/v1/transfer`, transfer, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/transfer`, transfer, authConfig],
     });
     await expectFailure({
-      call: () => transferService.createTransfer(transfer),
+      call: () => transferService.create(transfer),
       httpMethod: "post",
       errorMessage: "Failed to create transfer",
     });
@@ -412,12 +515,12 @@ describe("Crowdsplit services (Unit)", () => {
     const sell = { amount: 1 } as any;
     await expectSuccess({
       client,
-      call: () => sellService.createSell(sell),
+      call: () => sellService.create(sell),
       httpMethod: "post",
-      expectedArgs: [`${baseUrl}/api/v1/sell`, sell, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/sell`, sell, authConfig],
     });
     await expectFailure({
-      call: () => sellService.createSell(sell),
+      call: () => sellService.create(sell),
       httpMethod: "post",
       errorMessage: "Failed to create sell",
     });
@@ -425,15 +528,23 @@ describe("Crowdsplit services (Unit)", () => {
     const buy = { amount: 1 } as any;
     await expectSuccess({
       client,
-      call: () => buyService.createBuy(buy),
+      call: () => buyService.create(buy),
       httpMethod: "post",
-      expectedArgs: [`${baseUrl}/api/v1/buy`, buy, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/buy`, buy, authConfig],
     });
     await expectFailure({
-      call: () => buyService.createBuy(buy),
+      call: () => buyService.create(buy),
       httpMethod: "post",
       errorMessage: "Failed to create buy",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenTransferService = createTransferService(tokenErrorClient);
+    const tokenSellService = createSellService(tokenErrorClient);
+    const tokenBuyService = createBuyService(tokenErrorClient);
+    await expectTokenFailure(() => tokenTransferService.create(transfer));
+    await expectTokenFailure(() => tokenSellService.create(sell));
+    await expectTokenFailure(() => tokenBuyService.create(buy));
   });
 
   it("plan service methods", async () => {
@@ -454,96 +565,105 @@ describe("Crowdsplit services (Unit)", () => {
 
     await expectSuccess({
       client,
-      call: () => service.createPlan(planRequest),
+      call: () => service.create(planRequest),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans`,
+        `${SANDBOX_URL}/api/v1/subscription/plans`,
         planRequest,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.createPlan(planRequest),
+      call: () => service.create(planRequest),
       httpMethod: "post",
       errorMessage: "Failed to create plan",
     });
 
     await expectSuccess({
       client,
-      call: () => service.publishPlan("plan-1"),
+      call: () => service.publish("plan-1"),
       httpMethod: "patch",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans/plan-1/publish`,
+        `${SANDBOX_URL}/api/v1/subscription/plans/plan-1/publish`,
         undefined,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.publishPlan("plan-1"),
+      call: () => service.publish("plan-1"),
       httpMethod: "patch",
       errorMessage: "Failed to publish plan",
     });
 
     await expectSuccess({
       client,
-      call: () => service.planDetails("plan-1"),
+      call: () => service.details("plan-1"),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans/plan-1`,
+        `${SANDBOX_URL}/api/v1/subscription/plans/plan-1`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.planDetails("plan-1"),
+      call: () => service.details("plan-1"),
       httpMethod: "get",
       errorMessage: "Failed to get plan details",
     });
 
     await expectSuccess({
       client,
-      call: () => service.listAvailablePlans({ page_no: 1, per_page: undefined }),
+      call: () => service.list({ page_no: 1, per_page: undefined }),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans?page_no=1`,
+        `${SANDBOX_URL}/api/v1/subscription/plans?page_no=1`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.listAvailablePlans({ page_no: 1 }),
+      call: () => service.list({ page_no: 1 }),
       httpMethod: "get",
       errorMessage: "Failed to get available plans",
     });
 
     await expectSuccess({
       client,
-      call: () => service.updatePlan("plan-1", planRequest),
+      call: () => service.update("plan-1", planRequest),
       httpMethod: "patch",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans/plan-1`,
+        `${SANDBOX_URL}/api/v1/subscription/plans/plan-1`,
         planRequest,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.updatePlan("plan-1", planRequest),
+      call: () => service.update("plan-1", planRequest),
       httpMethod: "patch",
       errorMessage: "Failed to update plan",
     });
 
     await expectSuccess({
       client,
-      call: () => service.deletePlan("plan-1"),
+      call: () => service.delete("plan-1"),
       httpMethod: "delete",
       expectedArgs: [
-        `${baseUrl}/api/v1/subscription/plans/plan-1`,
+        `${SANDBOX_URL}/api/v1/subscription/plans/plan-1`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.deletePlan("plan-1"),
+      call: () => service.delete("plan-1"),
       httpMethod: "delete",
       errorMessage: "Failed to delete plan",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createPlanService(tokenErrorClient);
+    await expectTokenFailure(() => tokenErrorService.create(planRequest));
+    await expectTokenFailure(() => tokenErrorService.publish("plan-1"));
+    await expectTokenFailure(() => tokenErrorService.details("plan-1"));
+    await expectTokenFailure(() => tokenErrorService.list({ page_no: 1 }));
+    await expectTokenFailure(() => tokenErrorService.update("plan-1", planRequest));
+    await expectTokenFailure(() => tokenErrorService.delete("plan-1"));
   });
 
   it("webhook service methods", async () => {
@@ -554,94 +674,110 @@ describe("Crowdsplit services (Unit)", () => {
 
     await expectSuccess({
       client,
-      call: () => service.registerWebhook(webhook),
+      call: () => service.register(webhook),
       httpMethod: "post",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks`,
+        `${SANDBOX_URL}/api/v1/merchant/webhooks`,
         webhook,
         authConfig,
       ],
     });
 
-    mockedHttpClient.post.mockRejectedValueOnce({
-      body: { msg: "This URL is Already Registered!" },
-    });
-    await expect(service.registerWebhook(webhook)).rejects.toThrow(
-      "Webhook URL is already registered."
+    mockedHttpClient.post.mockResolvedValueOnce(
+      err(
+        new ApiError("This URL is Already Registered!", 409, {
+          msg: "This URL is Already Registered!",
+        })
+      ) as never
     );
+    const duplicateResult = await service.register(webhook);
+    expect(duplicateResult).toEqual(err(expect.any(ApiError)));
+    if ("ok" in duplicateResult && !duplicateResult.ok) {
+      if (duplicateResult.error instanceof ApiError) {
+        expect(duplicateResult.error.message).toContain(
+          "This URL is Already Registered!"
+        );
+      }
+    }
 
-    mockedHttpClient.post.mockRejectedValueOnce(new Error("fail"));
-    await expect(service.registerWebhook(webhook)).rejects.toThrow(
-      "Failed to create webhook"
+    mockedHttpClient.post.mockResolvedValueOnce(
+      err(new ApiError("HTTP error", 500, null)) as never
     );
+    const failResult = await service.register(webhook);
+    expect(failResult).toEqual(err(expect.any(ApiError)));
+    if ("ok" in failResult && !failResult.ok) {
+      if (failResult.error instanceof ApiError) {
+        expect(failResult.error.message).toContain("HTTP error");
+      }
+    }
 
     await expectSuccess({
       client,
-      call: () => service.getAllWebhooks(),
+      call: () => service.list(),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/merchant/webhooks`, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/merchant/webhooks`, authConfig],
     });
     await expectFailure({
-      call: () => service.getAllWebhooks(),
+      call: () => service.list(),
       httpMethod: "get",
       errorMessage: "Failed to get webhook list",
     });
 
     await expectSuccess({
       client,
-      call: () => service.getWebhook("wh-1"),
+      call: () => service.get("wh-1"),
       httpMethod: "get",
-      expectedArgs: [`${baseUrl}/api/v1/merchant/webhooks/wh-1`, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/merchant/webhooks/wh-1`, authConfig],
     });
     await expectFailure({
-      call: () => service.getWebhook("wh-1"),
+      call: () => service.get("wh-1"),
       httpMethod: "get",
       errorMessage: "Failed to get webhook list",
     });
 
     await expectSuccess({
       client,
-      call: () => service.updateWebhook("wh-1", webhook),
+      call: () => service.update("wh-1", webhook),
       httpMethod: "put",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/wh-1`,
+        `${SANDBOX_URL}/api/v1/merchant/webhooks/wh-1`,
         webhook,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.updateWebhook("wh-1", webhook),
+      call: () => service.update("wh-1", webhook),
       httpMethod: "put",
       errorMessage: "Failed updating webhook ",
     });
 
     await expectSuccess({
       client,
-      call: () => service.toggleWebhook("wh-1"),
+      call: () => service.toggle("wh-1"),
       httpMethod: "patch",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/wh-1/toggle`,
+        `${SANDBOX_URL}/api/v1/merchant/webhooks/wh-1/toggle`,
         undefined,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.toggleWebhook("wh-1"),
+      call: () => service.toggle("wh-1"),
       httpMethod: "patch",
       errorMessage: "Failed updating webhook ",
     });
 
     await expectSuccess({
       client,
-      call: () => service.deleteWebhook("wh-1"),
+      call: () => service.delete("wh-1"),
       httpMethod: "delete",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/wh-1`,
+        `${SANDBOX_URL}/api/v1/merchant/webhooks/wh-1`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.deleteWebhook("wh-1"),
+      call: () => service.delete("wh-1"),
       httpMethod: "delete",
       errorMessage: "Failed deleting webhook ",
     });
@@ -649,32 +785,45 @@ describe("Crowdsplit services (Unit)", () => {
     await expectSuccess({
       client,
       call: () =>
-        service.getAllWebhookNotifications({ limit: 1, offset: undefined }),
+        service.listNotifications({ limit: 1, offset: undefined }),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/notifications?limit=1`,
+        `${SANDBOX_URL}/api/v1/merchant/webhooks/notifications?limit=1`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.getAllWebhookNotifications({ limit: 1 }),
+      call: () => service.listNotifications({ limit: 1 }),
       httpMethod: "get",
       errorMessage: "Failed getting webhook notificaiton list ",
     });
 
     await expectSuccess({
       client,
-      call: () => service.getWebhookNotifications("wh-1"),
+      call: () => service.getNotification("wh-1"),
       httpMethod: "get",
       expectedArgs: [
-        `${baseUrl}/api/v1/merchant/webhooks/notifications/wh-1`,
+        `${SANDBOX_URL}/api/v1/merchant/webhooks/notifications/wh-1`,
         authConfig,
       ],
     });
     await expectFailure({
-      call: () => service.getWebhookNotifications("wh-1"),
+      call: () => service.getNotification("wh-1"),
       httpMethod: "get",
       errorMessage: "Failed getting webhook notificaiton ",
     });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createWebhookService(tokenErrorClient);
+    await expectTokenFailure(() => tokenErrorService.register(webhook));
+    await expectTokenFailure(() => tokenErrorService.list());
+    await expectTokenFailure(() => tokenErrorService.get("wh-1"));
+    await expectTokenFailure(() => tokenErrorService.update("wh-1", webhook));
+    await expectTokenFailure(() => tokenErrorService.toggle("wh-1"));
+    await expectTokenFailure(() => tokenErrorService.delete("wh-1"));
+    await expectTokenFailure(() =>
+      tokenErrorService.listNotifications({ limit: 1 })
+    );
+    await expectTokenFailure(() => tokenErrorService.getNotification("wh-1"));
   });
 });

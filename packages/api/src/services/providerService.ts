@@ -1,102 +1,81 @@
-import type { OakClient, Provider } from "../types";
+import type { OakClient, Provider, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { SDKError } from "../utils/errorHandler";
-import { getErrorBodyMessage } from "./helpers";
+import { err } from "../types";
 
 export interface ProviderService {
   getSchema(
     request: Provider.GetSchemaRequest,
-  ): Promise<Provider.GetSchemaResponse>;
+  ): Promise<Result<Provider.GetSchemaResponse>>;
   getRegistrationStatus(
     customerId: string,
-  ): Promise<Provider.GetRegistrationStatusResponse>;
+  ): Promise<Result<Provider.GetRegistrationStatusResponse>>;
   submitRegistration(
     customerId: string,
     registration: Provider.Request,
-  ): Promise<Provider.Response>;
+  ): Promise<Result<Provider.Response>>;
 }
 
 export const createProviderService = (client: OakClient): ProviderService => ({
   async getSchema(
     request: Provider.GetSchemaRequest,
-  ): Promise<Provider.GetSchemaResponse> {
-    try {
-      const token = await client.getAccessToken();
-
-      const response = await httpClient.get<Provider.GetSchemaResponse>(
-        `${
-          client.config.baseUrl
-        }/api/v1/provider-registration/schema?provider=${encodeURIComponent(
-          request.provider,
-        )}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          retryOptions: client.retryOptions,
-        },
-      );
-
-      return response;
-    } catch (error) {
-      throw new SDKError(
-        `Failed to retrieve provider schema for ${request.provider}`,
-        error,
-      );
+  ): Promise<Result<Provider.GetSchemaResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.get<Provider.GetSchemaResponse>(
+      `${
+        client.config.baseUrl
+      }/api/v1/provider-registration/schema?provider=${encodeURIComponent(
+        request.provider,
+      )}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 
   async getRegistrationStatus(
     customerId: string,
-  ): Promise<Provider.GetRegistrationStatusResponse> {
-    try {
-      const token = await client.getAccessToken();
-
-      const response =
-        await httpClient.get<Provider.GetRegistrationStatusResponse>(
-          `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/status`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            retryOptions: client.retryOptions,
-          },
-        );
-
-      return response;
-    } catch (error) {
-      throw new SDKError(
-        `Failed to retrieve provider registration status for customer ${customerId}`,
-        error,
-      );
+  ): Promise<Result<Provider.GetRegistrationStatusResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.get<Provider.GetRegistrationStatusResponse>(
+      `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/status`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 
   async submitRegistration(
     customerId: string,
     registration: Provider.Request,
-  ): Promise<Provider.Response> {
-    try {
-      const token = await client.getAccessToken();
-
-      const response = await httpClient.post<Provider.Response>(
-        `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/submit`,
-        registration,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          retryOptions: client.retryOptions,
-        },
-      );
-
-      return response;
-    } catch (error) {
-      const msg = getErrorBodyMessage(error) || "Unknown error";
-      throw new SDKError(
-        `Failed to submit provider registration for customer ${customerId}: ${msg}`,
-        error,
-      );
+  ): Promise<Result<Provider.Response>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.post<Provider.Response>(
+      `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/submit`,
+      registration,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 });

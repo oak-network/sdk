@@ -1,26 +1,25 @@
-import type { Buy, OakClient } from "../types";
+import type { Buy, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { SDKError } from "../utils/errorHandler";
+import { err } from "../types";
+import { OakError } from "../utils/errorHandler";
 
 export interface BuyService {
-  create(buyRequest: Buy.Request): Promise<Buy.Response>;
+  create(buyRequest: Buy.Request): Promise<Result<Buy.Response>>;
 }
 
 export const createBuyService = (client: OakClient): BuyService => ({
-  async create(buyRequest: Buy.Request): Promise<Buy.Response> {
-    try {
-      const token = await client.getAccessToken();
-      const response = await httpClient.post<Buy.Response>(
-        `${client.config.baseUrl}/api/v1/buy`,
-        buyRequest,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          retryOptions: client.retryOptions,
-        },
-      );
-      return response;
-    } catch (error) {
-      throw new SDKError("Failed to create buy", error);
+  async create(buyRequest: Buy.Request): Promise<Result<Buy.Response>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+    return httpClient.post<Buy.Response>(
+      `${client.config.baseUrl}/api/v1/buy`,
+      buyRequest,
+      {
+        headers: { Authorization: `Bearer ${token.value}` },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 });

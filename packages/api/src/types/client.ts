@@ -1,16 +1,23 @@
 import type { RetryOptions } from "../utils";
+import type { Result } from "./result";
 import type { TokenResponse } from "./token";
+import type { OakEnvironment } from "./environment";
 
 export interface OakClientConfig {
-  baseUrl: string;
+  environment: OakEnvironment;
   clientId: string;
   clientSecret: string;
+  customUrl?: string;
   retryOptions?: Partial<RetryOptions>;
 }
 
+export interface ResolvedOakClientConfig extends OakClientConfig {
+  baseUrl: string;
+}
+
 export interface OakClient {
-  readonly config: OakClientConfig;
+  readonly config: ResolvedOakClientConfig;
   readonly retryOptions: RetryOptions;
-  getAccessToken(): Promise<string>;
-  grantToken(): Promise<TokenResponse>;
+  getAccessToken(): Promise<Result<string>>;
+  grantToken(): Promise<Result<TokenResponse>>;
 }

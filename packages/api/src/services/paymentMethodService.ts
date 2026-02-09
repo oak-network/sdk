@@ -1,22 +1,25 @@
-import type { PaymentMethod, OakClient } from "../types";
+import type { PaymentMethod, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { SDKError } from "../utils/errorHandler";
 import { buildQueryString } from "./helpers";
+import { err } from "../types";
 
 export interface PaymentMethodService {
   add(
     customerId: string,
     paymentMethod: PaymentMethod.Request,
-  ): Promise<PaymentMethod.Response>;
-  get(customerId: string, paymentId: string): Promise<PaymentMethod.Response>;
+  ): Promise<Result<PaymentMethod.Response>>;
+  get(
+    customerId: string,
+    paymentId: string,
+  ): Promise<Result<PaymentMethod.Response>>;
   list(
     customerId: string,
     query?: PaymentMethod.ListQuery,
-  ): Promise<PaymentMethod.ListResponse>;
+  ): Promise<Result<PaymentMethod.ListResponse>>;
   delete(
     customerId: string,
     paymentMethodId: string,
-  ): Promise<PaymentMethod.DeleteResponse>;
+  ): Promise<Result<PaymentMethod.DeleteResponse>>;
 }
 
 export const createPaymentMethodService = (
@@ -25,103 +28,80 @@ export const createPaymentMethodService = (
   async add(
     customerId: string,
     paymentMethod: PaymentMethod.Request,
-  ): Promise<PaymentMethod.Response> {
-    try {
-      const token = await client.getAccessToken();
-
-      const response = await httpClient.post<PaymentMethod.Response>(
-        `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods`,
-        paymentMethod,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          retryOptions: client.retryOptions,
-        },
-      );
-
-      return response;
-    } catch (error) {
-      throw new SDKError(
-        `Failed to add payment method for customer ${customerId}`,
-        error,
-      );
+  ): Promise<Result<PaymentMethod.Response>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.post<PaymentMethod.Response>(
+      `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods`,
+      paymentMethod,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 
   async get(
     customerId: string,
     paymentId: string,
-  ): Promise<PaymentMethod.Response> {
-    try {
-      const token = await client.getAccessToken();
-
-      const response = await httpClient.get<PaymentMethod.Response>(
-        `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          retryOptions: client.retryOptions,
-        },
-      );
-
-      return response;
-    } catch (error) {
-      throw new SDKError(
-        `Failed to get payment method for customer ${customerId}`,
-        error,
-      );
+  ): Promise<Result<PaymentMethod.Response>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.get<PaymentMethod.Response>(
+      `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 
   async list(
     customerId: string,
     query?: PaymentMethod.ListQuery,
-  ): Promise<PaymentMethod.ListResponse> {
-    try {
-      const token = await client.getAccessToken();
-      const queryString = buildQueryString(query);
-
-      const response = await httpClient.get<PaymentMethod.ListResponse>(
-        `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods${queryString}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          retryOptions: client.retryOptions,
-        },
-      );
-      return response;
-    } catch (error) {
-      throw new SDKError(
-        `Failed to get payment method for customer ${customerId}`,
-        error,
-      );
+  ): Promise<Result<PaymentMethod.ListResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+    const queryString = buildQueryString(query);
+
+    return httpClient.get<PaymentMethod.ListResponse>(
+      `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods${queryString}`,
+      {
+        headers: { Authorization: `Bearer ${token.value}` },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 
   async delete(
     customerId: string,
     paymentMethodId: string,
-  ): Promise<PaymentMethod.DeleteResponse> {
-    try {
-      const token = await client.getAccessToken();
-
-      const response = await httpClient.delete<PaymentMethod.DeleteResponse>(
-        `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentMethodId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          retryOptions: client.retryOptions,
-        },
-      );
-
-      return response;
-    } catch (error) {
-      throw new SDKError(
-        `Failed to delete payment method ${paymentMethodId} for customer ${customerId}`,
-        error,
-      );
+  ): Promise<Result<PaymentMethod.DeleteResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.delete<PaymentMethod.DeleteResponse>(
+      `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentMethodId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 });

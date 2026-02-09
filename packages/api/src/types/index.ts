@@ -1,5 +1,6 @@
 export * from "./config";
 export * from "./client";
+export * from "./environment";
 export * from "./token";
 export * from "./payment";
 export * from "./paymentMethod";
@@ -11,3 +12,4 @@ export * from "./transfer";
 export * from "./sell";
 export * from "./plan";
 export * from "./buy";
+export * from "./result";

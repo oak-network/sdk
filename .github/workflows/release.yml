@@ -5,11 +5,17 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -19,20 +25,76 @@ jobs:
         with:
           run_install: false
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
           cache: pnpm
+          registry-url: https://registry.npmjs.org/
 
-      - name: Install dependencies
+      - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      - name: Create release pull request
+      - name: Create release PR or publish
+        id: changesets
         uses: changesets/action@v1
         with:
           version: pnpm changeset:version
           commit: "chore: version packages"
           title: "Release packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build packages
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: pnpm build
+
+      - name: Update npm for OIDC support
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - name: Publish packages
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: |
+          for pkg in packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              NAME=$(node -p "require('./$pkg/package.json').name")
+              VERSION=$(node -p "require('./$pkg/package.json').version")
+
+              # Check if this version is already published
+              if npm view "${NAME}@${VERSION}" version 2>/dev/null; then
+                echo "⏭️  ${NAME}@${VERSION} already published, skipping."
+                continue
+              fi
+
+              # Use --tag dev for prerelease versions
+              if [[ "$VERSION" == *-* ]]; then
+                TAG="--tag dev"
+              else
+                TAG=""
+              fi
+
+              echo "📦 Publishing ${NAME}@${VERSION}..."
+              (cd "$pkg" && npm publish --provenance --access public $TAG)
+            fi
+          done
+
+      - name: Create GitHub releases
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: |
+          for pkg in packages/*/; do
+            if [ -f "$pkg/package.json" ]; then
+              name=$(jq -r .name "$pkg/package.json")
+              version=$(jq -r .version "$pkg/package.json")
+              tag="${name}@${version}"
+              if ! git tag -l | grep -q "^${tag}$"; then
+                git tag "$tag"
+                git push origin "$tag" || true
+                gh release create "$tag" --title "$tag" --notes "Release $tag" || true
+              fi
+            fi
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
