@@ -1,7 +1,6 @@
 import type { Buy, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { err } from "../types";
-import { OakError } from "../utils/errorHandler";
 
 export interface BuyService {
   create(buyRequest: Buy.Request): Promise<Result<Buy.Response>>;
