@@ -1,6 +1,5 @@
-import type { OakClient, Provider, Result } from "../types";
+import { err, OakClient, Provider, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { err } from "../types";
 
 export interface ProviderService {
   getSchema(

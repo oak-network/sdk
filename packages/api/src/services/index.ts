@@ -30,3 +30,6 @@ export type { BuyService } from "./buyService";
 
 export { createWebhookService } from "./webhookService";
 export type { WebhookService } from "./webhookService";
+
+export { createRefundService } from "./refundService";
+export type { RefundService } from "./refundService";
