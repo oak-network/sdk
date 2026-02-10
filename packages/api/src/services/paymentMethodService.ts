@@ -1,13 +1,4 @@
-import type {
-  AddCustomerPaymentMethodRequest,
-  AddCustomerPaymentMethodResponse,
-  DeletePaymentMethodResponse,
-  GetAllCustomerPaymentMethodsQuery,
-  GetAllCustomerPaymentMethodsResponse,
-  GetCustomerPaymentMethodResponse,
-  OakClient,
-  Result,
-} from "../types";
+import type { PaymentMethod, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { buildQueryString } from "./helpers";
 import { err } from "../types";
@@ -15,20 +6,20 @@ import { err } from "../types";
 export interface PaymentMethodService {
   add(
     customerId: string,
-    paymentMethod: AddCustomerPaymentMethodRequest,
-  ): Promise<Result<AddCustomerPaymentMethodResponse>>;
+    paymentMethod: PaymentMethod.Request,
+  ): Promise<Result<PaymentMethod.Response>>;
   get(
     customerId: string,
     paymentId: string,
-  ): Promise<Result<GetCustomerPaymentMethodResponse>>;
+  ): Promise<Result<PaymentMethod.Response>>;
   list(
     customerId: string,
-    query?: GetAllCustomerPaymentMethodsQuery,
-  ): Promise<Result<GetAllCustomerPaymentMethodsResponse>>;
+    query?: PaymentMethod.ListQuery,
+  ): Promise<Result<PaymentMethod.ListResponse>>;
   delete(
     customerId: string,
     paymentMethodId: string,
-  ): Promise<Result<DeletePaymentMethodResponse>>;
+  ): Promise<Result<PaymentMethod.DeleteResponse>>;
 }
 
 export const createPaymentMethodService = (
@@ -36,14 +27,14 @@ export const createPaymentMethodService = (
 ): PaymentMethodService => ({
   async add(
     customerId: string,
-    paymentMethod: AddCustomerPaymentMethodRequest,
-  ): Promise<Result<AddCustomerPaymentMethodResponse>> {
+    paymentMethod: PaymentMethod.Request,
+  ): Promise<Result<PaymentMethod.Response>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
 
-    return httpClient.post<AddCustomerPaymentMethodResponse>(
+    return httpClient.post<PaymentMethod.Response>(
       `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods`,
       paymentMethod,
       {
@@ -58,13 +49,13 @@ export const createPaymentMethodService = (
   async get(
     customerId: string,
     paymentId: string,
-  ): Promise<Result<GetCustomerPaymentMethodResponse>> {
+  ): Promise<Result<PaymentMethod.Response>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
 
-    return httpClient.get<GetCustomerPaymentMethodResponse>(
+    return httpClient.get<PaymentMethod.Response>(
       `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentId}`,
       {
         headers: {
@@ -77,15 +68,15 @@ export const createPaymentMethodService = (
 
   async list(
     customerId: string,
-    query?: GetAllCustomerPaymentMethodsQuery,
-  ): Promise<Result<GetAllCustomerPaymentMethodsResponse>> {
+    query?: PaymentMethod.ListQuery,
+  ): Promise<Result<PaymentMethod.ListResponse>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
     const queryString = buildQueryString(query);
 
-    return httpClient.get<GetAllCustomerPaymentMethodsResponse>(
+    return httpClient.get<PaymentMethod.ListResponse>(
       `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods${queryString}`,
       {
         headers: { Authorization: `Bearer ${token.value}` },
@@ -97,13 +88,13 @@ export const createPaymentMethodService = (
   async delete(
     customerId: string,
     paymentMethodId: string,
-  ): Promise<Result<DeletePaymentMethodResponse>> {
+  ): Promise<Result<PaymentMethod.DeleteResponse>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
 
-    return httpClient.delete<DeletePaymentMethodResponse>(
+    return httpClient.delete<PaymentMethod.DeleteResponse>(
       `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentMethodId}`,
       {
         headers: {

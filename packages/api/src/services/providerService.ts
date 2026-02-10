@@ -1,38 +1,29 @@
-import type {
-  GetProviderRegistrationStatusResponse,
-  GetProviderSchemaRequest,
-  GetProviderSchemaResponse,
-  OakClient,
-  Result,
-  SubmitProviderRegistrationRequest,
-  SubmitProviderRegistrationResponse,
-} from "../types";
+import { err, OakClient, Provider, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { err } from "../types";
 
 export interface ProviderService {
   getSchema(
-    request: GetProviderSchemaRequest,
-  ): Promise<Result<GetProviderSchemaResponse>>;
+    request: Provider.GetSchemaRequest,
+  ): Promise<Result<Provider.GetSchemaResponse>>;
   getRegistrationStatus(
     customerId: string,
-  ): Promise<Result<GetProviderRegistrationStatusResponse>>;
+  ): Promise<Result<Provider.GetRegistrationStatusResponse>>;
   submitRegistration(
     customerId: string,
-    registration: SubmitProviderRegistrationRequest,
-  ): Promise<Result<SubmitProviderRegistrationResponse>>;
+    registration: Provider.Request,
+  ): Promise<Result<Provider.Response>>;
 }
 
 export const createProviderService = (client: OakClient): ProviderService => ({
   async getSchema(
-    request: GetProviderSchemaRequest,
-  ): Promise<Result<GetProviderSchemaResponse>> {
+    request: Provider.GetSchemaRequest,
+  ): Promise<Result<Provider.GetSchemaResponse>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
 
-    return httpClient.get<GetProviderSchemaResponse>(
+    return httpClient.get<Provider.GetSchemaResponse>(
       `${
         client.config.baseUrl
       }/api/v1/provider-registration/schema?provider=${encodeURIComponent(
@@ -49,13 +40,13 @@ export const createProviderService = (client: OakClient): ProviderService => ({
 
   async getRegistrationStatus(
     customerId: string,
-  ): Promise<Result<GetProviderRegistrationStatusResponse>> {
+  ): Promise<Result<Provider.GetRegistrationStatusResponse>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
 
-    return httpClient.get<GetProviderRegistrationStatusResponse>(
+    return httpClient.get<Provider.GetRegistrationStatusResponse>(
       `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/status`,
       {
         headers: {
@@ -68,14 +59,14 @@ export const createProviderService = (client: OakClient): ProviderService => ({
 
   async submitRegistration(
     customerId: string,
-    registration: SubmitProviderRegistrationRequest,
-  ): Promise<Result<SubmitProviderRegistrationResponse>> {
+    registration: Provider.Request,
+  ): Promise<Result<Provider.Response>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
 
-    return httpClient.post<SubmitProviderRegistrationResponse>(
+    return httpClient.post<Provider.Response>(
       `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/submit`,
       registration,
       {

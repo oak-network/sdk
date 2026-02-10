@@ -1,54 +1,63 @@
-// ----------------------
-// Core Webhook Types
-
 import { ApiResponse } from "./common";
 
-// ----------------------
-export interface WebhookData {
-  id: string;
-  url: string;
-  description?: string;
-  secret: string;
-  is_active: boolean;
+export namespace Webhook {
+  // ----------------------
+  // Data
+  // ----------------------
+  export interface Data {
+    id: string;
+    url: string;
+    description?: string;
+    secret: string;
+    is_active: boolean;
+  }
+
+  export type PublicData = Omit<Data, "secret">;
+
+  // ----------------------
+  // Requests
+  // ----------------------
+  export interface RegisterRequest {
+    url: string;
+    description?: string;
+  }
+
+  export interface UpdateRequest {
+    url?: string;
+    description?: string;
+  }
+
+  // ----------------------
+  // Notifications
+  // ----------------------
+  export interface Notification {
+    id: string;
+    is_acknowledged: boolean;
+    event: string | null;
+    category: string | null;
+    data: any;
+  }
+
+  export interface ListNotificationsQuery {
+    limit?: number;
+    offset?: number;
+  }
+
+  export interface ListNotificationsData {
+    count: number;
+    transaction_list: Notification[];
+  }
+
+  // ----------------------
+  // Responses
+  // ----------------------
+  /** register, toggle, update (full webhook data) */
+  export type Response = ApiResponse<Data>;
+
+  export type GetResponse = ApiResponse<PublicData>;
+  export type ListResponse = ApiResponse<PublicData[]>;
+  export type DeleteResponse = ApiResponse<{ success: boolean }>;
+
+  export type GetNotificationResponse = ApiResponse<Notification>;
+  export type ListNotificationsResponse = ApiResponse<ListNotificationsData>;
 }
-
-export type PublicWebhookData = Omit<WebhookData, "secret">;
-
-// ----------------------
-// Requests
-// ----------------------
-export interface RegisterWebhookRequest {
-  url: string;
-  description?: string;
-}
-
-export interface UpdateWebhookRequest {
-  url?: string;
-  description?: string;
-}
-
-// ----------------------
-// Notifications
-// ----------------------
-export interface WebhookNotification {
-  id: string;
-  is_acknowledged: boolean;
-  event: string | null;
-  category: string | null;
-  data: any;
-}
-
-// ----------------------
-// Responses
-// ----------------------
-export type RegisterWebhookResponse = ApiResponse<WebhookData>;
-export type GetAllWebhooksResponse = ApiResponse<PublicWebhookData[]>;
-export type GetWebhookNotificationResponse = ApiResponse<WebhookNotification>;
-export type ToggleWebhookResponse = ApiResponse<WebhookData>;
-export type GetAllWebhookNotificationResponse = ApiResponse<{
-  count: number;
-  transaction_list: WebhookNotification[];
-}>;
-export type GetWebhookResponse = ApiResponse<PublicWebhookData>;
-export type UpdateWebhookResponse = ApiResponse<WebhookData>;
-export type DeleteWebhookResponse = ApiResponse<{ success: boolean }>;

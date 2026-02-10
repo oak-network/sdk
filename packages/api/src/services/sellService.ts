@@ -1,25 +1,18 @@
-import type {
-  CreateSellRequest,
-  CreateSellResponse,
-  OakClient,
-  Result,
-} from "../types";
+import type { Sell, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { err } from "../types";
 
 export interface SellService {
-  create(sellRequest: CreateSellRequest): Promise<Result<CreateSellResponse>>;
+  create(sellRequest: Sell.Request): Promise<Result<Sell.Response>>;
 }
 
 export const createSellService = (client: OakClient): SellService => ({
-  async create(
-    sellRequest: CreateSellRequest,
-  ): Promise<Result<CreateSellResponse>> {
+  async create(sellRequest: Sell.Request): Promise<Result<Sell.Response>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
-    return httpClient.post<CreateSellResponse>(
+    return httpClient.post<Sell.Response>(
       `${client.config.baseUrl}/api/v1/sell`,
       sellRequest,
       {

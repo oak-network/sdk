@@ -1,30 +1,21 @@
-import type {
-  CancelPaymentResponse,
-  ConfirmPaymentResponse,
-  CreatePaymentRequest,
-  CreatePaymentResponse,
-  OakClient,
-  Result,
-} from "../types";
+import type { Payment, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { err } from "../types";
 
 export interface PaymentService {
-  create(payment: CreatePaymentRequest): Promise<Result<CreatePaymentResponse>>;
-  confirm(paymentId: string): Promise<Result<ConfirmPaymentResponse>>;
-  cancel(paymentId: string): Promise<Result<CancelPaymentResponse>>;
+  create(payment: Payment.Request): Promise<Result<Payment.Response>>;
+  confirm(paymentId: string): Promise<Result<Payment.Response>>;
+  cancel(paymentId: string): Promise<Result<Payment.Response>>;
 }
 
 export const createPaymentService = (client: OakClient): PaymentService => ({
-  async create(
-    payment: CreatePaymentRequest,
-  ): Promise<Result<CreatePaymentResponse>> {
+  async create(payment: Payment.Request): Promise<Result<Payment.Response>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
 
-    return httpClient.post<CreatePaymentResponse>(
+    return httpClient.post<Payment.Response>(
       `${client.config.baseUrl}/api/v1/payments/`,
       payment,
       {
@@ -36,15 +27,13 @@ export const createPaymentService = (client: OakClient): PaymentService => ({
     );
   },
 
-  async confirm(
-    paymentId: string,
-  ): Promise<Result<ConfirmPaymentResponse>> {
+  async confirm(paymentId: string): Promise<Result<Payment.Response>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
 
-    return httpClient.post<ConfirmPaymentResponse>(
+    return httpClient.post<Payment.Response>(
       `${client.config.baseUrl}/api/v1/payments/${paymentId}/confirm`,
       {},
       {
@@ -56,15 +45,13 @@ export const createPaymentService = (client: OakClient): PaymentService => ({
     );
   },
 
-  async cancel(
-    paymentId: string,
-  ): Promise<Result<CancelPaymentResponse>> {
+  async cancel(paymentId: string): Promise<Result<Payment.Response>> {
     const token = await client.getAccessToken();
     if (!token.ok) {
       return err(token.error);
     }
 
-    return httpClient.post<CancelPaymentResponse>(
+    return httpClient.post<Payment.Response>(
       `${client.config.baseUrl}/api/v1/payments/${paymentId}/cancel`,
       {},
       {
