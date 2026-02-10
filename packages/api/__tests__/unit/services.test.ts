@@ -6,6 +6,7 @@ import {
   createPaymentService,
   createPlanService,
   createProviderService,
+  createRefundService,
   createSellService,
   createTransactionService,
   createTransferService,
@@ -78,7 +79,7 @@ const expectSuccess = async (options: {
 
   expect(result).toEqual(ok(response));
   expect(mockedHttpClient[options.httpMethod]).toHaveBeenCalledWith(
-    ...options.expectedArgs
+    ...options.expectedArgs,
   );
   expect(options.client.getAccessToken).toHaveBeenCalled();
 };
@@ -94,9 +95,11 @@ const expectFailure = async (options: {
     400,
     { msg: options.errorMessage },
     undefined,
-    options.error
+    options.error,
   );
-  mockedHttpClient[options.httpMethod].mockResolvedValue(err(apiError) as never);
+  mockedHttpClient[options.httpMethod].mockResolvedValue(
+    err(apiError) as never,
+  );
 
   const result = await options.call();
   expect(result).toEqual(err(expect.any(ApiError)));
@@ -204,11 +207,13 @@ describe("Crowdsplit services (Unit)", () => {
 
     const tokenErrorClient = makeClientWithTokenError();
     const tokenErrorService = createCustomerService(tokenErrorClient);
-    await expectTokenFailure(() => tokenErrorService.create({ email: "t@t.com" }));
+    await expectTokenFailure(() =>
+      tokenErrorService.create({ email: "t@t.com" }),
+    );
     await expectTokenFailure(() => tokenErrorService.get("cust-1"));
     await expectTokenFailure(() => tokenErrorService.list({ limit: 1 }));
     await expectTokenFailure(() =>
-      tokenErrorService.update("cust-1", { email: "t@t.com" })
+      tokenErrorService.update("cust-1", { email: "t@t.com" }),
     );
   });
 
@@ -331,21 +336,22 @@ describe("Crowdsplit services (Unit)", () => {
 
     const tokenErrorClient = makeClientWithTokenError();
     const tokenPaymentService = createPaymentService(tokenErrorClient);
-    const tokenPaymentMethodService = createPaymentMethodService(tokenErrorClient);
+    const tokenPaymentMethodService =
+      createPaymentMethodService(tokenErrorClient);
     await expectTokenFailure(() => tokenPaymentService.create(payment));
     await expectTokenFailure(() => tokenPaymentService.confirm("pay-1"));
     await expectTokenFailure(() => tokenPaymentService.cancel("pay-1"));
     await expectTokenFailure(() =>
-      tokenPaymentMethodService.add("cust-1", paymentMethod)
+      tokenPaymentMethodService.add("cust-1", paymentMethod),
     );
     await expectTokenFailure(() =>
-      tokenPaymentMethodService.get("cust-1", "pay-1")
+      tokenPaymentMethodService.get("cust-1", "pay-1"),
     );
     await expectTokenFailure(() =>
-      tokenPaymentMethodService.list("cust-1", { type: "pix" })
+      tokenPaymentMethodService.list("cust-1", { type: "pix" }),
     );
     await expectTokenFailure(() =>
-      tokenPaymentMethodService.delete("cust-1", "pm-1")
+      tokenPaymentMethodService.delete("cust-1", "pm-1"),
     );
   });
 
@@ -399,7 +405,7 @@ describe("Crowdsplit services (Unit)", () => {
     });
 
     mockedHttpClient.post.mockResolvedValueOnce(
-      err(new ApiError("Bad", 400, { msg: "Bad" })) as never
+      err(new ApiError("Bad", 400, { msg: "Bad" })) as never,
     );
     const badResult = await service.submitRegistration("cust-1", registration);
     expect(badResult).toEqual(err(expect.any(ApiError)));
@@ -410,7 +416,7 @@ describe("Crowdsplit services (Unit)", () => {
     }
 
     mockedHttpClient.post.mockResolvedValueOnce(
-      err(new ApiError("HTTP error", 500, null)) as never
+      err(new ApiError("HTTP error", 500, null)) as never,
     );
     const boomResult = await service.submitRegistration("cust-1", registration);
     expect(boomResult).toEqual(err(expect.any(ApiError)));
@@ -424,10 +430,10 @@ describe("Crowdsplit services (Unit)", () => {
     const tokenErrorService = createProviderService(tokenErrorClient);
     await expectTokenFailure(() => tokenErrorService.getSchema(request));
     await expectTokenFailure(() =>
-      tokenErrorService.getRegistrationStatus("cust-1")
+      tokenErrorService.getRegistrationStatus("cust-1"),
     );
     await expectTokenFailure(() =>
-      tokenErrorService.submitRegistration("cust-1", registration)
+      tokenErrorService.submitRegistration("cust-1", registration),
     );
   });
 
@@ -435,12 +441,15 @@ describe("Crowdsplit services (Unit)", () => {
     const client = makeClient();
     const service = createTransactionService(client);
     const authConfig = getAuthConfig(client);
-    const settlement = { charge_id: "ch_1", amount: 10, status: "SETTLED" } as any;
+    const settlement = {
+      charge_id: "ch_1",
+      amount: 10,
+      status: "SETTLED",
+    } as any;
 
     await expectSuccess({
       client,
-      call: () =>
-        service.list({ type_list: "refund", status: undefined }),
+      call: () => service.list({ type_list: "refund", status: undefined }),
       httpMethod: "get",
       expectedArgs: [
         `${SANDBOX_URL}/api/v1/transactions?type_list=refund`,
@@ -484,11 +493,11 @@ describe("Crowdsplit services (Unit)", () => {
     const tokenErrorClient = makeClientWithTokenError();
     const tokenErrorService = createTransactionService(tokenErrorClient);
     await expectTokenFailure(() =>
-      tokenErrorService.list({ type_list: "refund" })
+      tokenErrorService.list({ type_list: "refund" }),
     );
     await expectTokenFailure(() => tokenErrorService.get("txn-1"));
     await expectTokenFailure(() =>
-      tokenErrorService.settle("txn-1", settlement)
+      tokenErrorService.settle("txn-1", settlement),
     );
   });
 
@@ -662,7 +671,9 @@ describe("Crowdsplit services (Unit)", () => {
     await expectTokenFailure(() => tokenErrorService.publish("plan-1"));
     await expectTokenFailure(() => tokenErrorService.details("plan-1"));
     await expectTokenFailure(() => tokenErrorService.list({ page_no: 1 }));
-    await expectTokenFailure(() => tokenErrorService.update("plan-1", planRequest));
+    await expectTokenFailure(() =>
+      tokenErrorService.update("plan-1", planRequest),
+    );
     await expectTokenFailure(() => tokenErrorService.delete("plan-1"));
   });
 
@@ -687,21 +698,21 @@ describe("Crowdsplit services (Unit)", () => {
       err(
         new ApiError("This URL is Already Registered!", 409, {
           msg: "This URL is Already Registered!",
-        })
-      ) as never
+        }),
+      ) as never,
     );
     const duplicateResult = await service.register(webhook);
     expect(duplicateResult).toEqual(err(expect.any(ApiError)));
     if ("ok" in duplicateResult && !duplicateResult.ok) {
       if (duplicateResult.error instanceof ApiError) {
         expect(duplicateResult.error.message).toContain(
-          "This URL is Already Registered!"
+          "This URL is Already Registered!",
         );
       }
     }
 
     mockedHttpClient.post.mockResolvedValueOnce(
-      err(new ApiError("HTTP error", 500, null)) as never
+      err(new ApiError("HTTP error", 500, null)) as never,
     );
     const failResult = await service.register(webhook);
     expect(failResult).toEqual(err(expect.any(ApiError)));
@@ -727,7 +738,10 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => service.get("wh-1"),
       httpMethod: "get",
-      expectedArgs: [`${SANDBOX_URL}/api/v1/merchant/webhooks/wh-1`, authConfig],
+      expectedArgs: [
+        `${SANDBOX_URL}/api/v1/merchant/webhooks/wh-1`,
+        authConfig,
+      ],
     });
     await expectFailure({
       call: () => service.get("wh-1"),
@@ -784,8 +798,7 @@ describe("Crowdsplit services (Unit)", () => {
 
     await expectSuccess({
       client,
-      call: () =>
-        service.listNotifications({ limit: 1, offset: undefined }),
+      call: () => service.listNotifications({ limit: 1, offset: undefined }),
       httpMethod: "get",
       expectedArgs: [
         `${SANDBOX_URL}/api/v1/merchant/webhooks/notifications?limit=1`,
@@ -822,8 +835,35 @@ describe("Crowdsplit services (Unit)", () => {
     await expectTokenFailure(() => tokenErrorService.toggle("wh-1"));
     await expectTokenFailure(() => tokenErrorService.delete("wh-1"));
     await expectTokenFailure(() =>
-      tokenErrorService.listNotifications({ limit: 1 })
+      tokenErrorService.listNotifications({ limit: 1 }),
     );
     await expectTokenFailure(() => tokenErrorService.getNotification("wh-1"));
+  });
+
+  it("refund service methods", async () => {
+    const client = makeClient();
+    const service = createRefundService(client);
+    const authConfig = getAuthConfig(client);
+    const refund = { amount: 1 } as any;
+
+    await expectSuccess({
+      client,
+      call: () => service.create("pay-1", refund),
+      httpMethod: "post",
+      expectedArgs: [
+        `${SANDBOX_URL}/api/v1/payments/pay-1/refund`,
+        refund,
+        authConfig,
+      ],
+    });
+    await expectFailure({
+      call: () => service.create("pay-1", refund),
+      httpMethod: "post",
+      errorMessage: "Failed to create refund",
+    });
+
+    const tokenErrorClient = makeClientWithTokenError();
+    const tokenErrorService = createRefundService(tokenErrorClient);
+    await expectTokenFailure(() => tokenErrorService.create("pay-1", refund));
   });
 });

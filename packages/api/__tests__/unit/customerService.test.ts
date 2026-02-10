@@ -3,13 +3,7 @@ import { Crowdsplit } from "../../src/products/crowdsplit";
 import { httpClient } from "../../src/utils/httpClient";
 import { ApiError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils/defaultRetryConfig";
-import {
-  OakClientConfig,
-  CreateCustomerRequest,
-  CustomerListQueryParams,
-  ok,
-  err,
-} from "../../src/types";
+import { OakClientConfig, Customer, ok, err } from "../../src/types";
 
 const SANDBOX_URL = "https://api.usecrowdpay.xyz";
 
@@ -38,16 +32,14 @@ describe("CustomerService - Unit", () => {
       ...config,
       retryOptions,
     });
-    jest
-      .spyOn(client, "getAccessToken")
-      .mockResolvedValue(ok("fake-token"));
+    jest.spyOn(client, "getAccessToken").mockResolvedValue(ok("fake-token"));
     customers = Crowdsplit(client).customers;
     jest.clearAllMocks();
   });
 
   describe("create", () => {
     it("should call POST /api/v1/customers with correct payload", async () => {
-      const request: CreateCustomerRequest = { email: "test@example.com" };
+      const request: Customer.Request = { email: "test@example.com" };
       const mockResponse = { data: { email: "test@example.com" } };
       (httpClient.post as jest.Mock).mockResolvedValue(ok(mockResponse));
 
@@ -60,7 +52,7 @@ describe("CustomerService - Unit", () => {
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
-        })
+        }),
       );
       expect(result).toEqual(ok(mockResponse));
     });
@@ -89,7 +81,7 @@ describe("CustomerService - Unit", () => {
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
-        })
+        }),
       );
       expect(result).toEqual(ok(mockResponse));
     });
@@ -97,7 +89,7 @@ describe("CustomerService - Unit", () => {
 
   describe("list", () => {
     it("should call GET /api/v1/customers with query params", async () => {
-      const params: CustomerListQueryParams = { limit: 10, offset: 5 };
+      const params: Customer.ListQueryParams = { limit: 10, offset: 5 };
       const mockResponse = { data: { count: 1, customer_list: [] } };
       (httpClient.get as jest.Mock).mockResolvedValue(ok(mockResponse));
 
@@ -108,7 +100,7 @@ describe("CustomerService - Unit", () => {
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
-        })
+        }),
       );
       expect(result).toEqual(ok(mockResponse));
     });
@@ -128,7 +120,7 @@ describe("CustomerService - Unit", () => {
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
-        })
+        }),
       );
       expect(result).toEqual(ok(mockResponse));
     });
