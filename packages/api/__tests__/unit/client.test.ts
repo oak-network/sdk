@@ -1,7 +1,7 @@
 import { createOakClient } from "../../src/client";
 import type { OakClientConfig } from "../../src/types/client";
 
-const SANDBOX_URL = "https://api.usecrowdpay.xyz";
+const SANDBOX_URL = "https://api-stage.usecrowdpay.xyz";
 const PRODUCTION_URL = "https://app.usecrowdpay.xyz";
 
 jest.mock("../../src/authManager", () => ({

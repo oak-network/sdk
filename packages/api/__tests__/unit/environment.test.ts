@@ -11,7 +11,7 @@ import {
 import { SandboxOnly, sandboxOnlyFn } from "../../src/decorators/sandboxOnly";
 import type { ResolvedOakClientConfig } from "../../src/types/client";
 
-const SANDBOX_URL = "https://api.usecrowdpay.xyz";
+const SANDBOX_URL = "https://api-stage.usecrowdpay.xyz";
 const PRODUCTION_URL = "https://app.usecrowdpay.xyz";
 
 describe("Environment Configuration", () => {

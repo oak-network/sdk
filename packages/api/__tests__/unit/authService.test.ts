@@ -5,7 +5,7 @@ import { RetryOptions } from "../../src/utils";
 import type { OakClientConfig } from "../../src/types";
 import { err, ok } from "../../src/types";
 
-const SANDBOX_URL = "https://api.usecrowdpay.xyz";
+const SANDBOX_URL = "https://api-stage.usecrowdpay.xyz";
 
 jest.mock("../../src/utils/httpClient");
 const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
