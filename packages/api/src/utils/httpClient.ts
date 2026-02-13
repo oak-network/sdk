@@ -96,7 +96,7 @@ const request = async <T>(
       const parseResult: ParseResult = text ? parseJsonSafe(text) : { success: true, data: {} };
 
       if (!response.ok) {
-        const body = parseResult.success ? parseResult.data : { rawText: text };
+        const body = parseResult.success ? (parseResult.data ?? {}) : { rawText: text };
         throw toApiError(response, body);
       }
 

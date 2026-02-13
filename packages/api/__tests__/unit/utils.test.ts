@@ -581,6 +581,26 @@ describe("httpClient", () => {
       expect((result.error as ApiError).body).toEqual({ rawText: "Internal Server Error" });
     }
   });
+
+  it("returns ApiError with empty body when error response is JSON null", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 400,
+      headers: new Headers(),
+      text: jest.fn().mockResolvedValue("null"),
+    });
+
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect((result.error as ApiError).status).toBe(400);
+      expect((result.error as ApiError).body).toEqual({});
+      expect(result.error.message).toBe("HTTP error");
+    }
+  });
 });
 
 describe("withRetry", () => {
