@@ -3,6 +3,7 @@ import {
   isTestEnvironment,
   getEnvironmentConfig,
   OakEnvironment,
+  ENVIRONMENT_URLS,
 } from "../../src/types/environment";
 import {
   EnvironmentViolationError,
@@ -11,8 +12,8 @@ import {
 import { SandboxOnly, sandboxOnlyFn } from "../../src/decorators/sandboxOnly";
 import type { ResolvedOakClientConfig } from "../../src/types/client";
 
-const SANDBOX_URL = "https://api-stage.usecrowdpay.xyz";
-const PRODUCTION_URL = "https://app.usecrowdpay.xyz";
+const SANDBOX_URL = ENVIRONMENT_URLS.sandbox;
+const PRODUCTION_URL = ENVIRONMENT_URLS.production;
 
 describe("Environment Configuration", () => {
   describe("getEnvironmentConfig", () => {

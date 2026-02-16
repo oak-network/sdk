@@ -1,8 +1,9 @@
 import { createOakClient } from "../../src/client";
 import type { OakClientConfig } from "../../src/types/client";
+import { ENVIRONMENT_URLS } from "../../src/types/environment";
 
-const SANDBOX_URL = "https://api-stage.usecrowdpay.xyz";
-const PRODUCTION_URL = "https://app.usecrowdpay.xyz";
+const SANDBOX_URL = ENVIRONMENT_URLS.sandbox;
+const PRODUCTION_URL = ENVIRONMENT_URLS.production;
 
 jest.mock("../../src/authManager", () => ({
   AuthManager: jest.fn().mockImplementation(() => ({

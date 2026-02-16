@@ -16,8 +16,9 @@ import { httpClient } from "../../src/utils/httpClient";
 import { ApiError, SDKError } from "../../src/utils/errorHandler";
 import type { OakClient } from "../../src/types";
 import { err, ok } from "../../src/types";
+import { ENVIRONMENT_URLS } from "../../src/types/environment";
 
-const SANDBOX_URL = "https://api-stage.usecrowdpay.xyz";
+const SANDBOX_URL = ENVIRONMENT_URLS.sandbox;
 
 jest.mock("../../src/utils/httpClient", () => ({
   httpClient: {
