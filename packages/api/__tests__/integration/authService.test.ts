@@ -2,13 +2,15 @@ import { createOakClient } from "../../src";
 import { getConfigFromEnv } from "../config";
 import { ApiError } from "../../src/utils/errorHandler";
 
+const INTEGRATION_TEST_TIMEOUT = 30000;
+
 describe("Auth (Integration)", () => {
   const client = createOakClient({
     ...getConfigFromEnv(),
     retryOptions: {
-      maxNumberOfRetries: 1,
-      delay: 100,
-      backoffFactor: 1,
+      maxNumberOfRetries: 2,
+      delay: 500,
+      backoffFactor: 2,
     },
   });
 
@@ -19,7 +21,7 @@ describe("Auth (Integration)", () => {
       expect(response.value.access_token).toBeDefined();
       expect(response.value.expires_in).toBeGreaterThan(0);
     }
-  });
+  }, INTEGRATION_TEST_TIMEOUT);
 
   it("should return the same token if not expired", async () => {
     const firstResult = await client.getAccessToken();
@@ -29,7 +31,7 @@ describe("Auth (Integration)", () => {
     if (firstResult.ok && secondResult.ok) {
       expect(secondResult.value).toBe(firstResult.value);
     }
-  });
+  }, INTEGRATION_TEST_TIMEOUT);
 
   it("should refresh token if expired", async () => {
     const originalNow = Date.now;
@@ -46,7 +48,7 @@ describe("Auth (Integration)", () => {
       expect(newTokenResult.value).toBeDefined();
       expect(newTokenResult.value).not.toBeNull();
     }
-  });
+  }, INTEGRATION_TEST_TIMEOUT);
 
   it("should return error on invalid credentials", async () => {
     const badClient = createOakClient({
@@ -65,5 +67,5 @@ describe("Auth (Integration)", () => {
     if (!result.ok) {
       expect(result.error).toBeInstanceOf(ApiError);
     }
-  });
+  }, INTEGRATION_TEST_TIMEOUT);
 });

@@ -5,8 +5,8 @@ export interface EnvironmentConfig {
   allowsTestOperations: boolean;
 }
 
-const ENVIRONMENT_URLS: Record<OakEnvironment, string> = {
-  sandbox: "https://api.usecrowdpay.xyz",
+export const ENVIRONMENT_URLS: Record<OakEnvironment, string> = {
+  sandbox: "https://api-stage.usecrowdpay.xyz",
   production: "https://app.usecrowdpay.xyz",
 };
 

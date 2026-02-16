@@ -27,9 +27,18 @@ const mergeHeaders = (headers?: Record<string, string>) => ({
   ...(headers ?? {}),
 });
 
-const parseResponseBody = async (response: Response) => {
-  const body = await response.json();
-  return body ?? {};
+type ParseResult = 
+  | { success: true; data: unknown; error?: undefined }
+  | { success: false; data?: undefined; error: Error };
+
+const parseJsonSafe = (text: string): ParseResult => {
+  try {
+    return { success: true, data: JSON.parse(text) };
+  } catch (error) {
+    /* istanbul ignore next -- defensive: JSON.parse always throws Error */
+    const err = error instanceof Error ? error : new Error(String(error));
+    return { success: false, error: err };
+  }
 };
 
 const toHeadersRecord = (headers?: Headers): Record<string, string> => {
@@ -83,18 +92,19 @@ const request = async <T>(
         throw new NetworkError("Network error", error);
       }
 
-      let parsedBody: unknown;
-      try {
-        parsedBody = await parseResponseBody(response);
-      } catch (error) {
-        throw new ParseError("Failed to parse response body", error);
-      }
+      const text = await response.text();
+      const parseResult: ParseResult = text ? parseJsonSafe(text) : { success: true, data: {} };
 
       if (!response.ok) {
-        throw toApiError(response, parsedBody);
+        const body = parseResult.success ? (parseResult.data ?? {}) : { rawText: text };
+        throw toApiError(response, body);
       }
 
-      return parsedBody as T;
+      if (!parseResult.success) {
+        throw new ParseError("Failed to parse response body", parseResult.error);
+      }
+
+      return parseResult.data as T;
     }, { ...config.retryOptions, signal: config.signal });
 
     return ok(responseBody);

@@ -71,16 +71,27 @@ describe("httpClient", () => {
   const retryOptions = { maxNumberOfRetries: 0, delay: 0 };
   let fetchMock: jest.Mock;
 
+  const mockResponse = (options: {
+    ok: boolean;
+    status?: number;
+    body?: unknown;
+    headers?: Headers;
+  }) => ({
+    ok: options.ok,
+    status: options.status ?? (options.ok ? 200 : 400),
+    headers: options.headers,
+    text: jest.fn().mockResolvedValue(
+      options.body !== undefined ? JSON.stringify(options.body) : ""
+    ),
+  });
+
   beforeEach(() => {
     fetchMock = jest.fn();
     (globalThis as any).fetch = fetchMock;
   });
 
   it("post returns response body", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.post(
       "https://api.test/post",
@@ -97,10 +108,7 @@ describe("httpClient", () => {
   });
 
   it("post merges custom headers", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.post(
       "https://api.test/post",
@@ -117,11 +125,7 @@ describe("httpClient", () => {
   });
 
   it("post throws error for non-ok response", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 400,
-      json: jest.fn().mockResolvedValue({ msg: "bad" }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 400, body: { msg: "bad" } }));
 
     const result = await httpClient.post("https://api.test/post", { data: 1 }, {
       retryOptions,
@@ -135,12 +139,12 @@ describe("httpClient", () => {
   });
 
   it("post includes response headers in ApiError", async () => {
-    fetchMock.mockResolvedValue({
+    fetchMock.mockResolvedValue(mockResponse({
       ok: false,
       status: 400,
+      body: { msg: "bad" },
       headers: new Headers({ "retry-after": "1" }),
-      json: jest.fn().mockResolvedValue({ msg: "bad" }),
-    });
+    }));
 
     const result = await httpClient.post("https://api.test/post", { data: 1 }, {
       retryOptions,
@@ -153,10 +157,7 @@ describe("httpClient", () => {
   });
 
   it("get returns response body", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.get("https://api.test/get", {
       retryOptions,
@@ -170,10 +171,7 @@ describe("httpClient", () => {
   });
 
   it("get merges custom headers", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.get("https://api.test/get", {
       retryOptions,
@@ -188,11 +186,7 @@ describe("httpClient", () => {
   });
 
   it("get throws error for non-ok response", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 404,
-      json: jest.fn().mockResolvedValue({ msg: "missing" }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 404, body: { msg: "missing" } }));
 
     const result = await httpClient.get("https://api.test/get", {
       retryOptions,
@@ -206,11 +200,7 @@ describe("httpClient", () => {
   });
 
   it("get uses fallback error message when missing", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 500,
-      json: jest.fn().mockResolvedValue(null),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 500, body: {} }));
 
     const result = await httpClient.get("https://api.test/get", {
       retryOptions,
@@ -223,10 +213,7 @@ describe("httpClient", () => {
   });
 
   it("put returns response body", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.put(
       "https://api.test/put",
@@ -243,10 +230,7 @@ describe("httpClient", () => {
   });
 
   it("put merges custom headers", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.put(
       "https://api.test/put",
@@ -263,11 +247,7 @@ describe("httpClient", () => {
   });
 
   it("put throws error for non-ok response", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 500,
-      json: jest.fn().mockResolvedValue({ msg: "boom" }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 500, body: { msg: "boom" } }));
 
     const result = await httpClient.put("https://api.test/put", { data: 2 }, {
       retryOptions,
@@ -281,11 +261,7 @@ describe("httpClient", () => {
   });
 
   it("put uses fallback error message when missing", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 500,
-      json: jest.fn().mockResolvedValue(null),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 500, body: {} }));
 
     const result = await httpClient.put("https://api.test/put", { data: 2 }, {
       retryOptions,
@@ -298,10 +274,7 @@ describe("httpClient", () => {
   });
 
   it("patch returns response body and omits body when undefined", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.patch(
       "https://api.test/patch",
@@ -318,10 +291,7 @@ describe("httpClient", () => {
   });
 
   it("patch sends body when provided", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.patch("https://api.test/patch", { data: 9 }, { retryOptions });
 
@@ -334,10 +304,7 @@ describe("httpClient", () => {
   });
 
   it("patch merges custom headers", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.patch(
       "https://api.test/patch",
@@ -354,11 +321,7 @@ describe("httpClient", () => {
   });
 
   it("patch throws error for non-ok response", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 422,
-      json: jest.fn().mockResolvedValue({ msg: "invalid" }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 422, body: { msg: "invalid" } }));
 
     const result = await httpClient.patch("https://api.test/patch", { data: 3 }, {
       retryOptions,
@@ -372,11 +335,7 @@ describe("httpClient", () => {
   });
 
   it("patch uses fallback error message when missing", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 422,
-      json: jest.fn().mockResolvedValue(null),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 422, body: {} }));
 
     const result = await httpClient.patch("https://api.test/patch", { data: 3 }, {
       retryOptions,
@@ -389,10 +348,7 @@ describe("httpClient", () => {
   });
 
   it("delete returns response body", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.delete("https://api.test/delete", {
       retryOptions,
@@ -406,10 +362,7 @@ describe("httpClient", () => {
   });
 
   it("delete merges custom headers", async () => {
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     const result = await httpClient.delete("https://api.test/delete", {
       retryOptions,
@@ -427,10 +380,7 @@ describe("httpClient", () => {
     const previousVersion = process.env.OAK_VERSION;
     delete process.env.OAK_VERSION;
 
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     let isolatedClient: typeof httpClient;
     jest.isolateModules(() => {
@@ -459,10 +409,7 @@ describe("httpClient", () => {
     const previousVersion = process.env.OAK_VERSION;
     process.env.OAK_VERSION = "9.9.9";
 
-    fetchMock.mockResolvedValue({
-      ok: true,
-      json: jest.fn().mockResolvedValue({ ok: true }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: true, body: { ok: true } }));
 
     let isolatedClient: typeof httpClient;
     jest.isolateModules(() => {
@@ -487,11 +434,7 @@ describe("httpClient", () => {
   });
 
   it("delete throws error for non-ok response", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 401,
-      json: jest.fn().mockResolvedValue({ msg: "unauthorized" }),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 401, body: { msg: "unauthorized" } }));
 
     const result = await httpClient.delete("https://api.test/delete", {
       retryOptions,
@@ -505,11 +448,7 @@ describe("httpClient", () => {
   });
 
   it("delete uses fallback error message when missing", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 401,
-      json: jest.fn().mockResolvedValue(null),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 401, body: {} }));
 
     const result = await httpClient.delete("https://api.test/delete", {
       retryOptions,
@@ -522,11 +461,7 @@ describe("httpClient", () => {
   });
 
   it("post uses fallback error message when missing", async () => {
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 400,
-      json: jest.fn().mockResolvedValue(null),
-    });
+    fetchMock.mockResolvedValue(mockResponse({ ok: false, status: 400, body: {} }));
 
     const result = await httpClient.post("https://api.test/post", { data: 1 }, {
       retryOptions,
@@ -541,7 +476,8 @@ describe("httpClient", () => {
   it("post returns ParseError when response body parsing fails", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
-      json: jest.fn().mockRejectedValue(new Error("bad json")),
+      status: 200,
+      text: jest.fn().mockResolvedValue("not valid json {{{"),
     });
 
     const result = await httpClient.post("https://api.test/post", { data: 1 }, {
@@ -608,6 +544,61 @@ describe("httpClient", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.message).toBe("Retry failed after maximum attempts");
+    }
+  });
+
+  it("handles empty response body", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: jest.fn().mockResolvedValue(""),
+    });
+
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions,
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual({});
+    }
+  });
+
+  it("returns ApiError with rawText when error response has invalid JSON", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 500,
+      headers: new Headers(),
+      text: jest.fn().mockResolvedValue("Internal Server Error"),
+    });
+
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect((result.error as ApiError).status).toBe(500);
+      expect((result.error as ApiError).body).toEqual({ rawText: "Internal Server Error" });
+    }
+  });
+
+  it("returns ApiError with empty body when error response is JSON null", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 400,
+      headers: new Headers(),
+      text: jest.fn().mockResolvedValue("null"),
+    });
+
+    const result = await httpClient.post("https://api.test/post", { data: 1 }, {
+      retryOptions,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBeInstanceOf(ApiError);
+      expect((result.error as ApiError).status).toBe(400);
+      expect((result.error as ApiError).body).toEqual({});
+      expect(result.error.message).toBe("HTTP error");
     }
   });
 });
