@@ -51,7 +51,7 @@ export namespace Transfer {
       };
       payment_method: {
         id: string;
-        type: "BANK";
+        type: "bank";
       };
     };
     metadata?: Record<string, any>;
