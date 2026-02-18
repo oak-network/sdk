@@ -145,9 +145,7 @@ describe("WebhookService - Integration", () => {
       expect(response.ok).toBe(true);
       if (response.ok) {
         expect(response.value.data.count).toBeDefined();
-        // API may return transaction_list or transactionList depending on version
-        const list = response.value.data.transaction_list ?? (response.value.data as any).transactionList;
-        expect(list === undefined || Array.isArray(list)).toBe(true);
+        expect(Array.isArray(response.value.data.notification_list)).toBe(true);
       }
     }, INTEGRATION_TEST_TIMEOUT);
 

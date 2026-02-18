@@ -45,7 +45,7 @@ export namespace Webhook {
 
   export interface ListNotificationsData {
     count: number;
-    transaction_list: Notification[];
+    notification_list: Notification[];
   }
 
   // ----------------------
