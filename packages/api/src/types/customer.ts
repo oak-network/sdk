@@ -56,22 +56,20 @@ export namespace Customer {
   export interface Request extends Partial<Base> {}
 
   export type Response = ApiResponse<Data>;
-  export interface ListResponse extends ApiResponse<{
-    count: number;
-    customer_list: Data[];
-  }> {}
+  export interface ListResponse
+    extends ApiResponse<{
+      count: number;
+      customer_list: Data[];
+    }> {}
 
   export interface ListQueryParams {
     limit?: number;
     offset?: number;
-    customer_id?: string;
-    type_list?: string;
-    status?: string;
-    payment_method?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    source_currency?: string;
-    destination_currency?: string;
+    target_role?: string;
+    provider_registration_status?: string;
+    provider?: string;
+    email?: string;
+    document_type?: string;
     country_code?: string;
   }
 }
