@@ -15,11 +15,19 @@ export class AuthManager {
   private tokenExpiration: number | null = null;
   private retryOptions: RetryOptions;
 
+  /**
+   * @param config - Resolved client configuration
+   * @param retryOptions - Retry options for token requests
+   */
   constructor(config: ResolvedOakClientConfig, retryOptions: RetryOptions) {
     this.config = config;
     this.retryOptions = retryOptions;
   }
 
+  /**
+   * Requests a new OAuth token from the API.
+   * @returns Result containing TokenResponse or error
+   */
   async grantToken(): Promise<Result<TokenResponse, OakError>> {
     const payload: TokenRequest = {
       client_id: this.config.clientId,
@@ -42,6 +50,10 @@ export class AuthManager {
     return ok(response.value);
   }
 
+  /**
+   * Gets a valid access token, refreshing if expired.
+   * @returns Result containing the access token string or error
+   */
   async getAccessToken(): Promise<Result<string, OakError>> {
     const currentTime = Date.now();
     if (

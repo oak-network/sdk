@@ -10,6 +10,10 @@ export const ENVIRONMENT_URLS: Record<OakEnvironment, string> = {
   production: "https://app.usecrowdpay.xyz",
 };
 
+/**
+ * @param environment - Target environment
+ * @returns Configuration for the specified environment
+ */
 export function getEnvironmentConfig(environment: OakEnvironment): EnvironmentConfig {
   return {
     apiUrl: ENVIRONMENT_URLS[environment],
@@ -17,6 +21,11 @@ export function getEnvironmentConfig(environment: OakEnvironment): EnvironmentCo
   };
 }
 
+/**
+ * @param environment - Target environment
+ * @param customUrl - Optional custom URL override
+ * @returns The resolved API base URL
+ */
 export function resolveBaseUrl(
   environment: OakEnvironment,
   customUrl?: string
@@ -27,6 +36,10 @@ export function resolveBaseUrl(
   return ENVIRONMENT_URLS[environment];
 }
 
+/**
+ * @param environment - Environment to check
+ * @returns True if environment allows test operations
+ */
 export function isTestEnvironment(environment: OakEnvironment): boolean {
   return environment === "sandbox";
 }

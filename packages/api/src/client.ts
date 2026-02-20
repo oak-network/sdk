@@ -6,6 +6,20 @@ import {
   RetryOptions,
 } from "./utils/defaultRetryConfig";
 
+/**
+ * Creates a new Oak SDK client instance.
+ * @param config - Client configuration including credentials and environment
+ * @returns Configured OakClient instance
+ *
+ * @example
+ * ```typescript
+ * const client = createOakClient({
+ *   environment: "sandbox",
+ *   clientId: "your-client-id",
+ *   clientSecret: "your-client-secret",
+ * });
+ * ```
+ */
 export function createOakClient(config: OakClientConfig): OakClient {
   const baseUrl = resolveBaseUrl(config.environment, config.customUrl);
 
