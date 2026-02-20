@@ -24,9 +24,14 @@ describe("CustomerService - Integration", () => {
   it(
     "should create a stripe customer",
     async () => {
-      const email = `test_${Date.now()}@example.com`;
+      const timestamp = Date.now();
+      const email = `test_${timestamp}@example.com`;
       const response = await customers.create({
         email,
+        first_name: 'John',
+        last_name: 'Doe',
+        document_type: 'personal_tax_id',
+        document_number: `${timestamp}`.padStart(11, '0').substring(0, 11),
       });
       expect(response.ok).toBe(true);
       if (response.ok) {
@@ -41,11 +46,16 @@ describe("CustomerService - Integration", () => {
   it(
     "should create a stripe connected account",
     async () => {
-      const email = `test_${Date.now()}@example.com`;
+      const timestamp = Date.now();
+      const email = `test_${timestamp}@example.com`;
       const country_code = "US";
       const response = await customers.create({
         email,
         country_code,
+        first_name: 'Jane',
+        last_name: 'Smith',
+        document_type: 'personal_tax_id',
+        document_number: `${timestamp + 1}`.padStart(11, '0').substring(0, 11),
       });
       expect(response.ok).toBe(true);
       if (response.ok) {
