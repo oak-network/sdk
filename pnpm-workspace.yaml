@@ -2,4 +2,7 @@ packages:
   - packages/*
 
 overrides:
-  minimatch@<10.2.1: '>=10.2.1'
+  # Use patched minimatch (fixes ReDoS CVE); test-exclude@7 uses glob 10 and
+  # named require('minimatch').minimatch, which works with minimatch 10 CJS.
+  minimatch@<10.2.1: ">=10.2.1"
+  test-exclude@6.0.0: "7.0.1"
