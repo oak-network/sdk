@@ -31,6 +31,10 @@ type ParseResult =
   | { success: true; data: unknown; error?: undefined }
   | { success: false; data?: undefined; error: Error };
 
+/**
+ * @param text - JSON string to parse
+ * @returns ParseResult with parsed data or error
+ */
 const parseJsonSafe = (text: string): ParseResult => {
   try {
     return { success: true, data: JSON.parse(text) };
@@ -41,6 +45,10 @@ const parseJsonSafe = (text: string): ParseResult => {
   }
 };
 
+/**
+ * @param headers - Fetch API Headers object
+ * @returns Plain object with lowercase header keys
+ */
 const toHeadersRecord = (headers?: Headers): Record<string, string> => {
   const record: Record<string, string> = {};
   if (!headers) {
@@ -52,12 +60,21 @@ const toHeadersRecord = (headers?: Headers): Record<string, string> => {
   return record;
 };
 
+/**
+ * @param response - Fetch API Response object
+ * @param responseBody - Parsed response body
+ * @returns ApiError with status, body, and headers
+ */
 const toApiError = (response: Response, responseBody: unknown) => {
   const message = (responseBody as { msg?: string }).msg ?? "HTTP error";
   const headers = toHeadersRecord(response.headers);
   return new ApiError(message, response.status, responseBody, headers);
 };
 
+/**
+ * @param error - Any thrown error
+ * @returns Normalized OakError instance
+ */
 const toOakError = (error: unknown): OakError => {
   if (error instanceof OakError) {
     return error;
@@ -68,6 +85,13 @@ const toOakError = (error: unknown): OakError => {
   return new OakError("Unknown error", error);
 };
 
+/**
+ * @typeParam T - Expected response body type
+ * @param url - Request URL
+ * @param config - HTTP client configuration
+ * @param init - Fetch RequestInit options
+ * @returns Result containing parsed response or error
+ */
 const request = async <T>(
   url: string,
   config: HttpClientConfig,
@@ -114,6 +138,13 @@ const request = async <T>(
 };
 
 export const httpClient = {
+  /**
+   * @typeParam T - Expected response body type
+   * @param url - Request URL
+   * @param data - Request body data
+   * @param config - HTTP client configuration
+   * @returns Result containing parsed response or error
+   */
   async post<T>(
     url: string,
     data: any,
@@ -124,15 +155,34 @@ export const httpClient = {
       body: JSON.stringify(data),
     });
   },
+  /**
+   * @typeParam T - Expected response body type
+   * @param url - Request URL
+   * @param config - HTTP client configuration
+   * @returns Result containing parsed response or error
+   */
   async get<T>(url: string, config: HttpClientConfig): Promise<Result<T, OakError>> {
     return request<T>(url, config, { method: "GET" });
   },
+  /**
+   * @typeParam T - Expected response body type
+   * @param url - Request URL
+   * @param config - HTTP client configuration
+   * @returns Result containing parsed response or error
+   */
   async delete<T>(
     url: string,
     config: HttpClientConfig
   ): Promise<Result<T, OakError>> {
     return request<T>(url, config, { method: "DELETE" });
   },
+  /**
+   * @typeParam T - Expected response body type
+   * @param url - Request URL
+   * @param data - Request body data
+   * @param config - HTTP client configuration
+   * @returns Result containing parsed response or error
+   */
   async put<T>(
     url: string,
     data: any,
@@ -143,6 +193,13 @@ export const httpClient = {
       body: JSON.stringify(data),
     });
   },
+  /**
+   * @typeParam T - Expected response body type
+   * @param url - Request URL
+   * @param data - Request body data
+   * @param config - HTTP client configuration
+   * @returns Result containing parsed response or error
+   */
   async patch<T>(
     url: string,
     data: any,

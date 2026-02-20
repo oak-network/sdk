@@ -1,5 +1,12 @@
 import { RetryOptions } from "./defaultRetryConfig";
 
+/**
+ * @typeParam T - Return type of the function
+ * @param fn - Async function to execute
+ * @param options - Retry configuration
+ * @returns Promise resolving to function result
+ * @throws Last error if all retries exhausted
+ */
 export async function withRetry<T>(
   fn: () => Promise<T>,
   options: RetryOptions
