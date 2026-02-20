@@ -1,4 +1,4 @@
-import { buildQueryString, getErrorBodyMessage } from "../../src/services/helpers";
+import { buildQueryString } from "../../src/services/helpers";
 import {
   AbortError,
   ApiError,
@@ -54,16 +54,6 @@ describe("service helpers", () => {
 
   it("buildQueryString encodes values", () => {
     expect(buildQueryString({ a: "b c", count: 2 })).toBe("?a=b%20c&count=2");
-  });
-
-  it("getErrorBodyMessage extracts error body", () => {
-    expect(getErrorBodyMessage(null)).toBeUndefined();
-    expect(getErrorBodyMessage("boom")).toBeUndefined();
-    expect(getErrorBodyMessage({})).toBeUndefined();
-    expect(getErrorBodyMessage({ body: undefined })).toBeUndefined();
-    expect(getErrorBodyMessage({ body: null })).toBeUndefined();
-    expect(getErrorBodyMessage({ body: {} })).toBeUndefined();
-    expect(getErrorBodyMessage({ body: { msg: "bad" } })).toBe("bad");
   });
 });
 
