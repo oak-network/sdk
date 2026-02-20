@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { err, ok, Result } from "../types";
-import { OakError } from "./errorHandler";
+import { ApiError } from "./errorHandler";
 
 /**
  * Verifies a webhook signature using HMAC-SHA256.
@@ -57,7 +57,7 @@ export function verifyWebhookSignature(
  * @param payload - Raw webhook payload string
  * @param signature - Signature from webhook headers
  * @param secret - Your webhook secret
- * @returns Result containing parsed payload or error
+ * @returns Result containing parsed payload or ApiError
  *
  * @example
  * ```typescript
@@ -68,7 +68,7 @@ export function verifyWebhookSignature(
  * );
  *
  * if (!result.ok) {
- *   return res.status(401).send(result.error.message);
+ *   return res.status(result.error.status).send(result.error.message);
  * }
  *
  * const event = result.value;
@@ -79,14 +79,14 @@ export function parseWebhookPayload<T>(
   payload: string,
   signature: string,
   secret: string,
-): Result<T> {
+): Result<T, ApiError> {
   // Verify signature first
   if (!verifyWebhookSignature(payload, signature, secret)) {
     return err(
-      new OakError(
+      new ApiError(
         "Invalid webhook signature",
-        "WEBHOOK_VERIFICATION_FAILED",
         401,
+        { code: "WEBHOOK_VERIFICATION_FAILED" },
       ),
     );
   }
@@ -97,10 +97,10 @@ export function parseWebhookPayload<T>(
     return ok(parsed);
   } catch (error) {
     return err(
-      new OakError(
+      new ApiError(
         `Failed to parse webhook payload: ${error instanceof Error ? error.message : String(error)}`,
-        "WEBHOOK_PARSE_ERROR",
         400,
+        { code: "WEBHOOK_PARSE_ERROR" },
       ),
     );
   }
