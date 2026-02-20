@@ -39,8 +39,7 @@ describe("TransferService - Integration", () => {
         customerList.ok &&
         customerList.value.data.customer_list.length === 0
       ) {
-        console.warn("Skipping: no customers found");
-        return;
+        throw new Error("No customers found - this test requires at least one customer with approved provider registration");
       }
       if (customerList.ok) {
         expect(customerList.value.data.customer_list.length).toBeGreaterThan(0);
@@ -63,8 +62,7 @@ describe("TransferService - Integration", () => {
       }
 
       if (!customerId || !paymentMethodId) {
-        console.warn("Skipping: no customer or payment method found");
-        return;
+        throw new Error("No customer or payment method found - this test requires at least one customer with an active bank payment method");
       }
 
       expect(customerId).toBeDefined();
