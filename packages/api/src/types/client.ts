@@ -15,8 +15,20 @@ export interface ResolvedOakClientConfig extends OakClientConfig {
   baseUrl: string;
 }
 
+/**
+ * Public configuration exposed by the OakClient.
+ * Excludes clientSecret for security reasons.
+ */
+export interface PublicOakClientConfig {
+  environment: OakEnvironment;
+  clientId: string;
+  baseUrl: string;
+  customUrl?: string;
+  retryOptions?: Partial<RetryOptions>;
+}
+
 export interface OakClient {
-  readonly config: ResolvedOakClientConfig;
+  readonly config: PublicOakClientConfig;
   readonly retryOptions: RetryOptions;
   getAccessToken(): Promise<Result<string>>;
   grantToken(): Promise<Result<TokenResponse>>;
