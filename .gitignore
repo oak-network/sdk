@@ -76,6 +76,10 @@ coverage/
 .yarn-cache/
 .yarn-integrity
 
+### Wrong package manager lockfiles (use pnpm)
+package-lock.json
+**/package-lock.json
+
 ### Lint/test caches
 .eslintcache
 .jest-cache/
@@ -100,6 +104,10 @@ coverage/
 .tern-port
 storage/
 init-queues.sh
+
+### Test and scratch files
+test-sdk.ts
+**/test-sdk.ts
 
 .specstory
 .specstory/** */
