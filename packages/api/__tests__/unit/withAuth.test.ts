@@ -32,7 +32,7 @@ describe("withAuth", () => {
 
   it("should return error if token fetch fails", async () => {
     // Mock failed token fetch
-    const tokenError = new OakError("Token fetch failed", "AUTH_ERROR", 401);
+    const tokenError = new OakError("Token fetch failed");
     jest.spyOn(mockClient, "getAccessToken").mockResolvedValue(err(tokenError));
 
     // Mock operation (should not be called)
@@ -50,7 +50,7 @@ describe("withAuth", () => {
     jest.spyOn(mockClient, "getAccessToken").mockResolvedValue(ok("token"));
 
     // Mock operation that returns error
-    const operationError = new OakError("Operation failed", "OP_ERROR", 500);
+    const operationError = new OakError("Operation failed");
     const mockOperation = jest.fn().mockResolvedValue(err(operationError));
 
     const result = await withAuth(mockClient, mockOperation);
