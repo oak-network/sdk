@@ -1,6 +1,7 @@
 import type { Transfer, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { err } from "../types";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface TransferService {
   create(transfer: Transfer.Request): Promise<Result<Transfer.Response>>;
@@ -12,20 +13,17 @@ export interface TransferService {
  */
 export const createTransferService = (client: OakClient): TransferService => ({
   async create(transfer: Transfer.Request): Promise<Result<Transfer.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.post<Transfer.Response>(
-      `${client.config.baseUrl}/api/v1/transfer`,
-      transfer,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.post<Transfer.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/transfer"),
+        transfer,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 });
