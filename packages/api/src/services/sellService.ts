@@ -6,6 +6,10 @@ export interface SellService {
   create(sellRequest: Sell.Request): Promise<Result<Sell.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns SellService instance
+ */
 export const createSellService = (client: OakClient): SellService => ({
   async create(sellRequest: Sell.Request): Promise<Result<Sell.Response>> {
     const token = await client.getAccessToken();

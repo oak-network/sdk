@@ -8,6 +8,10 @@ export interface RefundService {
   ): Promise<Result<Refund.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns RefundService instance
+ */
 export const createRefundService = (client: OakClient): RefundService => ({
   async create(
     paymentId: string,

@@ -6,6 +6,10 @@ export interface TransferService {
   create(transfer: Transfer.Request): Promise<Result<Transfer.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns TransferService instance
+ */
 export const createTransferService = (client: OakClient): TransferService => ({
   async create(transfer: Transfer.Request): Promise<Result<Transfer.Response>> {
     const token = await client.getAccessToken();

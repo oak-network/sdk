@@ -22,6 +22,10 @@ export interface PaymentMethodService {
   ): Promise<Result<PaymentMethod.DeleteResponse>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns PaymentMethodService instance
+ */
 export const createPaymentMethodService = (
   client: OakClient,
 ): PaymentMethodService => ({
