@@ -7,6 +7,10 @@ export interface TestClientConfig extends OakClientConfig {
   retryOptions?: RetryOptions;
 }
 
+export interface TestEnvironment {
+  paymentCustomerId?: string;
+}
+
 export function getConfigFromEnv(): OakClientConfig {
   if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET) {
     throw new Error(
@@ -27,5 +31,11 @@ export function getConfigFromEnv(): OakClientConfig {
     environment,
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
+  };
+}
+
+export function getTestEnvironment(): TestEnvironment {
+  return {
+    paymentCustomerId: process.env.PAYMENT_CUSTOMER_ID,
   };
 }
