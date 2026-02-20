@@ -88,4 +88,35 @@ export namespace Customer {
     document_type?: string;
     country_code?: string;
   }
+  export interface BalanceFilter {
+    provider: string;
+    role: string;
+  }
+
+  export interface BalanceResponse
+    extends ApiResponse<{
+      as_of: string;
+      filters: {
+        customer_id: string;
+        provider?: string;
+        role?: string;
+      };
+
+      balances: {
+        account_id: string;
+        provider: string;
+        customer: {
+          id: string;
+          role: string;
+        };
+        as_of: string;
+        totals: {
+          currency: string;
+          amount: number;
+          pending: number;
+          reserved: number;
+          instant_payouts: number;
+        }[];
+      }[];
+    }> {}
 }
