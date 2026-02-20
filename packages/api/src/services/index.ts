@@ -1,6 +1,3 @@
-export { createAuthService } from "./authService";
-export type { AuthService } from "./authService";
-
 export { createCustomerService } from "./customerService";
 export type { CustomerService } from "./customerService";
 
