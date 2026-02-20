@@ -20,6 +20,10 @@ export interface WebhookService {
   getNotification(id: string): Promise<Result<Webhook.GetNotificationResponse>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns WebhookService instance
+ */
 export const createWebhookService = (client: OakClient): WebhookService => ({
   async register(
     webhook: Webhook.RegisterRequest,

@@ -14,6 +14,10 @@ export interface ProviderService {
   ): Promise<Result<Provider.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns ProviderService instance
+ */
 export const createProviderService = (client: OakClient): ProviderService => ({
   async getSchema(
     request: Provider.GetSchemaRequest,

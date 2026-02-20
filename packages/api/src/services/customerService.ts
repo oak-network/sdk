@@ -15,6 +15,10 @@ export interface CustomerService {
   ): Promise<Result<Customer.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns CustomerService instance
+ */
 export const createCustomerService = (client: OakClient): CustomerService => ({
   async create(customer: Customer.Request): Promise<Result<Customer.Response>> {
     const token = await client.getAccessToken();

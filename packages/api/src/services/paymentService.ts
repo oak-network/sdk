@@ -8,6 +8,10 @@ export interface PaymentService {
   cancel(paymentId: string): Promise<Result<Payment.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns PaymentService instance
+ */
 export const createPaymentService = (client: OakClient): PaymentService => ({
   async create(payment: Payment.Request): Promise<Result<Payment.Response>> {
     const token = await client.getAccessToken();

@@ -14,6 +14,10 @@ export interface TransactionService {
   ): Promise<Result<Transaction.SettlementResponse>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns TransactionService instance
+ */
 export const createTransactionService = (
   client: OakClient,
 ): TransactionService => ({

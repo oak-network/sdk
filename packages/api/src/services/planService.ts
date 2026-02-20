@@ -15,6 +15,10 @@ export interface PlanService {
   delete(id: string): Promise<Result<Plan.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns PlanService instance
+ */
 export const createPlanService = (client: OakClient): PlanService => ({
   async create(
     createPlanRequest: Plan.Request,

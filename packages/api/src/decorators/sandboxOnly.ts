@@ -9,6 +9,10 @@ interface HasClient {
   client: { config: ResolvedOakClientConfig };
 }
 
+/**
+ * @param obj - Object to check
+ * @returns True if object has a config property with environment
+ */
 function hasConfig(obj: unknown): obj is HasConfig {
   return (
     typeof obj === "object" &&
@@ -20,6 +24,10 @@ function hasConfig(obj: unknown): obj is HasConfig {
   );
 }
 
+/**
+ * @param obj - Object to check
+ * @returns True if object has a client.config property
+ */
 function hasClient(obj: unknown): obj is HasClient {
   return (
     typeof obj === "object" &&
@@ -31,6 +39,13 @@ function hasClient(obj: unknown): obj is HasClient {
   );
 }
 
+/**
+ * @typeParam T - Method signature type
+ * @param target - Class prototype
+ * @param propertyKey - Method name
+ * @param descriptor - Property descriptor
+ * @returns Modified descriptor or void
+ */
 export function SandboxOnly<T extends (...args: unknown[]) => unknown>(
   target: object,
   propertyKey: string | symbol,
@@ -79,6 +94,13 @@ export function SandboxOnly<T extends (...args: unknown[]) => unknown>(
   return descriptor;
 }
 
+/**
+ * @typeParam T - Function signature type
+ * @param fn - Function to wrap
+ * @param getEnvironment - Function that returns current environment
+ * @param methodName - Name for error messages
+ * @returns Wrapped function that throws in production
+ */
 export function sandboxOnlyFn<T extends (...args: unknown[]) => unknown>(
   fn: T,
   getEnvironment: () => string,
