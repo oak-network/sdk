@@ -5,33 +5,7 @@ import { ApiError } from '../../src/utils/errorHandler';
 import { getConfigFromEnv } from '../config';
 
 /**
- * Generate a valid CPF (Brazilian personal tax ID) for test customers.
- */
-const generateCpf = (): string => {
-  const digits = Array.from({ length: 9 }, () =>
-    Math.floor(Math.random() * 10),
-  );
-  const calcDigit = (numbers: number[], factor: number): number => {
-    const sum = numbers.reduce(
-      (total, num, idx) => total + num * (factor - idx),
-      0,
-    );
-    const remainder = (sum * 10) % 11;
-    return remainder === 10 ? 0 : remainder;
-  };
-  const first = calcDigit(digits, 10);
-  const second = calcDigit([...digits, first], 11);
-  return [...digits, first, second].join('');
-};
-
-/**
- * Build a PagarMe PIX payment request according to the API documentation.
- *
- * Source fields:
- *   - amount (number, sandbox: min 100 – max 10000)
- *   - currency ('brl')
- *   - customer ({ id })
- *   - payment_method ({ type: 'pix', expiry_date })
+ * Build a PagarMe PIX payment request.
  *
  * NOTE: capture_method is NOT allowed for PagarMe PIX (API returns 422).
  */
@@ -51,40 +25,22 @@ const buildPagarMePixPaymentRequest = (
   }) as unknown as CreatePaymentRequest;
 
 /**
- * Build a Stripe card payment request according to the API documentation.
+ * Build a Stripe card payment request.
  *
- * Source fields:
- *   - amount (number, sandbox: min 100 – max 10000)
- *   - currency (string, e.g., 'usd')
- *   - payment_method ({ type: 'card', id?: string })
- *   - capture_method ('automatic') — REQUIRED for Stripe
- *
- * Optional top-level fields:
- *   - destination ({ customer: { id }, currency })
- *   - confirm (boolean)
- *   - metadata (Record<string, string>)
+ * capture_method is REQUIRED for Stripe (API returns 422 without it).
  */
 const buildStripePaymentRequest = (
-  customerId?: string,
+  customerId: string,
   confirm = false,
 ): CreatePaymentRequest => {
-  const stripePaymentMethodId =
-    process.env.STRIPE_PAYMENT_METHOD_ID ?? undefined;
-
-  const paymentDestinationCustomerId =
-    process.env.PAYMENT_DESTINATION_CUSTOMER_ID ?? undefined;
-
   const request: Record<string, unknown> = {
     provider: 'stripe',
     source: {
       amount: 1500,
       currency: 'usd',
-      payment_method: {
-        type: 'card',
-        ...(stripePaymentMethodId ? { id: stripePaymentMethodId } : {}),
-      },
+      payment_method: { type: 'card' },
       capture_method: 'automatic',
-      ...(customerId ? { customer: { id: customerId } } : {}),
+      customer: { id: customerId },
     },
     confirm,
     metadata: {
@@ -92,83 +48,17 @@ const buildStripePaymentRequest = (
       customer_email: 'integration-test@example.com',
     },
   };
-
-  if (paymentDestinationCustomerId) {
-    request.destination = {
-      customer: { id: paymentDestinationCustomerId },
-      currency: 'usd',
-    };
-  }
-
   return request as unknown as CreatePaymentRequest;
-};
-
-const formatError = (error: unknown): string => {
-  if (error instanceof ApiError) {
-    let body = 'unknown body';
-    try {
-      body = JSON.stringify(error.body);
-    } catch {
-      body = 'unserializable body';
-    }
-    return `ApiError ${error.status}: ${error.message} - ${body}`;
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return 'Unknown error';
-};
-
-const isCustomerNotFoundError = (error: unknown): boolean => {
-  const check = (e: unknown): boolean => {
-    if (e instanceof ApiError)
-      return (
-        (e.status === 400 || e.status === 404) &&
-        (String(e.message).toLowerCase().includes('customer not found') ||
-          String(e.body ?? '')
-            .toLowerCase()
-            .includes('customer not found'))
-      );
-    if (e instanceof Error)
-      return (
-        e.message.toLowerCase().includes('customer not found') ||
-        check((e as Error & { cause?: unknown }).cause)
-      );
-    return false;
-  };
-  return check(error);
-};
-
-/**
- * Returns true if the error indicates a customer is not approved for
- * the requested provider (sandbox registration timing issue).
- */
-const isProviderNotApprovedError = (error: unknown): boolean => {
-  const check = (e: unknown): boolean => {
-    if (e instanceof ApiError)
-      return (
-        e.status === 400 &&
-        (String(e.message).toLowerCase().includes('not approved') ||
-          String(e.body ?? '')
-            .toLowerCase()
-            .includes('not approved'))
-      );
-    if (e instanceof Error)
-      return (
-        e.message.toLowerCase().includes('not approved') ||
-        check((e as Error & { cause?: unknown }).cause)
-      );
-    return false;
-  };
-  return check(error);
 };
 
 describe('PaymentService - Integration', () => {
   let payments: ReturnType<typeof Crowdsplit>['payments'];
   let customers: ReturnType<typeof Crowdsplit>['customers'];
   let providers: ReturnType<typeof Crowdsplit>['providers'];
-  let customerId: string;
-  let hasValidPaymentCustomer = false;
+
+  /** An already-approved customer ID fetched from the database. */
+  let approvedCustomerId: string;
+  let hasApprovedCustomer = false;
   let setupFailureReason = '';
 
   beforeAll(async () => {
@@ -184,162 +74,74 @@ describe('PaymentService - Integration', () => {
     customers = cs.customers;
     payments = cs.payments;
     providers = cs.providers;
-    // Always create a fresh customer so tests are self-contained
-    // and don't depend on pre-existing sandbox data.
-    const cpf = generateCpf();
-    const email = `payment_test_${Date.now()}@example.com`;
-    const createRes = await customers.create({
-      document_number: cpf,
-      document_type: 'personal_tax_id',
-      email,
-      first_name: 'Test',
-      last_name: 'Payment',
-      dob: '1997-04-01',
-      phone_country_code: '55',
-      phone_area_code: '18',
-      phone_number: '998121211',
-    });
 
-    if (createRes.ok) {
-      customerId = (createRes.value.data.id ??
-        createRes.value.data.customer_id) as string;
-      hasValidPaymentCustomer = true;
-    } else {
-      setupFailureReason = `Failed to create test customer: ${formatError(createRes.error)}`;
+    // Fetch existing customers from the database and find one that
+    // is already approved for a provider (KYC requires the UI, so
+    // we cannot create+approve customers programmatically).
+    const listRes = await customers.list({ limit: 50 });
+    if (!listRes.ok) {
+      setupFailureReason = `Failed to list customers: ${listRes.error instanceof ApiError ? listRes.error.message : 'Unknown error'}`;
+      return;
     }
 
-    // Per the API documentation, customers must be registered with
-    // the provider before payments can be created.
-    if (hasValidPaymentCustomer) {
-      await Promise.allSettled([
-        providers.submitRegistration(customerId, {
-          provider: 'stripe',
-          target_role: 'customer',
-        }),
-        providers.submitRegistration(customerId, {
-          provider: 'pagar_me',
-          target_role: 'customer',
-        }),
-      ]);
+    const customerList = listRes.value.data.customer_list;
+    if (customerList.length === 0) {
+      setupFailureReason = 'No customers found in the database.';
+      return;
     }
 
-    // Log setup outcome so it's clear in test output.
-    if (!hasValidPaymentCustomer) {
-      console.warn(
-        `⚠️  Customer-dependent tests will FAIL: ${setupFailureReason}`,
-      );
-    }
-  });
+    // Check each customer's provider registration status to find
+    // one that has been approved.
+    for (const customer of customerList) {
+      const id = (customer.id ?? customer.customer_id) as string;
+      if (!id) continue;
 
-  /**
-   * Asserts the test has a valid customer, otherwise fails with a
-   * clear message instead of silently passing.
-   */
-  const requireCustomerOrFail = () => {
-    if (!hasValidPaymentCustomer) {
-      throw new Error(
-        `Test cannot run: no valid customer available. ${setupFailureReason}`,
-      );
-    }
-  };
+      const statusRes = await providers.getRegistrationStatus(id);
+      if (!statusRes.ok) continue;
 
-  /**
-   * Attempt to register the customer with a provider.
-   * This is required before creating payments per the API docs.
-   */
-  const ensureProviderRegistration = async (
-    provider: 'stripe' | 'pagar_me',
-  ) => {
-    if (!customerId) {
-      return false;
-    }
-    const response = await providers.submitRegistration(customerId, {
-      provider,
-      target_role: 'customer',
-    });
-    return response.ok;
-  };
+      const registrations = statusRes.value.data;
+      const approved =
+        Array.isArray(registrations) &&
+        registrations.some((r) => r.status?.toLowerCase() === 'approved');
 
-  /**
-   * Helper to create a payment, trying multiple providers/strategies
-   * until one succeeds.  Throws on failure — never silently swallows.
-   */
-  const createPaymentForTests = async ({
-    confirm = false,
-    requireCustomer = false,
-  }: {
-    confirm?: boolean;
-    requireCustomer?: boolean;
-  } = {}) => {
-    const paymentCustomerId = customerId || process.env.PAYMENT_CUSTOMER_ID;
-    if (requireCustomer && !paymentCustomerId) {
-      throw new Error(
-        'PAYMENT_CUSTOMER_ID is required to run customer-specific payment tests.',
-      );
-    }
-
-    const requests: CreatePaymentRequest[] = requireCustomer
-      ? [
-          ...(paymentCustomerId
-            ? [
-                buildStripePaymentRequest(paymentCustomerId, confirm),
-                buildPagarMePixPaymentRequest(paymentCustomerId, confirm),
-              ]
-            : []),
-        ]
-      : [
-          buildStripePaymentRequest(undefined, confirm),
-          ...(paymentCustomerId
-            ? [
-                buildStripePaymentRequest(paymentCustomerId, confirm),
-                buildPagarMePixPaymentRequest(paymentCustomerId, confirm),
-              ]
-            : []),
-        ];
-
-    let lastError: unknown;
-    for (const request of requests) {
-      const response = await payments.create(request);
-      if (response.ok) {
-        return response.value;
-      }
-      lastError = response.error;
-
-      // If customer is not found or not approved at the provider,
-      // try registering and retry once.
-      if (
-        response.error instanceof ApiError &&
-        (isCustomerNotFoundError(response.error) ||
-          isProviderNotApprovedError(response.error))
-      ) {
-        const provider =
-          request.provider === 'pagar_me' ? 'pagar_me' : 'stripe';
-        await ensureProviderRegistration(provider);
-        const retry = await payments.create(request);
-        if (retry.ok) {
-          return retry.value;
-        }
-        lastError = retry.error;
+      if (approved) {
+        approvedCustomerId = id;
+        hasApprovedCustomer = true;
+        break;
       }
     }
-    throw new Error(
-      `Unable to create payment for integration tests. ${formatError(lastError)}`,
-    );
+
+    if (!hasApprovedCustomer) {
+      setupFailureReason =
+        'No approved customer found. KYC must be completed in the UI before running these tests.';
+    }
+  }, 30_000);
+
+  /**
+   * Asserts the test has an approved customer, otherwise fails with
+   * a clear message.
+   */
+  const requireApprovedCustomer = () => {
+    if (!hasApprovedCustomer) {
+      throw new Error(`Test cannot run: ${setupFailureReason}`);
+    }
   };
 
   // ---------------------------------------------------------------
   // Payment creation tests
   // ---------------------------------------------------------------
   it('should create a payment with a valid customer', async () => {
-    requireCustomerOrFail();
+    requireApprovedCustomer();
 
-    const response = await createPaymentForTests({
-      confirm: false,
-      requireCustomer: true,
-    });
+    const response = await payments.create(
+      buildStripePaymentRequest(approvedCustomerId, false),
+    );
 
-    expect(response.data.id).toBeDefined();
-    expect(response.data.provider).toBeDefined();
+    expect(response.ok).toBe(true);
+    if (response.ok) {
+      expect(response.value.data.id).toBeDefined();
+      expect(response.value.data.provider).toBeDefined();
+    }
   });
 
   it('should return an error for an invalid customer', async () => {
@@ -362,24 +164,17 @@ describe('PaymentService - Integration', () => {
   });
 
   it('should validate that the client of the client ID is valid', async () => {
-    requireCustomerOrFail();
+    requireApprovedCustomer();
 
-    expect(customerId).toBeDefined();
-
-    const customerResponse = await customers.get(customerId);
+    const customerResponse = await customers.get(approvedCustomerId);
     expect(customerResponse.ok).toBe(true);
-
     if (customerResponse.ok) {
       const id =
         customerResponse.value.data.id ??
         customerResponse.value.data.customer_id;
-      expect(id).toEqual(customerId);
+      expect(id).toEqual(approvedCustomerId);
       expect(customerResponse.value.data).toBeDefined();
       expect(customerResponse.value.data.email).toBeDefined();
-    } else {
-      throw new Error(
-        `Customer ID ${customerId} is not valid. Error: ${formatError(customerResponse.error)}`,
-      );
     }
   });
 
@@ -387,11 +182,15 @@ describe('PaymentService - Integration', () => {
   // Payment confirm tests
   // ---------------------------------------------------------------
   it('should confirm a payment with a valid ID', async () => {
-    requireCustomerOrFail();
+    requireApprovedCustomer();
 
-    const createResponse = await createPaymentForTests({ confirm: false });
+    const createResponse = await payments.create(
+      buildStripePaymentRequest(approvedCustomerId, false),
+    );
+    expect(createResponse.ok).toBe(true);
+    if (!createResponse.ok) return;
 
-    const paymentId = createResponse.data.id;
+    const paymentId = createResponse.value.data.id;
     const response = await payments.confirm(paymentId);
     expect(response.ok).toBe(true);
     if (response.ok) {
@@ -408,11 +207,15 @@ describe('PaymentService - Integration', () => {
   // Payment cancel tests
   // ---------------------------------------------------------------
   it('should cancel a payment with a valid ID', async () => {
-    requireCustomerOrFail();
+    requireApprovedCustomer();
 
-    const createResponse = await createPaymentForTests({ confirm: false });
+    const createResponse = await payments.create(
+      buildStripePaymentRequest(approvedCustomerId, false),
+    );
+    expect(createResponse.ok).toBe(true);
+    if (!createResponse.ok) return;
 
-    const paymentId = createResponse.data.id;
+    const paymentId = createResponse.value.data.id;
     const response = await payments.cancel(paymentId);
     expect(response.ok).toBe(true);
     if (response.ok) {

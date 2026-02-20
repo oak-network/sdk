@@ -39,8 +39,8 @@ if (tIdx >= 0 && args[tIdx + 1]) {
 
 const child = spawn(
   'pnpm',
-  ['--filter', '@oaknetwork/api', 'exec', 'jest', '--coverage', ...args],
-  { stdio: 'inherit', cwd: require('path').resolve(__dirname, '../..') }
+  ['--filter', '@oaknetwork/api', 'exec', 'jest', ...args],
+  { stdio: 'inherit', cwd: require('path').resolve(__dirname, '../..') },
 );
 
 child.on('exit', (code) => process.exit(code ?? 0));
