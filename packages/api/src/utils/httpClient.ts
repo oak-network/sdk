@@ -9,6 +9,9 @@ export interface HttpClientConfig {
   signal?: AbortSignal;
 }
 
+/**
+ * @returns Package version string or undefined
+ */
 const getPackageVersion = () => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -21,6 +24,10 @@ const getPackageVersion = () => {
 
 const oakVersion = process.env.OAK_VERSION ?? getPackageVersion() ?? "unknown";
 
+/**
+ * @param headers - Optional custom headers to merge
+ * @returns Merged headers with defaults
+ */
 const mergeHeaders = (headers?: Record<string, string>) => ({
   "Content-Type": "application/json",
   "Oak-Version": oakVersion,

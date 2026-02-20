@@ -51,7 +51,6 @@ export namespace Webhook {
   // ----------------------
   // Responses
   // ----------------------
-  /** register, toggle, update (full webhook data) */
   export type Response = ApiResponse<Data>;
 
   export type GetResponse = ApiResponse<PublicData>;

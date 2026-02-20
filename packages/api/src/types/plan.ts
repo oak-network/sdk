@@ -17,7 +17,6 @@ export namespace Plan {
     created_by: string;
   }
 
-  /** Use for both create and update. */
   export interface Request extends Base {}
 
   // ----------------------
@@ -56,7 +55,6 @@ export namespace Plan {
   // ----------------------
   // Responses
   // ----------------------
-  /** create, update, publish, delete */
   export type Response = ApiResponse<string>;
 
   export type DetailsResponse = ApiResponse<Details>;

@@ -25,6 +25,10 @@ export interface CrowdsplitProduct {
   buy: ReturnType<typeof createBuyService>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns Object containing all Crowdsplit service instances
+ */
 export const Crowdsplit = (client: OakClient): CrowdsplitProduct => ({
   customers: createCustomerService(client),
   payments: createPaymentService(client),
