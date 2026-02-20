@@ -50,8 +50,7 @@ describe("PaymentMethodService - Integration", () => {
       "should add a PIX payment method",
       async () => {
         if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
+          throw new Error("testCustomerId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.add(testCustomerId, {
@@ -77,8 +76,7 @@ describe("PaymentMethodService - Integration", () => {
       "should add a bank account payment method (Stripe)",
       async () => {
         if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
+          throw new Error("testCustomerId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.add(testCustomerId, {
@@ -115,8 +113,7 @@ describe("PaymentMethodService - Integration", () => {
       "should get the created payment method",
       async () => {
         if (!testCustomerId || !createdPaymentMethodId) {
-          console.warn("Skipping: testCustomerId or createdPaymentMethodId not available");
-          return;
+          throw new Error("testCustomerId or createdPaymentMethodId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.get(testCustomerId, createdPaymentMethodId);
@@ -133,8 +130,7 @@ describe("PaymentMethodService - Integration", () => {
       "should handle invalid payment method ID gracefully",
       async () => {
         if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
+          throw new Error("testCustomerId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.get(testCustomerId, "non-existent-pm-id");
@@ -160,8 +156,7 @@ describe("PaymentMethodService - Integration", () => {
       "should list all payment methods for customer",
       async () => {
         if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
+          throw new Error("testCustomerId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.list(testCustomerId);
@@ -178,8 +173,7 @@ describe("PaymentMethodService - Integration", () => {
       "should list payment methods with type filter",
       async () => {
         if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
+          throw new Error("testCustomerId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.list(testCustomerId, { type: "pix" });
@@ -199,8 +193,7 @@ describe("PaymentMethodService - Integration", () => {
       "should list payment methods with status filter",
       async () => {
         if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
+          throw new Error("testCustomerId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.list(testCustomerId, { status: "active" });
@@ -217,8 +210,7 @@ describe("PaymentMethodService - Integration", () => {
       "should list payment methods with platform filter",
       async () => {
         if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
+          throw new Error("testCustomerId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.list(testCustomerId, { platform: "stripe" });
@@ -237,8 +229,7 @@ describe("PaymentMethodService - Integration", () => {
       "should delete the payment method",
       async () => {
         if (!testCustomerId || !createdPaymentMethodId) {
-          console.warn("Skipping: testCustomerId or createdPaymentMethodId not available");
-          return;
+          throw new Error("testCustomerId or createdPaymentMethodId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.delete(testCustomerId, createdPaymentMethodId);
@@ -255,8 +246,7 @@ describe("PaymentMethodService - Integration", () => {
       "should handle deleting non-existent payment method",
       async () => {
         if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
+          throw new Error("testCustomerId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.delete(testCustomerId, "non-existent-pm-id");
@@ -270,8 +260,7 @@ describe("PaymentMethodService - Integration", () => {
       "should verify payment method is deleted",
       async () => {
         if (!testCustomerId || !createdPaymentMethodId) {
-          console.warn("Skipping: testCustomerId or createdPaymentMethodId not available");
-          return;
+          throw new Error("testCustomerId or createdPaymentMethodId not available from previous test - this test requires prerequisite setup");
         }
 
         const response = await paymentMethods.get(testCustomerId, createdPaymentMethodId);
