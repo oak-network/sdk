@@ -13,6 +13,8 @@ export interface CustomerService {
     id: string,
     customer: Customer.Request,
   ): Promise<Result<Customer.Response>>;
+
+  sync(id: string, sync: Customer.Sync): Promise<Result<Customer.SyncResponse>>;
 }
 
 export const createCustomerService = (client: OakClient): CustomerService => ({
@@ -83,6 +85,27 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     return httpClient.put<Customer.Response>(
       `${client.config.baseUrl}/api/v1/customers/${id}`,
       customer,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
+  },
+
+  async sync(
+    id: string,
+    sync: Customer.Sync,
+  ): Promise<Result<Customer.SyncResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
+    }
+
+    return httpClient.post<Customer.SyncResponse>(
+      `${client.config.baseUrl}/api/v1/customers/${id}/sync`,
+      sync,
       {
         headers: {
           Authorization: `Bearer ${token.value}`,
