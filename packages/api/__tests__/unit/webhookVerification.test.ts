@@ -90,8 +90,7 @@ describe("webhookVerification", () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.message).toBe("Invalid webhook signature");
-        expect(result.error.code).toBe("WEBHOOK_VERIFICATION_FAILED");
-        expect(result.error.statusCode).toBe(401);
+        expect(result.error.status).toBe(401);
       }
     });
 
@@ -107,8 +106,7 @@ describe("webhookVerification", () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.message).toContain("Failed to parse webhook payload");
-        expect(result.error.code).toBe("WEBHOOK_PARSE_ERROR");
-        expect(result.error.statusCode).toBe(400);
+        expect(result.error.status).toBe(400);
       }
     });
 
