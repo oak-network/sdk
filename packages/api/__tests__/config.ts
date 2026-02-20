@@ -1,7 +1,14 @@
 import type { OakClientConfig, OakEnvironment } from "../src";
 import type { RetryOptions } from "../src/utils";
 import dotenv from "dotenv";
-dotenv.config();
+import path from "path";
+
+// Always load env vars from the API package's .env,
+// regardless of the current working directory.
+dotenv.config({
+  path: path.resolve(__dirname, "../.env"),
+});
+
 
 export interface TestClientConfig extends OakClientConfig {
   retryOptions?: RetryOptions;
