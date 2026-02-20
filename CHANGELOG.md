@@ -31,7 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Replaced `any` with `unknown` in httpClient methods (`post`, `put`, `patch`) and retryHandler for better type safety
   - Converted `ReturnType<typeof>` to direct interface imports in Crowdsplit facade
   - Converted intersection types to standalone interfaces in Payment and Transfer types
-  - Added JSDoc to clarify `customer.id` (legacy) vs `customer.customer_id` (preferred)
 - **Dependency Updates**:
   - Moved `nock` and `dotenv` from dependencies to devDependencies (reduces production bundle size)
   - Updated `ts-jest` from `^29.4.1` to `^29.4.6`
@@ -64,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### 1. `clientSecret` No Longer Accessible
 
 **Before:**
+
 ```typescript
 const client = createOakClient({
   environment: "sandbox",
@@ -76,6 +76,7 @@ console.log(client.config.clientSecret); // ❌ undefined
 ```
 
 **After:**
+
 ```typescript
 // Store secret separately if needed for logging/debugging
 const clientSecret = process.env.CLIENT_SECRET;
@@ -94,6 +95,7 @@ const client = createOakClient({
 #### 2. `createAuthService()` Removed
 
 **Before:**
+
 ```typescript
 import { createAuthService } from "@oaknetwork/api";
 
@@ -102,6 +104,7 @@ const token = await auth.getAccessToken();
 ```
 
 **After:**
+
 ```typescript
 // Use client methods directly
 const token = await client.getAccessToken();
@@ -113,12 +116,14 @@ const tokenResponse = await client.grantToken();
 #### 3. Stricter Type Checking
 
 **Before:**
+
 ```typescript
 // Any type accepted
 httpClient.post(url, anyData, config);
 ```
 
 **After:**
+
 ```typescript
 // Unknown type requires explicit typing
 httpClient.post<ResponseType>(url, requestData as RequestType, config);
@@ -138,7 +143,7 @@ app.post("/webhook", (req, res) => {
   const isValid = verifyWebhookSignature(
     JSON.stringify(req.body),
     req.headers["x-oak-signature"] as string,
-    process.env.WEBHOOK_SECRET
+    process.env.WEBHOOK_SECRET,
   );
 
   if (!isValid) {
@@ -153,7 +158,7 @@ app.post("/webhook", (req, res) => {
   const result = parseWebhookPayload<PaymentEvent>(
     JSON.stringify(req.body),
     req.headers["x-oak-signature"] as string,
-    process.env.WEBHOOK_SECRET
+    process.env.WEBHOOK_SECRET,
   );
 
   if (!result.ok) {
@@ -182,21 +187,25 @@ const result = await crowdsplit.refunds.create({
 ### Upgrade Steps
 
 1. **Update Package**:
+
    ```bash
    pnpm update @oaknetwork/api@latest
    ```
 
 2. **Remove `clientSecret` Access**:
+
    - Search codebase for `client.config.clientSecret`
    - Store separately if needed for non-SDK purposes
    - Update to use environment variables
 
 3. **Replace `createAuthService()`**:
+
    - Search for `createAuthService`
    - Replace with direct `client.getAccessToken()` or `client.grantToken()` calls
    - Remove import
 
 4. **Add Type Assertions** (if needed):
+
    - TypeScript may require type assertions for HTTP client methods
    - Add `as RequestType` where compiler indicates `unknown` cannot be assigned
 
