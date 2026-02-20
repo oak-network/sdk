@@ -46,7 +46,8 @@ export class AuthManager {
       return err(response.error);
     }
     this.accessToken = response.value.access_token;
-    this.tokenExpiration = Date.now() + response.value.expires_in;
+    // Convert expires_in from seconds to milliseconds
+    this.tokenExpiration = Date.now() + (response.value.expires_in * 1000);
     return ok(response.value);
   }
 
