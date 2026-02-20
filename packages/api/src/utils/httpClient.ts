@@ -154,7 +154,7 @@ export const httpClient = {
    */
   async post<T>(
     url: string,
-    data: any,
+    data: unknown,
     config: HttpClientConfig
   ): Promise<Result<T, OakError>> {
     return request<T>(url, config, {
@@ -192,7 +192,7 @@ export const httpClient = {
    */
   async put<T>(
     url: string,
-    data: any,
+    data: unknown,
     config: HttpClientConfig
   ): Promise<Result<T, OakError>> {
     return request<T>(url, config, {
@@ -209,7 +209,7 @@ export const httpClient = {
    */
   async patch<T>(
     url: string,
-    data: any,
+    data: unknown,
     config: HttpClientConfig
   ): Promise<Result<T, OakError>> {
     return request<T>(url, config, {
