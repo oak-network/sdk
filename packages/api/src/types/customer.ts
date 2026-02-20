@@ -53,18 +53,19 @@ export namespace Customer {
     account_type?: string | null;
   }
 
-  export interface Sync {
-    // provider is an array of providers to sync the customer with and length must be 1
-    providers:
-      | "stripe"
-      | "bridge"
-      | "pagar_me"
-      | "brla"
-      | "avenia"
-      | "mercado_pago"[];
+  type Provider =
+    | "stripe"
+    | "bridge"
+    | "pagar_me"
+    | "brla"
+    | "avenia"
+    | "mercado_pago";
 
-    // fields is an array of fields to sync the customer
-    fields: "shipping" | "email" | "first_name" | "last_name"[];
+  type SyncField = "shipping" | "email" | "first_name" | "last_name";
+
+  export interface Sync {
+    providers: [Provider]; // exactly 1
+    fields: SyncField[];
   }
 
   export type SyncResponse = ApiResponse<null>;
