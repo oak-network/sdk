@@ -18,7 +18,6 @@ export namespace Customer {
   }
 
   export interface Data {
-    id?: string;
     customer_id?: string;
     document_number?: string | null;
     document_type?: string | null;
