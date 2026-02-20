@@ -1,6 +1,6 @@
 import { createOakClient } from "../../src";
 import { Crowdsplit } from "../../src/products/crowdsplit";
-import { getConfigFromEnv } from "../config";
+import { getConfigFromEnv, getTestEnvironment } from "../config";
 
 const INTEGRATION_TEST_TIMEOUT = 30000;
 
@@ -27,18 +27,33 @@ describe("PaymentMethodService - Integration", () => {
 
   describe("setup", () => {
     it(
-      "should find or create a test customer",
+      "should use test customer from environment",
       async () => {
-        const listResponse = await customers.list({ limit: 1 });
-        if (listResponse.ok && listResponse.value.data.customer_list.length > 0) {
-          testCustomerId = listResponse.value.data.customer_list[0].id as string;
+        const testEnv = getTestEnvironment();
+
+        if (testEnv.paymentCustomerId) {
+          // Use customer ID from environment
+          testCustomerId = testEnv.paymentCustomerId;
         } else {
-          const email = `pm_test_${Date.now()}@example.com`;
-          const createResponse = await customers.create({ email });
-          if (createResponse.ok) {
-            testCustomerId = createResponse.value.data.id as string;
+          // Fallback: find or create a test customer
+          const listResponse = await customers.list({ limit: 1 });
+          if (listResponse.ok && listResponse.value.data.customer_list.length > 0) {
+            testCustomerId = listResponse.value.data.customer_list[0].id as string;
+          } else {
+            const email = `pm_test_${Date.now()}@example.com`;
+            const createResponse = await customers.create({
+              email,
+              first_name: 'Test',
+              last_name: 'User',
+              document_type: 'personal_tax_id',
+              document_number: `${Date.now()}`.padStart(11, '0').substring(0, 11),
+            });
+            if (createResponse.ok) {
+              testCustomerId = createResponse.value.data.id as string;
+            }
           }
         }
+
         expect(testCustomerId).toBeDefined();
       },
       INTEGRATION_TEST_TIMEOUT,
