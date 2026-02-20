@@ -1,5 +1,4 @@
 import {
-  createAuthService,
   createBuyService,
   createCustomerService,
   createPaymentMethodService,
@@ -38,7 +37,6 @@ const makeClient = (): OakClient => ({
   config: {
     environment: "sandbox",
     clientId: "id",
-    clientSecret: "secret",
     baseUrl: SANDBOX_URL,
   },
   retryOptions,
@@ -52,7 +50,6 @@ const makeClientWithTokenError = (): OakClient => {
     config: {
       environment: "sandbox",
       clientId: "id",
-      clientSecret: "secret",
       baseUrl: SANDBOX_URL,
     },
     retryOptions,
@@ -127,16 +124,6 @@ const expectTokenFailure = async (call: () => Promise<unknown>) => {
 describe("Crowdsplit services (Unit)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-  });
-
-  it("auth service delegates to client", async () => {
-    const client = makeClient();
-    const service = createAuthService(client);
-    await service.getAccessToken();
-    await service.grantToken();
-
-    expect(client.getAccessToken).toHaveBeenCalled();
-    expect(client.grantToken).toHaveBeenCalled();
   });
 
   it("customer service methods", async () => {
@@ -228,7 +215,7 @@ describe("Crowdsplit services (Unit)", () => {
       client,
       call: () => service.create(payment),
       httpMethod: "post",
-      expectedArgs: [`${SANDBOX_URL}/api/v1/payments/`, payment, authConfig],
+      expectedArgs: [`${SANDBOX_URL}/api/v1/payments`, payment, authConfig],
     });
     await expectFailure({
       call: () => service.create(payment),
