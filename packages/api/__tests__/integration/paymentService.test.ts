@@ -1,6 +1,5 @@
-import { createOakClient } from '../../src';
+import { createOakClient, Payment } from '../../src';
 import { Crowdsplit } from '../../src/products/crowdsplit';
-import type { CreatePaymentRequest } from '../../src/types/payment';
 import { ApiError } from '../../src/utils/errorHandler';
 import { getConfigFromEnv } from '../config';
 
@@ -14,7 +13,7 @@ const INTEGRATION_TEST_TIMEOUT = 30000;
 const buildPagarMePixPaymentRequest = (
   customerId: string,
   confirm = false,
-): CreatePaymentRequest =>
+): Payment.Request =>
   ({
     provider: 'pagar_me',
     source: {
@@ -24,7 +23,7 @@ const buildPagarMePixPaymentRequest = (
       payment_method: { type: 'pix', expiry_date: '2030-01-01' },
     },
     confirm,
-  }) as unknown as CreatePaymentRequest;
+  }) as unknown as Payment.Request;
 
 /**
  * Build a Stripe card payment request.
@@ -34,7 +33,7 @@ const buildPagarMePixPaymentRequest = (
 const buildStripePaymentRequest = (
   customerId: string,
   confirm = false,
-): CreatePaymentRequest => {
+): Payment.Request => {
   const request: Record<string, unknown> = {
     provider: 'stripe',
     source: {
@@ -50,7 +49,7 @@ const buildStripePaymentRequest = (
       customer_email: 'integration-test@example.com',
     },
   };
-  return request as unknown as CreatePaymentRequest;
+  return request as unknown as Payment.Request;
 };
 
 describe('PaymentService - Integration', () => {
