@@ -78,7 +78,7 @@ describe('TransactionService - Integration', () => {
         },
         confirm: false,
         metadata: { order_id: `txn-test-${Date.now()}` },
-      } as unknown as import('../../src/types/payment').CreatePaymentRequest);
+      });
 
       expect(createRes.ok).toBe(true);
       if (!createRes.ok) return;
@@ -122,12 +122,15 @@ describe('TransactionService - Integration', () => {
       const response = await transactions.list({
         type_list: 'installment_payment',
       });
-      expect(response.ok).toBe(true);
+      // The API may return 404 if no installment_payment transactions exist
       if (response.ok) {
         expect(Array.isArray(response.value.data.transaction_list)).toBe(true);
         for (const tx of response.value.data.transaction_list) {
           expect(tx.type).toBe('installment_payment');
         }
+      } else {
+        expect(response.error).toBeInstanceOf(ApiError);
+        expect((response.error as ApiError).status).toBe(404);
       }
     },
     INTEGRATION_TEST_TIMEOUT,
@@ -310,7 +313,8 @@ describe('TransactionService - Integration', () => {
       } else {
         expect(response.error).toBeInstanceOf(ApiError);
         const status = (response.error as ApiError).status;
-        expect([400, 404, 422, 500]).toContain(status);
+        // 400 = wrong status, 404 = not found, 422 = validation error
+        expect([400, 404, 422]).toContain(status);
       }
     },
     INTEGRATION_TEST_TIMEOUT,
