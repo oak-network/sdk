@@ -53,6 +53,23 @@ export namespace Customer {
     account_type?: string | null;
   }
 
+  type Provider =
+    | "stripe"
+    | "bridge"
+    | "pagar_me"
+    | "brla"
+    | "avenia"
+    | "mercado_pago";
+
+  type SyncField = "shipping" | "email" | "first_name" | "last_name";
+
+  export interface Sync {
+    providers: [Provider]; // exactly 1
+    fields: SyncField[];
+  }
+
+  export type SyncResponse = ApiResponse<null>;
+
   export interface Request extends Partial<Base> {}
 
   export type Response = ApiResponse<Data>;
@@ -72,4 +89,35 @@ export namespace Customer {
     document_type?: string;
     country_code?: string;
   }
+  export interface BalanceFilter {
+    provider: string;
+    role: string;
+  }
+
+  export interface BalanceResponse
+    extends ApiResponse<{
+      as_of: string;
+      filters: {
+        customer_id: string;
+        provider?: string;
+        role?: string;
+      };
+
+      balances: {
+        account_id: string;
+        provider: string;
+        customer: {
+          id: string;
+          role: string;
+        };
+        as_of: string;
+        totals: {
+          currency: string;
+          amount: number;
+          pending: number;
+          reserved: number;
+          instant_payouts: number;
+        }[];
+      }[];
+    }> {}
 }

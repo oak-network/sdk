@@ -13,6 +13,13 @@ export interface CustomerService {
     id: string,
     customer: Customer.Request,
   ): Promise<Result<Customer.Response>>;
+
+  sync(id: string, sync: Customer.Sync): Promise<Result<Customer.SyncResponse>>;
+
+  balance(
+    customer_id: string,
+    filter: Customer.BalanceFilter,
+  ): Promise<Result<Customer.BalanceResponse>>;
 }
 
 /**
@@ -87,6 +94,49 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     return httpClient.put<Customer.Response>(
       `${client.config.baseUrl}/api/v1/customers/${id}`,
       customer,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
+  },
+
+  async sync(
+    id: string,
+    sync: Customer.Sync,
+  ): Promise<Result<Customer.SyncResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
+    }
+
+    return httpClient.post<Customer.SyncResponse>(
+      `${client.config.baseUrl}/api/v1/customers/${id}/sync`,
+      sync,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
+  },
+
+  async balance(
+    customer_id: string,
+    filter: Customer.BalanceFilter,
+  ): Promise<Result<Customer.BalanceResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
+    }
+
+    const queryString = buildQueryString(filter);
+
+    return httpClient.get<Customer.BalanceResponse>(
+      `${client.config.baseUrl}/api/v1/customers/${customer_id}/balance${queryString}`,
       {
         headers: {
           Authorization: `Bearer ${token.value}`,

@@ -200,6 +200,27 @@ describe("Crowdsplit services (Unit)", () => {
         authConfig,
       ],
     });
+    await expectSuccess({
+      client,
+      call: () =>
+        service.sync("cust-1", { providers: ["stripe"], fields: ["shipping"] }),
+      httpMethod: "post",
+      expectedArgs: [
+        `${SANDBOX_URL}/api/v1/customers/cust-1/sync`,
+        { providers: ["stripe"], fields: ["shipping"] },
+        authConfig,
+      ],
+    });
+    await expectSuccess({
+      client,
+      call: () =>
+        service.balance("cust-1", { provider: "stripe", role: "customer" }),
+      httpMethod: "get",
+      expectedArgs: [
+        `${SANDBOX_URL}/api/v1/customers/cust-1/balance?provider=stripe&role=customer`,
+        authConfig,
+      ],
+    });
     await expectFailure({
       call: () => service.update("cust-1", { email: "new@example.com" }),
       httpMethod: "put",
@@ -215,6 +236,18 @@ describe("Crowdsplit services (Unit)", () => {
     await expectTokenFailure(() => tokenErrorService.list({ limit: 1 }));
     await expectTokenFailure(() =>
       tokenErrorService.update("cust-1", { email: "t@t.com" }),
+    );
+    await expectTokenFailure(() =>
+      tokenErrorService.sync("cust-1", {
+        providers: ["stripe"],
+        fields: ["shipping"],
+      }),
+    );
+    await expectTokenFailure(() =>
+      tokenErrorService.balance("cust-1", {
+        provider: "stripe",
+        role: "customer",
+      }),
     );
   });
 
