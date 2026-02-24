@@ -1,8 +1,5 @@
 /**
  * Shared configuration helper for Oak SDK examples
- *
- * This module provides a consistent way to configure the Oak client
- * across all examples using environment variables.
  */
 
 const { createOakClient } = require('../../dist/index.js');
@@ -43,7 +40,6 @@ function getOakClient() {
     },
   };
 
-  // Add custom URL if provided in environment
   if (process.env.BASE_URL) {
     config.customUrl = process.env.BASE_URL;
   }
@@ -52,18 +48,66 @@ function getOakClient() {
 }
 
 /**
- * Gets environment-specific test data
+ * Resolves a customer ID by fetching the first customer from the list.
  *
- * @returns {Object} Test environment configuration
+ * @param {object} customers - CustomerService instance
+ * @param {object} [filter] - Optional filter params for customers.list()
+ * @returns {Promise<string>} Resolved customer ID
+ * @throws {Error} If no customers are found
  */
-function getTestEnvironment() {
+async function resolveCustomerId(customers, filter = {}) {
+  const result = await customers.list({ limit: 1, ...filter });
+
+  if (!result.ok) {
+    throw new Error(`Failed to fetch customer list: ${result.error.message}`);
+  }
+
+  if (result.value.data.customer_list.length === 0) {
+    throw new Error(
+      'No customers found. Create one first: node customers/create-customer.js'
+    );
+  }
+
+  const first = result.value.data.customer_list[0];
+  return first.id ?? first.customer_id;
+}
+
+/**
+ * Resolves a customer ID from list, or creates one with email only (same as integration test).
+ *
+ * @param {object} customers - CustomerService instance
+ * @returns {Promise<{ customerId: string, created: boolean, email?: string }>} Resolved or newly created customer info
+ * @throws {Error} If list fails or create fails (e.g. API requires more fields)
+ */
+async function resolveOrCreateCustomerId(customers) {
+  const listResult = await customers.list({ limit: 1 });
+
+  if (!listResult.ok) {
+    throw new Error(`Failed to fetch customer list: ${listResult.error.message}`);
+  }
+
+  if (listResult.value.data.customer_list.length > 0) {
+    const first = listResult.value.data.customer_list[0];
+    return {
+      customerId: first.id ?? first.customer_id,
+      created: false,
+    };
+  }
+
+  const email = `customer_${Date.now()}@example.com`;
+  const createResult = await customers.create({ email });
+
+  if (!createResult.ok) {
+    throw new Error(
+      `No customers and create failed: ${createResult.error.message}. Create one via dashboard or ensure API accepts email-only create.`
+    );
+  }
+
   return {
-    paymentCustomerId: process.env.PAYMENT_CUSTOMER_ID,
-    environment: process.env.OAK_ENVIRONMENT || 'sandbox',
+    customerId: createResult.value.data.id ?? createResult.value.data.customer_id,
+    created: true,
+    email: createResult.value.data.email,
   };
 }
 
-module.exports = {
-  getOakClient,
-  getTestEnvironment,
-};
+module.exports = { getOakClient, resolveCustomerId, resolveOrCreateCustomerId };
