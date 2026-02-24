@@ -95,9 +95,3 @@ Based on code review (Feb 2026). Ordered by priority.
 - [ ] **Enforce `import type` consistently across all service files**
   - `providerService.ts` and `refundService.ts` use value imports for type-only symbols
   - All other services use `import type` — make it uniform
-
----
-
-## Done
-
-Check the checkboxes when done.
