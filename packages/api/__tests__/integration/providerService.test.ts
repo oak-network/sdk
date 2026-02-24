@@ -117,7 +117,7 @@ describe('ProviderService - Integration', () => {
   // submitRegistration()
   // ---------------------------------------------------------------
   it(
-    'should submit a valid registration',
+    'should submit a valid Stripe registration',
     async () => {
       if (!existingCustomerId) {
         throw new Error('No customer available — setup test must run first');
@@ -137,7 +137,33 @@ describe('ProviderService - Integration', () => {
         expect(registration.provider).toBe('stripe');
         expect(registration.status).toBeDefined();
       } else {
-        // Already registered or another expected error
+        expect(response.error).toBeInstanceOf(ApiError);
+      }
+    },
+    INTEGRATION_TEST_TIMEOUT,
+  );
+
+  it(
+    'should submit a valid PagarMe registration',
+    async () => {
+      if (!existingCustomerId) {
+        throw new Error('No customer available — setup test must run first');
+      }
+
+      const response = await providers.submitRegistration(existingCustomerId, {
+        provider: 'pagar_me',
+        target_role: 'customer',
+      });
+
+      // Registration may succeed or return an error if the customer
+      // is already registered with this provider.
+      if (response.ok) {
+        const data = response.value.data;
+        const registration = Array.isArray(data) ? data[0] : data;
+        expect(registration).toBeDefined();
+        expect(registration.provider).toBe('pagar_me');
+        expect(registration.status).toBeDefined();
+      } else {
         expect(response.error).toBeInstanceOf(ApiError);
       }
     },
