@@ -35,8 +35,7 @@ describe('ProviderService - Integration', () => {
       const listRes = await customers.list({ limit: 1 });
       expect(listRes.ok).toBe(true);
       if (listRes.ok && listRes.value.data.customer_list.length === 0) {
-        console.warn('Skipping: no customers found in database');
-        return;
+        throw new Error('No customers found in database');
       }
       if (listRes.ok) {
         expect(listRes.value.data.customer_list.length).toBeGreaterThan(0);
@@ -53,7 +52,14 @@ describe('ProviderService - Integration', () => {
   it(
     'should get schema for an enabled provider',
     async () => {
-      // Try pagar_me first (known to be enabled), then mercado_pago as fallback
+      // Try stripe first (default provider), then pagar_me as fallback
+      const stripeRes = await providers.getSchema({ provider: 'stripe' });
+      if (stripeRes.ok) {
+        expect(stripeRes.value.data).toBeDefined();
+        expect(typeof stripeRes.value.data).toBe('object');
+        return;
+      }
+
       const pagarRes = await providers.getSchema({ provider: 'pagar_me' });
       if (pagarRes.ok) {
         expect(pagarRes.value.data).toBeDefined();
@@ -61,17 +67,8 @@ describe('ProviderService - Integration', () => {
         return;
       }
 
-      const mercadoRes = await providers.getSchema({
-        provider: 'mercado_pago',
-      });
-      if (mercadoRes.ok) {
-        expect(mercadoRes.value.data).toBeDefined();
-        expect(typeof mercadoRes.value.data).toBe('object');
-        return;
-      }
-
       // At least one provider must be enabled
-      expect(pagarRes.ok || mercadoRes.ok).toBe(true);
+      expect(stripeRes.ok || pagarRes.ok).toBe(true);
     },
     INTEGRATION_TEST_TIMEOUT,
   );
@@ -94,8 +91,7 @@ describe('ProviderService - Integration', () => {
     'should get registration status for a valid customer',
     async () => {
       if (!existingCustomerId) {
-        console.warn('Skipping: no customer available');
-        return;
+        throw new Error('No customer available — setup test must run first');
       }
 
       const response =
@@ -124,12 +120,11 @@ describe('ProviderService - Integration', () => {
     'should submit a valid registration',
     async () => {
       if (!existingCustomerId) {
-        console.warn('Skipping: no customer available');
-        return;
+        throw new Error('No customer available — setup test must run first');
       }
 
       const response = await providers.submitRegistration(existingCustomerId, {
-        provider: 'pagar_me',
+        provider: 'stripe',
         target_role: 'customer',
       });
 
@@ -139,7 +134,7 @@ describe('ProviderService - Integration', () => {
         const data = response.value.data;
         const registration = Array.isArray(data) ? data[0] : data;
         expect(registration).toBeDefined();
-        expect(registration.provider).toBe('pagar_me');
+        expect(registration.provider).toBe('stripe');
         expect(registration.status).toBeDefined();
       } else {
         // Already registered or another expected error
@@ -153,12 +148,11 @@ describe('ProviderService - Integration', () => {
     'should return an error for invalid provider registration',
     async () => {
       if (!existingCustomerId) {
-        console.warn('Skipping: no customer available');
-        return;
+        throw new Error('No customer available — setup test must run first');
       }
 
       const response = await providers.submitRegistration(existingCustomerId, {
-        provider: 'invalid_provider' as 'pagar_me',
+        provider: 'invalid_provider' as 'stripe',
         target_role: 'customer',
       });
       expect(response.ok).toBe(false);
