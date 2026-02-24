@@ -5,7 +5,7 @@ import type {
   TokenResponse,
 } from "./types";
 import { httpClient } from "./utils/httpClient";
-import { OakError } from "./utils/errorHandler";
+import { ApiError, OakError } from "./utils/errorHandler";
 import { RetryOptions } from "./utils/defaultRetryConfig";
 import { err, ok } from "./types";
 
@@ -14,6 +14,8 @@ export class AuthManager {
   private accessToken: string | null = null;
   private tokenExpiration: number | null = null;
   private retryOptions: RetryOptions;
+  /** Coalesces concurrent token refresh so only one grantToken() runs at a time. */
+  private refreshPromise: Promise<Result<TokenResponse, OakError>> | null = null;
 
   /**
    * @param config - Resolved client configuration
@@ -43,6 +45,10 @@ export class AuthManager {
       }
     );
     if (!response.ok) {
+      if (response.error instanceof ApiError && response.error.status === 401) {
+        this.accessToken = null;
+        this.tokenExpiration = null;
+      }
       return err(response.error);
     }
     this.accessToken = response.value.access_token;
@@ -53,21 +59,30 @@ export class AuthManager {
 
   /**
    * Gets a valid access token, refreshing if expired.
+   * Concurrent callers share a single in-flight refresh to avoid race conditions.
    * @returns Result containing the access token string or error
    */
   async getAccessToken(): Promise<Result<string, OakError>> {
     const currentTime = Date.now();
-    if (
+    const needsRefresh =
       !this.accessToken ||
       !this.tokenExpiration ||
-      currentTime >= this.tokenExpiration - 60000
-    ) {
-      const response = await this.grantToken();
-      if (!response.ok) {
-        return response;
-      }
-      return ok(response.value.access_token);
+      currentTime >= this.tokenExpiration - 60000;
+
+    if (!needsRefresh && this.accessToken) {
+      return ok(this.accessToken);
     }
-    return ok(this.accessToken);
+
+    if (!this.refreshPromise) {
+      this.refreshPromise = this.grantToken().finally(() => {
+        this.refreshPromise = null;
+      });
+    }
+
+    const response = await this.refreshPromise;
+    if (!response.ok) {
+      return response;
+    }
+    return ok(response.value.access_token);
   }
 }
