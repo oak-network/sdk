@@ -1,4 +1,5 @@
 import type { Customer, OakClient, Result } from "../types";
+import { err } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { buildQueryString } from "./helpers";
 import { withAuth } from "../utils/withAuth";
