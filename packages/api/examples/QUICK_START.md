@@ -43,12 +43,9 @@ node customers/get-customer.js
 node customers/update-customer.js
 ```
 
-### Payment Methods
+### Payment Methods (Stripe)
 ```bash
-# Add PIX payment method
-node payment-methods/add-pix.js
-
-# Add bank account (requires Stripe setup)
+# Add Stripe bank account (requires Stripe connected account setup)
 node payment-methods/add-bank-account.js
 
 # List all payment methods for a customer
@@ -135,7 +132,7 @@ When running examples, you'll see color-coded output:
 
 ### "Payment method creation failed"
 - Bank accounts require Stripe connected account setup
-- Use PIX payment methods for testing instead
+- Ensure Stripe connected account is set up for bank account payment methods
 
 ## Next Steps
 
