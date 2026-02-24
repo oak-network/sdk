@@ -1,5 +1,7 @@
-import { err, OakClient, Provider, Result } from "../types";
+import { OakClient, Provider, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface ProviderService {
   getSchema(
@@ -22,42 +24,34 @@ export const createProviderService = (client: OakClient): ProviderService => ({
   async getSchema(
     request: Provider.GetSchemaRequest,
   ): Promise<Result<Provider.GetSchemaResponse>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.get<Provider.GetSchemaResponse>(
-      `${
-        client.config.baseUrl
-      }/api/v1/provider-registration/schema?provider=${encodeURIComponent(
-        request.provider,
-      )}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.get<Provider.GetSchemaResponse>(
+        `${buildUrl(client.config.baseUrl, "api/v1/provider-registration/schema")}?provider=${encodeURIComponent(
+          request.provider,
+        )}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
   async getRegistrationStatus(
     customerId: string,
   ): Promise<Result<Provider.GetRegistrationStatusResponse>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.get<Provider.GetRegistrationStatusResponse>(
-      `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/status`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.get<Provider.GetRegistrationStatusResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/provider-registration", customerId, "status"),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
@@ -65,20 +59,17 @@ export const createProviderService = (client: OakClient): ProviderService => ({
     customerId: string,
     registration: Provider.Request,
   ): Promise<Result<Provider.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.post<Provider.Response>(
-      `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/submit`,
-      registration,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.post<Provider.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/provider-registration", customerId, "submit"),
+        registration,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 });

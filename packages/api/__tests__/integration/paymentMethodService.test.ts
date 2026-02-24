@@ -7,8 +7,10 @@ const INTEGRATION_TEST_TIMEOUT = 30000;
 describe("PaymentMethodService - Integration", () => {
   let paymentMethods: ReturnType<typeof Crowdsplit>["paymentMethods"];
   let customers: ReturnType<typeof Crowdsplit>["customers"];
+  let testCustomerId: string;
+  let createdPaymentMethodId: string | undefined;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     const client = createOakClient({
       ...getConfigFromEnv(),
       retryOptions: {
@@ -20,40 +22,35 @@ describe("PaymentMethodService - Integration", () => {
     const crowdsplit = Crowdsplit(client);
     paymentMethods = crowdsplit.paymentMethods;
     customers = crowdsplit.customers;
-  });
 
-  let testCustomerId: string | undefined;
-  let createdPaymentMethodId: string | undefined;
+    const listResponse = await customers.list({ limit: 1 });
+    if (listResponse.ok && listResponse.value.data.customer_list.length > 0) {
+      const first = listResponse.value.data.customer_list[0];
+      testCustomerId = (first.id ?? first.customer_id) as string;
+    } else {
+      const createResponse = await customers.create({
+        email: `pm_test_${Date.now()}@example.com`,
+      });
+      if (!createResponse.ok) {
+        throw new Error(
+          "Could not get or create test customer — ensure at least one customer exists or create with email only is supported",
+        );
+      }
+      testCustomerId = (createResponse.value.data.id ??
+        createResponse.value.data.customer_id) as string;
+    }
 
-  describe("setup", () => {
-    it(
-      "should find or create a test customer",
-      async () => {
-        const listResponse = await customers.list({ limit: 1 });
-        if (listResponse.ok && listResponse.value.data.customer_list.length > 0) {
-          testCustomerId = listResponse.value.data.customer_list[0].id as string;
-        } else {
-          const email = `pm_test_${Date.now()}@example.com`;
-          const createResponse = await customers.create({ email });
-          if (createResponse.ok) {
-            testCustomerId = createResponse.value.data.id as string;
-          }
-        }
-        expect(testCustomerId).toBeDefined();
-      },
-      INTEGRATION_TEST_TIMEOUT,
-    );
-  });
+    if (!testCustomerId) {
+      throw new Error(
+        "testCustomerId not available — list or create must yield a customer",
+      );
+    }
+  }, INTEGRATION_TEST_TIMEOUT);
 
   describe("add", () => {
     it(
       "should add a PIX payment method",
       async () => {
-        if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
-        }
-
         const response = await paymentMethods.add(testCustomerId, {
           type: "pix",
           pix_string: `pix_test_${Date.now()}@example.com`,
@@ -76,11 +73,6 @@ describe("PaymentMethodService - Integration", () => {
     it(
       "should add a bank account payment method (Stripe)",
       async () => {
-        if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
-        }
-
         const response = await paymentMethods.add(testCustomerId, {
           type: "bank",
           provider: "stripe",
@@ -102,42 +94,47 @@ describe("PaymentMethodService - Integration", () => {
           if (!createdPaymentMethodId) {
             createdPaymentMethodId = response.value.data.id;
           }
-        } else {
-          console.warn("Bank account creation failed - may require Stripe connected account");
         }
+        // When Stripe connected account is not set up, creation fails; test does not fail the suite.
       },
       INTEGRATION_TEST_TIMEOUT,
     );
   });
 
   describe("get", () => {
-    it(
-      "should get the created payment method",
-      async () => {
-        if (!testCustomerId || !createdPaymentMethodId) {
-          console.warn("Skipping: testCustomerId or createdPaymentMethodId not available");
-          return;
+    describe("when a payment method was added", () => {
+      beforeAll(() => {
+        if (!createdPaymentMethodId) {
+          throw new Error(
+            "createdPaymentMethodId not available — add PIX test must run first",
+          );
         }
+      });
 
-        const response = await paymentMethods.get(testCustomerId, createdPaymentMethodId);
+      it(
+        "should get the created payment method",
+        async () => {
+          const response = await paymentMethods.get(
+            testCustomerId,
+            createdPaymentMethodId!,
+          );
 
-        expect(response.ok).toBe(true);
-        if (response.ok) {
-          expect(response.value.data.id).toEqual(createdPaymentMethodId);
-        }
-      },
-      INTEGRATION_TEST_TIMEOUT,
-    );
+          expect(response.ok).toBe(true);
+          if (response.ok) {
+            expect(response.value.data.id).toEqual(createdPaymentMethodId);
+          }
+        },
+        INTEGRATION_TEST_TIMEOUT,
+      );
+    });
 
     it(
       "should handle invalid payment method ID gracefully",
       async () => {
-        if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
-        }
-
-        const response = await paymentMethods.get(testCustomerId, "non-existent-pm-id");
+        const response = await paymentMethods.get(
+          testCustomerId,
+          "non-existent-pm-id",
+        );
 
         expect(response.ok).toBe(false);
       },
@@ -147,7 +144,10 @@ describe("PaymentMethodService - Integration", () => {
     it(
       "should handle invalid customer ID gracefully",
       async () => {
-        const response = await paymentMethods.get("non-existent-customer-id", "non-existent-pm-id");
+        const response = await paymentMethods.get(
+          "non-existent-customer-id",
+          "non-existent-pm-id",
+        );
 
         expect(response.ok).toBe(false);
       },
@@ -159,11 +159,6 @@ describe("PaymentMethodService - Integration", () => {
     it(
       "should list all payment methods for customer",
       async () => {
-        if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
-        }
-
         const response = await paymentMethods.list(testCustomerId);
 
         expect(response.ok).toBe(true);
@@ -177,12 +172,9 @@ describe("PaymentMethodService - Integration", () => {
     it(
       "should list payment methods with type filter",
       async () => {
-        if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
-        }
-
-        const response = await paymentMethods.list(testCustomerId, { type: "pix" });
+        const response = await paymentMethods.list(testCustomerId, {
+          type: "pix",
+        });
 
         expect(response.ok).toBe(true);
         if (response.ok) {
@@ -198,12 +190,9 @@ describe("PaymentMethodService - Integration", () => {
     it(
       "should list payment methods with status filter",
       async () => {
-        if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
-        }
-
-        const response = await paymentMethods.list(testCustomerId, { status: "active" });
+        const response = await paymentMethods.list(testCustomerId, {
+          status: "active",
+        });
 
         expect(response.ok).toBe(true);
         if (response.ok) {
@@ -216,12 +205,9 @@ describe("PaymentMethodService - Integration", () => {
     it(
       "should list payment methods with platform filter",
       async () => {
-        if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
-        }
-
-        const response = await paymentMethods.list(testCustomerId, { platform: "stripe" });
+        const response = await paymentMethods.list(testCustomerId, {
+          platform: "stripe",
+        });
 
         expect(response.ok).toBe(true);
         if (response.ok) {
@@ -233,15 +219,21 @@ describe("PaymentMethodService - Integration", () => {
   });
 
   describe("delete", () => {
+    beforeAll(() => {
+      if (!createdPaymentMethodId) {
+        throw new Error(
+          "createdPaymentMethodId not available — add PIX test must run first",
+        );
+      }
+    });
+
     it(
       "should delete the payment method",
       async () => {
-        if (!testCustomerId || !createdPaymentMethodId) {
-          console.warn("Skipping: testCustomerId or createdPaymentMethodId not available");
-          return;
-        }
-
-        const response = await paymentMethods.delete(testCustomerId, createdPaymentMethodId);
+        const response = await paymentMethods.delete(
+          testCustomerId,
+          createdPaymentMethodId!,
+        );
 
         expect(response.ok).toBe(true);
         if (response.ok) {
@@ -254,12 +246,10 @@ describe("PaymentMethodService - Integration", () => {
     it(
       "should handle deleting non-existent payment method",
       async () => {
-        if (!testCustomerId) {
-          console.warn("Skipping: testCustomerId not available");
-          return;
-        }
-
-        const response = await paymentMethods.delete(testCustomerId, "non-existent-pm-id");
+        const response = await paymentMethods.delete(
+          testCustomerId,
+          "non-existent-pm-id",
+        );
 
         expect(response.ok).toBe(false);
       },
@@ -269,12 +259,10 @@ describe("PaymentMethodService - Integration", () => {
     it(
       "should verify payment method is deleted",
       async () => {
-        if (!testCustomerId || !createdPaymentMethodId) {
-          console.warn("Skipping: testCustomerId or createdPaymentMethodId not available");
-          return;
-        }
-
-        const response = await paymentMethods.get(testCustomerId, createdPaymentMethodId);
+        const response = await paymentMethods.get(
+          testCustomerId,
+          createdPaymentMethodId!,
+        );
 
         expect(response.ok).toBe(false);
       },

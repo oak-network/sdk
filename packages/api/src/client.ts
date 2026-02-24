@@ -1,5 +1,5 @@
 import { AuthManager } from "./authManager";
-import type { OakClient, OakClientConfig, ResolvedOakClientConfig } from "./types";
+import type { OakClient, OakClientConfig, ResolvedOakClientConfig, PublicOakClientConfig } from "./types";
 import { resolveBaseUrl } from "./types/environment";
 import {
   DEFAULT_RETRY_OPTIONS,
@@ -28,6 +28,15 @@ export function createOakClient(config: OakClientConfig): OakClient {
     baseUrl,
   };
 
+  // Create public config without clientSecret for security
+  const publicConfig: PublicOakClientConfig = {
+    environment: config.environment,
+    clientId: config.clientId,
+    baseUrl,
+    customUrl: config.customUrl,
+    retryOptions: config.retryOptions,
+  };
+
   const retryOptions: RetryOptions = {
     ...DEFAULT_RETRY_OPTIONS,
     ...config.retryOptions,
@@ -43,7 +52,7 @@ export function createOakClient(config: OakClientConfig): OakClient {
   };
 
   return {
-    config: resolvedConfig,
+    config: publicConfig,
     retryOptions,
     getAccessToken: () => getAuthManager().getAccessToken(),
     grantToken: () => getAuthManager().grantToken(),

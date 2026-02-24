@@ -21,17 +21,3 @@ export const buildQueryString = <T extends object>(params?: T): string => {
     .join("&")}`;
 };
 
-/**
- * @param error - Error object to extract message from
- * @returns Error message from body.msg or undefined
- */
-export const getErrorBodyMessage = (error: unknown): string | undefined => {
-  if (typeof error !== "object" || error === null) {
-    return undefined;
-  }
-  if (!("body" in error)) {
-    return undefined;
-  }
-  const body = (error as { body?: { msg?: string } }).body;
-  return body?.msg;
-};

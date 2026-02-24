@@ -42,8 +42,7 @@ describe("WebhookService - Integration", () => {
 
     it("should handle duplicate URL registration", async () => {
       if (!createdWebhookId) {
-        console.warn("Skipping: createdWebhookId not available from previous test");
-        return;
+        throw new Error("createdWebhookId not available from previous test - this test requires prerequisite setup");
       }
 
       const response = await webhooks.register({
@@ -70,8 +69,7 @@ describe("WebhookService - Integration", () => {
   describe("get", () => {
     it("should get the created webhook", async () => {
       if (!createdWebhookId) {
-        console.warn("Skipping: createdWebhookId not available from previous test");
-        return;
+        throw new Error("createdWebhookId not available from previous test - this test requires prerequisite setup");
       }
 
       const response = await webhooks.get(createdWebhookId);
@@ -93,8 +91,7 @@ describe("WebhookService - Integration", () => {
   describe("update", () => {
     it("should update the webhook", async () => {
       if (!createdWebhookId) {
-        console.warn("Skipping: createdWebhookId not available from previous test");
-        return;
+        throw new Error("createdWebhookId not available from previous test - this test requires prerequisite setup");
       }
 
       const response = await webhooks.update(createdWebhookId, {
@@ -111,8 +108,7 @@ describe("WebhookService - Integration", () => {
   describe("toggle", () => {
     it("should toggle webhook status to inactive", async () => {
       if (!createdWebhookId) {
-        console.warn("Skipping: createdWebhookId not available from previous test");
-        return;
+        throw new Error("createdWebhookId not available from previous test - this test requires prerequisite setup");
       }
 
       const response = await webhooks.toggle(createdWebhookId);
@@ -125,8 +121,7 @@ describe("WebhookService - Integration", () => {
 
     it("should toggle webhook status back to active", async () => {
       if (!createdWebhookId) {
-        console.warn("Skipping: createdWebhookId not available from previous test");
-        return;
+        throw new Error("createdWebhookId not available from previous test - this test requires prerequisite setup");
       }
 
       const response = await webhooks.toggle(createdWebhookId);
@@ -168,8 +163,7 @@ describe("WebhookService - Integration", () => {
   describe("delete", () => {
     it("should delete the webhook", async () => {
       if (!createdWebhookId) {
-        console.warn("Skipping: createdWebhookId not available from previous test");
-        return;
+        throw new Error("createdWebhookId not available from previous test - this test requires prerequisite setup");
       }
 
       const response = await webhooks.delete(createdWebhookId);
@@ -182,8 +176,7 @@ describe("WebhookService - Integration", () => {
 
     it("should verify webhook is deleted", async () => {
       if (!createdWebhookId) {
-        console.warn("Skipping: createdWebhookId not available from previous test");
-        return;
+        throw new Error("createdWebhookId not available from previous test - this test requires prerequisite setup");
       }
 
       const response = await webhooks.get(createdWebhookId);

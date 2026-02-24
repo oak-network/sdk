@@ -1,7 +1,9 @@
 import type { Customer, OakClient, Result } from "../types";
+import { err } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { buildQueryString } from "./helpers";
-import { err } from "../types";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface CustomerService {
   create(customer: Customer.Request): Promise<Result<Customer.Response>>;
@@ -28,57 +30,49 @@ export interface CustomerService {
  */
 export const createCustomerService = (client: OakClient): CustomerService => ({
   async create(customer: Customer.Request): Promise<Result<Customer.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.post<Customer.Response>(
-      `${client.config.baseUrl}/api/v1/customers`,
-      customer,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.post<Customer.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/customers"),
+        customer,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
   async get(id: string): Promise<Result<Customer.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.get<Customer.Response>(
-      `${client.config.baseUrl}/api/v1/customers/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.get<Customer.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", id),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
   async list(
     params?: Customer.ListQueryParams,
   ): Promise<Result<Customer.ListResponse>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
     const queryString = buildQueryString(params);
 
-    return httpClient.get<Customer.ListResponse>(
-      `${client.config.baseUrl}/api/v1/customers${queryString}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.get<Customer.ListResponse>(
+        `${buildUrl(client.config.baseUrl, "api/v1/customers")}${queryString}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
@@ -86,20 +80,17 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     id: string,
     customer: Customer.Request,
   ): Promise<Result<Customer.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.put<Customer.Response>(
-      `${client.config.baseUrl}/api/v1/customers/${id}`,
-      customer,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.put<Customer.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", id),
+        customer,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 

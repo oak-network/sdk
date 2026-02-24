@@ -156,14 +156,18 @@ export namespace Payment {
   // ----------------------------------------
   // Payment responses (create / confirm / cancel)
   // ----------------------------------------
-  export type Transaction = Request & {
+  export interface Transaction {
+    provider: string;
+    source: Source;
+    confirm?: boolean;
+    metadata?: Record<string, string>;
     id: string;
     status: string;
     type: "payment";
     created_at: string;
     updated_at: string;
     provider_response?: ProviderResponse;
-  };
+  }
 
   export type Response = ApiResponse<Transaction>;
 

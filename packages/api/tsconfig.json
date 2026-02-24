@@ -10,6 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "moduleResolution": "node",
+    // Required for @SandboxOnly decorator exported in public API
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },

@@ -1,6 +1,7 @@
 import type { Payment, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { err } from "../types";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface PaymentService {
   create(payment: Payment.Request): Promise<Result<Payment.Response>>;
@@ -14,56 +15,47 @@ export interface PaymentService {
  */
 export const createPaymentService = (client: OakClient): PaymentService => ({
   async create(payment: Payment.Request): Promise<Result<Payment.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.post<Payment.Response>(
-      `${client.config.baseUrl}/api/v1/payments/`,
-      payment,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.post<Payment.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/payments"),
+        payment,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
   async confirm(paymentId: string): Promise<Result<Payment.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.post<Payment.Response>(
-      `${client.config.baseUrl}/api/v1/payments/${paymentId}/confirm`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.post<Payment.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/payments", paymentId, "confirm"),
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
   async cancel(paymentId: string): Promise<Result<Payment.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.post<Payment.Response>(
-      `${client.config.baseUrl}/api/v1/payments/${paymentId}/cancel`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.post<Payment.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/payments", paymentId, "cancel"),
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 });

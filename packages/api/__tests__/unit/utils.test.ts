@@ -1,4 +1,4 @@
-import { buildQueryString, getErrorBodyMessage } from "../../src/services/helpers";
+import { buildQueryString } from "../../src/services/helpers";
 import {
   AbortError,
   ApiError,
@@ -37,11 +37,11 @@ describe("DEFAULT_RETRY_OPTIONS", () => {
     expect(DEFAULT_RETRY_OPTIONS.retryOnError?.(undefined)).toBe(false);
   });
 
-  it("onRetry logs warning", () => {
-    const spy = jest.spyOn(console, "warn").mockImplementation(() => {});
-    DEFAULT_RETRY_OPTIONS.onRetry?.(1, { message: "boom" });
-    expect(spy).toHaveBeenCalled();
-    spy.mockRestore();
+  it("onRetry is undefined by default so SDK does not log to stdout", () => {
+    expect(DEFAULT_RETRY_OPTIONS.onRetry).toBeUndefined();
+    expect(() =>
+      DEFAULT_RETRY_OPTIONS.onRetry?.(1, { message: "boom" })
+    ).not.toThrow();
   });
 });
 
@@ -54,16 +54,6 @@ describe("service helpers", () => {
 
   it("buildQueryString encodes values", () => {
     expect(buildQueryString({ a: "b c", count: 2 })).toBe("?a=b%20c&count=2");
-  });
-
-  it("getErrorBodyMessage extracts error body", () => {
-    expect(getErrorBodyMessage(null)).toBeUndefined();
-    expect(getErrorBodyMessage("boom")).toBeUndefined();
-    expect(getErrorBodyMessage({})).toBeUndefined();
-    expect(getErrorBodyMessage({ body: undefined })).toBeUndefined();
-    expect(getErrorBodyMessage({ body: null })).toBeUndefined();
-    expect(getErrorBodyMessage({ body: {} })).toBeUndefined();
-    expect(getErrorBodyMessage({ body: { msg: "bad" } })).toBe("bad");
   });
 });
 

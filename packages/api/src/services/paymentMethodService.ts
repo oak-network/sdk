@@ -1,7 +1,8 @@
 import type { PaymentMethod, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { buildQueryString } from "./helpers";
-import { err } from "../types";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface PaymentMethodService {
   add(
@@ -33,20 +34,17 @@ export const createPaymentMethodService = (
     customerId: string,
     paymentMethod: PaymentMethod.Request,
   ): Promise<Result<PaymentMethod.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.post<PaymentMethod.Response>(
-      `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods`,
-      paymentMethod,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.post<PaymentMethod.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "payment_methods"),
+        paymentMethod,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
@@ -54,19 +52,16 @@ export const createPaymentMethodService = (
     customerId: string,
     paymentId: string,
   ): Promise<Result<PaymentMethod.Response>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.get<PaymentMethod.Response>(
-      `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.get<PaymentMethod.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "payment_methods", paymentId),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
@@ -74,18 +69,16 @@ export const createPaymentMethodService = (
     customerId: string,
     query?: PaymentMethod.ListQuery,
   ): Promise<Result<PaymentMethod.ListResponse>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
     const queryString = buildQueryString(query);
 
-    return httpClient.get<PaymentMethod.ListResponse>(
-      `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods${queryString}`,
-      {
-        headers: { Authorization: `Bearer ${token.value}` },
-        retryOptions: client.retryOptions,
-      },
+    return withAuth(client, (token) =>
+      httpClient.get<PaymentMethod.ListResponse>(
+        `${buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "payment_methods")}${queryString}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          retryOptions: client.retryOptions,
+        },
+      ),
     );
   },
 
@@ -93,19 +86,16 @@ export const createPaymentMethodService = (
     customerId: string,
     paymentMethodId: string,
   ): Promise<Result<PaymentMethod.DeleteResponse>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.delete<PaymentMethod.DeleteResponse>(
-      `${client.config.baseUrl}/api/v1/customers/${customerId}/payment_methods/${paymentMethodId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.delete<PaymentMethod.DeleteResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "payment_methods", paymentMethodId),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 });

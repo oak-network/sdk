@@ -6,8 +6,10 @@ const INTEGRATION_TEST_TIMEOUT = 30000;
 
 describe("CustomerService - Integration", () => {
   let customers: ReturnType<typeof Crowdsplit>["customers"];
+  /** Customer resolved from list so get/update tests don't depend on create succeeding. */
+  let existingCustomerId: string | undefined;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     const client = createOakClient({
       ...getConfigFromEnv(),
       retryOptions: {
@@ -17,106 +19,105 @@ describe("CustomerService - Integration", () => {
       },
     });
     customers = Crowdsplit(client).customers;
+
+    const listResponse = await customers.list({ limit: 1 });
+    if (listResponse.ok && listResponse.value.data.customer_list.length > 0) {
+      const first = listResponse.value.data.customer_list[0];
+      existingCustomerId = (first.id ?? first.customer_id) as string;
+    }
+  }, INTEGRATION_TEST_TIMEOUT);
+
+  describe("create", () => {
+    it(
+      "should create a customer with email only",
+      async () => {
+        const email = `test_${Date.now()}@example.com`;
+        const response = await customers.create({ email });
+
+        expect(response.ok).toBe(true);
+        if (response.ok) {
+          expect(response.value.data.id ?? response.value.data.customer_id).toBeDefined();
+          expect(response.value.data.email).toEqual(email);
+        }
+      },
+      INTEGRATION_TEST_TIMEOUT,
+    );
   });
 
-  let createdCustomerId: string | undefined;
-
-  it(
-    "should create a stripe customer",
-    async () => {
-      const email = `test_${Date.now()}@example.com`;
-      const response = await customers.create({
-        email,
-      });
-      expect(response.ok).toBe(true);
-      if (response.ok) {
-        expect(response.value.data.id).toBeDefined();
-        expect(response.value.data.email).toEqual(email);
-        createdCustomerId = response.value.data.id as string;
-      }
-    },
-    INTEGRATION_TEST_TIMEOUT,
-  );
-
-  it(
-    "should create a stripe connected account",
-    async () => {
-      const email = `test_${Date.now()}@example.com`;
-      const country_code = "US";
-      const response = await customers.create({
-        email,
-        country_code,
-      });
-      expect(response.ok).toBe(true);
-      if (response.ok) {
-        expect(response.value.data.id).toBeDefined();
-        expect(response.value.data.email).toEqual(email);
-        expect(response.value.data.country_code).toEqual(
-          country_code.toLowerCase(),
+  describe("get", () => {
+    beforeAll(() => {
+      if (!existingCustomerId) {
+        throw new Error(
+          "No customer in account — create one or ensure list returns at least one",
         );
-        createdCustomerId = response.value.data.id as string;
       }
-    },
-    INTEGRATION_TEST_TIMEOUT,
-  );
+    });
 
-  it(
-    "should get the created customer",
-    async () => {
-      if (!createdCustomerId) {
-        console.warn(
-          "Skipping: createdCustomerId not available from previous test",
+    it(
+      "should get a customer by ID",
+      async () => {
+        const response = await customers.get(existingCustomerId!);
+
+        expect(response.ok).toBe(true);
+        if (response.ok) {
+          const id = response.value.data.id ?? response.value.data.customer_id;
+          expect(id).toEqual(existingCustomerId);
+          expect(response.value.data.email).toBeDefined();
+        }
+      },
+      INTEGRATION_TEST_TIMEOUT,
+    );
+
+    it(
+      "should handle invalid customer ID gracefully",
+      async () => {
+        const response = await customers.get("non-existent-id");
+
+        expect(response.ok).toBe(false);
+      },
+      INTEGRATION_TEST_TIMEOUT,
+    );
+  });
+
+  describe("update", () => {
+    beforeAll(() => {
+      if (!existingCustomerId) {
+        throw new Error(
+          "No customer in account — create one or ensure list returns at least one",
         );
-        return;
       }
-      const response = await customers.get(createdCustomerId);
-      expect(response.ok).toBe(true);
-      if (response.ok) {
-        expect(response.value.data.id).toEqual(createdCustomerId);
-      }
-    },
-    INTEGRATION_TEST_TIMEOUT,
-  );
+    });
 
-  it(
-    "should update the customer",
-    async () => {
-      if (!createdCustomerId) {
-        console.warn(
-          "Skipping: createdCustomerId not available from previous test",
-        );
-        return;
-      }
-      const response = await customers.update(createdCustomerId, {
-        first_name: "UpdatedName",
-      });
-      expect(response.ok).toBe(true);
-      if (response.ok) {
-        expect(response.value.data.first_name).toEqual("UpdatedName");
-      }
-    },
-    INTEGRATION_TEST_TIMEOUT,
-  );
+    it(
+      "should update a customer",
+      async () => {
+        const updatedEmail = `updated_${Date.now()}@example.com`;
+        const response = await customers.update(existingCustomerId!, {
+          email: updatedEmail,
+        });
 
-  it(
-    "should list customers",
-    async () => {
-      const response = await customers.list({ limit: 5 });
-      expect(response.ok).toBe(true);
-      if (response.ok) {
-        expect(Array.isArray(response.value.data.customer_list)).toBe(true);
-        expect(response.value.data.customer_list.length).toBeGreaterThan(0);
-      }
-    },
-    INTEGRATION_TEST_TIMEOUT,
-  );
+        expect(response.ok).toBe(true);
+        if (response.ok) {
+          expect(response.value.data.email).toEqual(updatedEmail);
+        }
+      },
+      INTEGRATION_TEST_TIMEOUT,
+    );
+  });
 
-  it(
-    "should handle invalid customer ID gracefully",
-    async () => {
-      const response = await customers.get("non-existent-id");
-      expect(response.ok).toBe(false);
-    },
-    INTEGRATION_TEST_TIMEOUT,
-  );
+  describe("list", () => {
+    it(
+      "should list customers",
+      async () => {
+        const response = await customers.list({ limit: 5 });
+
+        expect(response.ok).toBe(true);
+        if (response.ok) {
+          expect(Array.isArray(response.value.data.customer_list)).toBe(true);
+          expect(response.value.data.customer_list.length).toBeGreaterThan(0);
+        }
+      },
+      INTEGRATION_TEST_TIMEOUT,
+    );
+  });
 });

@@ -68,14 +68,15 @@ describe("createOakClient", () => {
   });
 
   describe("config preservation", () => {
-    it("should preserve clientId and clientSecret", () => {
+    it("should preserve clientId in public config", () => {
       const client = createOakClient({
         ...baseConfig,
         environment: "sandbox",
       });
 
       expect(client.config.clientId).toBe(baseConfig.clientId);
-      expect(client.config.clientSecret).toBe(baseConfig.clientSecret);
+      // clientSecret is intentionally not exposed in public config for security
+      expect(client.config).not.toHaveProperty('clientSecret');
     });
 
     it("should preserve custom retry options", () => {

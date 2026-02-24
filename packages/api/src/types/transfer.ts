@@ -65,14 +65,36 @@ export namespace Transfer {
   // ----------------------
   // Response
   // ----------------------
-  export type Data = Request & {
-    id: string;
-    status: string; // e.g. "created"
-    type: "transfer";
+  export interface TransferData {
     provider: string;
+    source: {
+      amount: number;
+      currency: string;
+      customer?: {
+        id: string;
+      };
+    };
+    destination?: {
+      customer?: {
+        id: string;
+      };
+      payment_method?: {
+        id?: string;
+        type: string;
+        chain?: string;
+        evm_address?: string;
+      };
+    };
+    metadata?: Record<string, any>;
+    provider_data?: Record<string, any>;
+    id: string;
+    status: string;
+    type: "transfer";
     created_at: string;
     updated_at: string;
-  };
+  }
 
-  export type Response = ApiResponse<Data>;
+  export type Data = TransferData;
+
+  export type Response = ApiResponse<TransferData>;
 }
