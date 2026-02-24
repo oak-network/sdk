@@ -1,10 +1,10 @@
 /**
- * List Payment Methods Example
+ * List Payment Methods Example (Stripe)
  *
- * Demonstrates how to list all payment methods for a customer with filtering.
+ * Lists payment methods for a customer with optional filtering.
  */
 
-const { getOakClient, getTestEnvironment } = require('../common/config');
+const { getOakClient, resolveCustomerId } = require('../common/config');
 const { Crowdsplit } = require('../../dist/products/crowdsplit');
 const logger = require('../common/logger');
 
@@ -14,25 +14,11 @@ async function main() {
   try {
     const client = getOakClient();
     const { paymentMethods, customers } = Crowdsplit(client);
-    const testEnv = getTestEnvironment();
 
-    // Get customer ID
-    let customerId = testEnv.paymentCustomerId;
+    logger.step(1, 'Resolving customer...');
+    const customerId = await resolveCustomerId(customers);
 
-    if (!customerId) {
-      logger.warning('No PAYMENT_CUSTOMER_ID in .env, fetching from list...');
-      const listResult = await customers.list({ limit: 1 });
-
-      if (listResult.ok && listResult.value.data.customer_list.length > 0) {
-        customerId = listResult.value.data.customer_list[0].id;
-      } else {
-        logger.error('No customers found.');
-        process.exit(1);
-      }
-    }
-
-    // Example 1: List all payment methods
-    logger.step(1, `Listing all payment methods for customer: ${customerId}`);
+    logger.step(2, `Listing all payment methods for customer: ${customerId}`);
     const allResult = await paymentMethods.list(customerId);
 
     if (!allResult.ok) {
@@ -40,38 +26,33 @@ async function main() {
       process.exit(1);
     }
 
-    logger.success(`Found ${allResult.value.data.length} payment method(s)`);
+    const list = allResult.value.data;
+    logger.success(`Found ${list.length} payment method(s)`);
 
-    if (allResult.value.data.length === 0) {
+    if (list.length === 0) {
       logger.warning('No payment methods found for this customer');
-      logger.info('Add a payment method first:', 'node payment-methods/add-pix.js');
+      logger.info('Add one: node payment-methods/add-bank-account.js');
     } else {
-      allResult.value.data.forEach((pm, index) => {
+      list.forEach((pm, index) => {
         console.log(`\n  ${index + 1}. ${pm.type?.toUpperCase() || 'Unknown'}`);
         console.log(`     ID: ${pm.id}`);
         console.log(`     Status: ${pm.status || 'N/A'}`);
         if (pm.provider) console.log(`     Provider: ${pm.provider}`);
-        if (pm.pix_string) console.log(`     PIX: ${pm.pix_string}`);
         if (pm.bank_name) console.log(`     Bank: ${pm.bank_name}`);
       });
     }
 
-    // Example 2: Filter by type (PIX)
-    logger.step(2, 'Filtering payment methods by type: PIX');
-    const pixResult = await paymentMethods.list(customerId, { type: 'pix' });
-
-    if (pixResult.ok) {
-      logger.success(`Found ${pixResult.value.data.length} PIX payment method(s)`);
+    logger.step(3, 'Filter by type: bank');
+    const bankResult = await paymentMethods.list(customerId, { type: 'bank' });
+    if (bankResult.ok) {
+      logger.success(`Found ${bankResult.value.data.length} bank payment method(s)`);
     }
 
-    // Example 3: Filter by status (active)
-    logger.step(3, 'Filtering payment methods by status: active');
+    logger.step(4, 'Filter by status: active');
     const activeResult = await paymentMethods.list(customerId, { status: 'active' });
-
     if (activeResult.ok) {
       logger.success(`Found ${activeResult.value.data.length} active payment method(s)`);
     }
-
   } catch (error) {
     logger.error('Unexpected error', error);
     process.exit(1);
