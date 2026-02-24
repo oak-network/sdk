@@ -39,8 +39,8 @@ node authentication/get-token.js
 node customers/create-customer.js
 node customers/list-customers.js
 
-# Payment methods
-node payment-methods/add-pix.js
+# Payment methods (Stripe bank account)
+node payment-methods/add-bank-account.js
 
 # Webhooks
 node webhooks/register-webhook.js
@@ -66,8 +66,7 @@ examples/
 │   ├── get-customer.js
 │   └── update-customer.js
 │
-├── payment-methods/    # Payment method examples
-│   ├── add-pix.js
+├── payment-methods/    # Payment method examples (Stripe)
 │   ├── add-bank-account.js
 │   ├── list-payment-methods.js
 │   └── delete-payment-method.js
@@ -91,7 +90,7 @@ Learn how to authenticate with the Oak API using OAuth 2.0 client credentials fl
 Create, read, update, and list customers with proper error handling.
 
 ### Payment Methods
-Add and manage payment methods (PIX, bank accounts, cards) for customers.
+Add and manage Stripe payment methods (e.g. bank accounts) for customers.
 
 ### Webhooks
 Set up webhook endpoints, verify signatures, and handle webhook events securely.
