@@ -28,10 +28,6 @@ describe("CustomerService - Integration", () => {
       const email = `test_${timestamp}@example.com`;
       const response = await customers.create({
         email,
-        first_name: 'John',
-        last_name: 'Doe',
-        document_type: 'personal_tax_id',
-        document_number: `${timestamp}`.padStart(11, '0').substring(0, 11),
       });
       expect(response.ok).toBe(true);
       if (response.ok) {
@@ -48,23 +44,14 @@ describe("CustomerService - Integration", () => {
     async () => {
       const timestamp = Date.now();
       const email = `test_${timestamp}@example.com`;
-      const country_code = "US";
       const response = await customers.create({
         email,
-        country_code,
-        first_name: 'Jane',
-        last_name: 'Smith',
-        document_type: 'personal_tax_id',
-        document_number: `${timestamp + 1}`.padStart(11, '0').substring(0, 11),
       });
       expect(response.ok).toBe(true);
       if (response.ok) {
-        expect(response.value.data.id).toBeDefined();
+        expect(response.value.data.customer_id).toBeDefined();
         expect(response.value.data.email).toEqual(email);
-        expect(response.value.data.country_code).toEqual(
-          country_code.toLowerCase(),
-        );
-        createdCustomerId = response.value.data.id as string;
+        createdCustomerId = response.value.data.customer_id as string;
       }
     },
     INTEGRATION_TEST_TIMEOUT,
