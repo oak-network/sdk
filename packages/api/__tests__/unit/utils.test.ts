@@ -37,11 +37,11 @@ describe("DEFAULT_RETRY_OPTIONS", () => {
     expect(DEFAULT_RETRY_OPTIONS.retryOnError?.(undefined)).toBe(false);
   });
 
-  it("onRetry logs warning", () => {
-    const spy = jest.spyOn(console, "warn").mockImplementation(() => {});
-    DEFAULT_RETRY_OPTIONS.onRetry?.(1, { message: "boom" });
-    expect(spy).toHaveBeenCalled();
-    spy.mockRestore();
+  it("onRetry is undefined by default so SDK does not log to stdout", () => {
+    expect(DEFAULT_RETRY_OPTIONS.onRetry).toBeUndefined();
+    expect(() =>
+      DEFAULT_RETRY_OPTIONS.onRetry?.(1, { message: "boom" })
+    ).not.toThrow();
   });
 });
 
