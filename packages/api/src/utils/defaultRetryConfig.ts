@@ -16,9 +16,5 @@ export const DEFAULT_RETRY_OPTIONS: RetryOptions = {
   maxDelay: 30000,
   retryOnStatus: [408, 429, 500, 502, 503, 504],
   retryOnError: (err) => Boolean(err?.isNetworkError),
-  onRetry: (attempt, error) =>
-    console.warn(
-      `[OakClient] Retry attempt ${attempt} due to:`,
-      error.message
-    ),
+  // No default onRetry — SDK does not log to stdout. Pass onRetry in retryOptions to log retries.
 };
