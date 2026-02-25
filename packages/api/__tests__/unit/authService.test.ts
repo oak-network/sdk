@@ -1,16 +1,22 @@
-// __tests__/unit/authService.test.ts
 import { createOakClient } from "../../src";
 import { httpClient } from "../../src/utils/httpClient";
-import { SDKError } from "../../src/utils/errorHandler";
+import { ApiError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils";
-import { getConfigFromEnv } from "../config";
-import { ok } from "../../src/types";
+import type { OakClientConfig } from "../../src/types";
+import { err, ok } from "../../src/types";
+import { ENVIRONMENT_URLS } from "../../src/types/environment";
+
+const SANDBOX_URL = ENVIRONMENT_URLS.sandbox;
 
 jest.mock("../../src/utils/httpClient");
 const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
 
 describe("Auth (Unit)", () => {
-  const config = getConfigFromEnv();
+  const config: OakClientConfig = {
+    environment: "sandbox",
+    clientId: "test-client-id",
+    clientSecret: "test-client-secret",
+  };
   const retryOptions: RetryOptions = {
     maxNumberOfRetries: 1,
     delay: 100,
@@ -33,12 +39,12 @@ describe("Auth (Unit)", () => {
       expires_in: 3300000,
       token_type: "bearer",
     };
-    mockedHttpClient.post.mockResolvedValue(mockResponse);
+    mockedHttpClient.post.mockResolvedValue(ok(mockResponse) as never);
 
     const result = await client.grantToken();
 
     expect(mockedHttpClient.post).toHaveBeenCalledWith(
-      `${config.baseUrl}/api/v1/merchant/token/grant`,
+      `${SANDBOX_URL}/api/v1/merchant/token/grant`,
       {
         client_id: config.clientId,
         client_secret: config.clientSecret,
@@ -58,26 +64,25 @@ describe("Auth (Unit)", () => {
       expires_in: 3300000,
       token_type: "bearer",
     };
-    mockedHttpClient.post.mockResolvedValue(mockResponse);
+    mockedHttpClient.post.mockResolvedValue(ok(mockResponse) as never);
 
-    // First call to fetch token
     const token1 = await client.getAccessToken();
-    // Second call should return cached token
     const token2 = await client.getAccessToken();
 
     expect(token1).toEqual(ok("cachedToken"));
     expect(token2).toEqual(ok("cachedToken"));
-    // httpClient.post should have been called only once
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(1);
   });
 
   it("should return error result when grantToken fails in getAccessToken", async () => {
-    mockedHttpClient.post.mockRejectedValue(new Error("Network Error"));
+    mockedHttpClient.post.mockResolvedValue(
+      err(new ApiError("HTTP error", 500, null)) as never
+    );
 
     const result = await client.getAccessToken();
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toBeInstanceOf(SDKError);
+      expect(result.error).toBeInstanceOf(ApiError);
     }
   });
 
@@ -86,21 +91,18 @@ describe("Auth (Unit)", () => {
       access_token: "token1",
       expires_in: 1,
       token_type: "bearer",
-    }; // expires in 1ms
+    };
     const mockResponse2 = {
       access_token: "token2",
       expires_in: 3600,
       token_type: "bearer",
     };
     mockedHttpClient.post
-      .mockResolvedValueOnce(mockResponse1)
-      .mockResolvedValueOnce(mockResponse2);
+      .mockResolvedValueOnce(ok(mockResponse1) as never)
+      .mockResolvedValueOnce(ok(mockResponse2) as never);
 
-    // First call
     const token1 = await client.getAccessToken();
-    // wait to expire token
     await new Promise((r) => setTimeout(r, 10));
-    // Second call triggers new token request
     const token2 = await client.getAccessToken();
 
     expect(token1).toEqual(ok("token1"));
@@ -108,13 +110,15 @@ describe("Auth (Unit)", () => {
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(2);
   });
 
-  it("should return SDKError if grantToken fails", async () => {
-    mockedHttpClient.post.mockRejectedValue(new Error("Network Error"));
+  it("should return ApiError if grantToken fails", async () => {
+    mockedHttpClient.post.mockResolvedValue(
+      err(new ApiError("HTTP error", 500, null)) as never
+    );
 
     const result = await client.grantToken();
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toBeInstanceOf(SDKError);
+      expect(result.error).toBeInstanceOf(ApiError);
     }
   });
 });

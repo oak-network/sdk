@@ -1,3 +1,8 @@
+/**
+ * @typeParam T - Query parameters object type
+ * @param params - Optional query parameters
+ * @returns URL query string or empty string
+ */
 export const buildQueryString = <T extends object>(params?: T): string => {
   if (!params) {
     return "";
@@ -16,13 +21,3 @@ export const buildQueryString = <T extends object>(params?: T): string => {
     .join("&")}`;
 };
 
-export const getErrorBodyMessage = (error: unknown): string | undefined => {
-  if (typeof error !== "object" || error === null) {
-    return undefined;
-  }
-  if (!("body" in error)) {
-    return undefined;
-  }
-  const body = (error as { body?: { msg?: string } }).body;
-  return body?.msg;
-};

@@ -1,71 +1,100 @@
-// ----------------------
-// Common Types
-
 import { ApiResponse } from "./common";
 
-// ----------------------
-interface Customer {
-  id: string;
-}
+export namespace Transfer {
+  export interface BrlaRequest {
+    provider: "brla";
+    source: {
+      amount: number; // integer, positive
+      currency: "brla"; // from ASSET_TYPE.BRLA
+      customer?: {
+        id: string;
+      };
+    };
+    destination: {
+      customer?: {
+        id: string; // required if payment_method.id is provided
+      };
+      payment_method?: {
+        id?: string; // if present, chain and evm_address are forbidden
+        type: string; // from TRANSFER_PAYMENT_METHOD_TYPE keys
+        chain?: string; // from WALLET_CHAIN values, required when id is absent
+        evm_address?: string; // required when id is absent, validated as checksummed address
+      };
+    };
+    metadata?: Record<string, any>;
+    provider_data?: {
+      wallet_memo?: string; // max 50 characters
+    };
+  }
 
-interface Source {
-  amount: number;
-  currency: string;
-  customer?: Customer;
-}
+  export interface PagarMeRequest {
+    provider: "pagar_me";
+    source: {
+      amount: number; // integer, positive
+      currency: "brl"; // from CURRENCY.BRL
+    };
+    metadata?: Record<string, any>;
+  }
 
-interface PaymentMethod {
-  id?: string;
-  type: string;
-  chain?: string;
-  evm_address?: string;
-}
+  export interface StripeRequest {
+    provider: "stripe";
+    source: {
+      amount: number; // integer, positive
+      currency: "usd"; // from CURRENCY.USD
+      customer: {
+        id: string; // must equal destination.customer.id
+      };
+    };
+    destination: {
+      customer: {
+        id: string; // must equal source.customer.id
+      };
+      payment_method: {
+        id: string;
+        type: "bank";
+      };
+    };
+    metadata?: Record<string, any>;
+    provider_data?: {
+      statement_descriptor?: string;
+    };
+  }
 
-interface Destination {
-  customer?: Customer;
-  payment_method?: PaymentMethod;
-}
+  export type Request = BrlaRequest | PagarMeRequest | StripeRequest;
 
-type Metadata = Record<string, any>;
+  // ----------------------
+  // Response
+  // ----------------------
+  export interface TransferData {
+    provider: string;
+    source: {
+      amount: number;
+      currency: string;
+      customer?: {
+        id: string;
+      };
+    };
+    destination?: {
+      customer?: {
+        id: string;
+      };
+      payment_method?: {
+        id?: string;
+        type: string;
+        chain?: string;
+        evm_address?: string;
+      };
+    };
+    metadata?: Record<string, any>;
+    provider_data?: Record<string, any>;
+    id: string;
+    status: string;
+    type: "transfer";
+    created_at: string;
+    updated_at: string;
+  }
 
-// ----------------------
-// Provider-specific Requests
-// ----------------------
-export interface BrlaTransferRequest {
-  provider: "brla";
-  source: Source & { currency: "brla" };
-  destination: Destination;
-  metadata?: Metadata;
-}
+  export type Data = TransferData;
 
-export interface StripeTransferRequest {
-  provider: "stripe";
-  source: Source & { currency: "usd" };
-  destination: Destination & {
-    customer: Customer;
-    payment_method: { id: string; type: "bank" };
-  };
-  metadata?: Metadata;
-  provider_data?: { statement_descriptor?: string };
-}
-
-// ----------------------
-// Union Request Type
-// ----------------------
-export type CreateTransferRequest = BrlaTransferRequest | StripeTransferRequest;
-
-// ----------------------
-// API Response
-// ----------------------
-
-export type CreateTransferResponse = ApiResponse<TransferData>;
-
-export interface TransferData {
-  id: string;
-  status: string; // e.g., "created"
-  type: "transfer";
-  source: Source;
-  destination: Destination;
-  metadata?: Metadata;
-  provider: string;
+  export type Response = ApiResponse<TransferData>;
 }

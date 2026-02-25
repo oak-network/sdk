@@ -1,101 +1,61 @@
-import type {
-  CancelPaymentResponse,
-  ConfirmPaymentResponse,
-  CreatePaymentRequest,
-  CreatePaymentResponse,
-  OakClient,
-  Result,
-} from "../types";
+import type { Payment, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { SDKError } from "../utils/errorHandler";
-import { err, ok } from "../types";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface PaymentService {
-  create(payment: CreatePaymentRequest): Promise<Result<CreatePaymentResponse>>;
-  confirm(paymentId: string): Promise<Result<ConfirmPaymentResponse>>;
-  cancel(paymentId: string): Promise<Result<CancelPaymentResponse>>;
+  create(payment: Payment.Request): Promise<Result<Payment.Response>>;
+  confirm(paymentId: string): Promise<Result<Payment.Response>>;
+  cancel(paymentId: string): Promise<Result<Payment.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns PaymentService instance
+ */
 export const createPaymentService = (client: OakClient): PaymentService => ({
-  async create(
-    payment: CreatePaymentRequest,
-  ): Promise<Result<CreatePaymentResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.post<CreatePaymentResponse>(
-        `${client.config.baseUrl}/api/v1/payments/`,
+  async create(payment: Payment.Request): Promise<Result<Payment.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Payment.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/payments"),
         payment,
         {
           headers: {
-            Authorization: `Bearer ${token.value}`,
+            Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
         },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(new SDKError("Failed to create payment", error));
-    }
+      ),
+    );
   },
 
-  async confirm(
-    paymentId: string,
-  ): Promise<Result<ConfirmPaymentResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.post<ConfirmPaymentResponse>(
-        `${client.config.baseUrl}/api/v1/payments/${paymentId}/confirm`,
+  async confirm(paymentId: string): Promise<Result<Payment.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Payment.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/payments", paymentId, "confirm"),
         {},
         {
           headers: {
-            Authorization: `Bearer ${token.value}`,
+            Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
         },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(
-        new SDKError(`Failed to confirm payment with id ${paymentId}`, error),
-      );
-    }
+      ),
+    );
   },
 
-  async cancel(
-    paymentId: string,
-  ): Promise<Result<CancelPaymentResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.post<CancelPaymentResponse>(
-        `${client.config.baseUrl}/api/v1/payments/${paymentId}/cancel`,
+  async cancel(paymentId: string): Promise<Result<Payment.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Payment.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/payments", paymentId, "cancel"),
         {},
         {
           headers: {
-            Authorization: `Bearer ${token.value}`,
+            Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
         },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(
-        new SDKError(`Failed to cancel payment with id ${paymentId}`, error),
-      );
-    }
+      ),
+    );
   },
 });

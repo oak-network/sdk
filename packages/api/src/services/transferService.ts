@@ -1,41 +1,29 @@
-import type {
-  CreateTransferRequest,
-  CreateTransferResponse,
-  OakClient,
-  Result,
-} from "../types";
+import type { Transfer, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { SDKError } from "../utils/errorHandler";
-import { err, ok } from "../types";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface TransferService {
-  create(transfer: CreateTransferRequest): Promise<Result<CreateTransferResponse>>;
+  create(transfer: Transfer.Request): Promise<Result<Transfer.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns TransferService instance
+ */
 export const createTransferService = (client: OakClient): TransferService => ({
-  async create(
-    transfer: CreateTransferRequest,
-  ): Promise<Result<CreateTransferResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.post<CreateTransferResponse>(
-        `${client.config.baseUrl}/api/v1/transfer`,
+  async create(transfer: Transfer.Request): Promise<Result<Transfer.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Transfer.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/transfer"),
         transfer,
         {
           headers: {
-            Authorization: `Bearer ${token.value}`,
+            Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
         },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(new SDKError("Failed to create transfer", error));
-    }
+      ),
+    );
   },
 });

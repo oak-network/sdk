@@ -38,15 +38,15 @@ jobs:
         run: pnpm changeset:status
       
       - name: Build all packages
-        run: pnpm -r --workspace-concurrency=Infinity build
+        run: pnpm -r --workspace-concurrency=Infinity --filter=!@oaknetwork/contracts build
       
       - name: Run tests with coverage (enforces 100% threshold)
-        run: pnpm -r --workspace-concurrency=Infinity test --coverage
+        run: pnpm -r --workspace-concurrency=Infinity --filter=!@oaknetwork/contracts test --coverage
         env:
           CI: true
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          BASE_URL: ${{ secrets.BASE_URL }}
+          OAK_ENVIRONMENT: sandbox
       
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
@@ -58,5 +58,4 @@ jobs:
           retention-days: 30
       
       - name: Run lint
-        run: pnpm -r --workspace-concurrency=Infinity lint
-        continue-on-error: true
+        run: pnpm -r --workspace-concurrency=Infinity --filter=!@oaknetwork/contracts lint

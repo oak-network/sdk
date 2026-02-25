@@ -1,37 +1,27 @@
-import type {
-  CreateSellRequest,
-  CreateSellResponse,
-  OakClient,
-  Result,
-} from "../types";
+import type { Sell, OakClient, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { SDKError } from "../utils/errorHandler";
-import { err, ok } from "../types";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface SellService {
-  create(sellRequest: CreateSellRequest): Promise<Result<CreateSellResponse>>;
+  create(sellRequest: Sell.Request): Promise<Result<Sell.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns SellService instance
+ */
 export const createSellService = (client: OakClient): SellService => ({
-  async create(
-    sellRequest: CreateSellRequest,
-  ): Promise<Result<CreateSellResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-      const response = await httpClient.post<CreateSellResponse>(
-        `${client.config.baseUrl}/api/v1/sell`,
+  async create(sellRequest: Sell.Request): Promise<Result<Sell.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Sell.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/sell"),
         sellRequest,
         {
-          headers: { Authorization: `Bearer ${token.value}` },
+          headers: { Authorization: `Bearer ${token}` },
           retryOptions: client.retryOptions,
         },
-      );
-      return ok(response);
-    } catch (error) {
-      return err(new SDKError("Failed to create sell", error));
-    }
+      ),
+    );
   },
 });

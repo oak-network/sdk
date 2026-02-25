@@ -1,5 +1,12 @@
 import { RetryOptions } from "./defaultRetryConfig";
 
+/**
+ * @typeParam T - Return type of the function
+ * @param fn - Async function to execute
+ * @param options - Retry configuration
+ * @returns Promise resolving to function result
+ * @throws Last error if all retries exhausted
+ */
 export async function withRetry<T>(
   fn: () => Promise<T>,
   options: RetryOptions
@@ -22,16 +29,16 @@ export async function withRetry<T>(
     try {
       if (signal?.aborted) throw new Error("Retry aborted");
       return await fn();
-    } catch (error: any) {
-      const status = error?.status;
-      const shouldRetry = retryOnStatus.includes(status) || retryOnError(error);
+    } catch (error: unknown) {
+      const status = (error as { status?: number })?.status;
+      const shouldRetry = retryOnStatus.includes(status ?? 0) || retryOnError(error);
 
       if (attempt === maxNumberOfRetries || !shouldRetry) throw error;
 
       onRetry?.(attempt + 1, error);
 
       // Honor Retry-After header if present
-      let retryAfter = error?.headers?.["retry-after"];
+      let retryAfter = (error as { headers?: Record<string, string> })?.headers?.["retry-after"];
       if (retryAfter) {
         waitTime = Number(retryAfter) * 1000;
       } else {

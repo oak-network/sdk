@@ -1,127 +1,75 @@
-import type {
-  GetProviderRegistrationStatusResponse,
-  GetProviderSchemaRequest,
-  GetProviderSchemaResponse,
-  OakClient,
-  Result,
-  SubmitProviderRegistrationRequest,
-  SubmitProviderRegistrationResponse,
-} from "../types";
+import { OakClient, Provider, Result } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { SDKError } from "../utils/errorHandler";
-import { getErrorBodyMessage } from "./helpers";
-import { err, ok } from "../types";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface ProviderService {
   getSchema(
-    request: GetProviderSchemaRequest,
-  ): Promise<Result<GetProviderSchemaResponse>>;
+    request: Provider.GetSchemaRequest,
+  ): Promise<Result<Provider.GetSchemaResponse>>;
   getRegistrationStatus(
     customerId: string,
-  ): Promise<Result<GetProviderRegistrationStatusResponse>>;
+  ): Promise<Result<Provider.GetRegistrationStatusResponse>>;
   submitRegistration(
     customerId: string,
-    registration: SubmitProviderRegistrationRequest,
-  ): Promise<Result<SubmitProviderRegistrationResponse>>;
+    registration: Provider.Request,
+  ): Promise<Result<Provider.Response>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns ProviderService instance
+ */
 export const createProviderService = (client: OakClient): ProviderService => ({
   async getSchema(
-    request: GetProviderSchemaRequest,
-  ): Promise<Result<GetProviderSchemaResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.get<GetProviderSchemaResponse>(
-        `${
-          client.config.baseUrl
-        }/api/v1/provider-registration/schema?provider=${encodeURIComponent(
+    request: Provider.GetSchemaRequest,
+  ): Promise<Result<Provider.GetSchemaResponse>> {
+    return withAuth(client, (token) =>
+      httpClient.get<Provider.GetSchemaResponse>(
+        `${buildUrl(client.config.baseUrl, "api/v1/provider-registration/schema")}?provider=${encodeURIComponent(
           request.provider,
         )}`,
         {
           headers: {
-            Authorization: `Bearer ${token.value}`,
+            Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
         },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(
-        new SDKError(
-          `Failed to retrieve provider schema for ${request.provider}`,
-          error,
-        ),
-      );
-    }
+      ),
+    );
   },
 
   async getRegistrationStatus(
     customerId: string,
-  ): Promise<Result<GetProviderRegistrationStatusResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response =
-        await httpClient.get<GetProviderRegistrationStatusResponse>(
-          `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/status`,
-          {
-            headers: {
-              Authorization: `Bearer ${token.value}`,
-            },
-            retryOptions: client.retryOptions,
+  ): Promise<Result<Provider.GetRegistrationStatusResponse>> {
+    return withAuth(client, (token) =>
+      httpClient.get<Provider.GetRegistrationStatusResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/provider-registration", customerId, "status"),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
-
-      return ok(response);
-    } catch (error) {
-      return err(
-        new SDKError(
-          `Failed to retrieve provider registration status for customer ${customerId}`,
-          error,
-        ),
-      );
-    }
+          retryOptions: client.retryOptions,
+        },
+      ),
+    );
   },
 
   async submitRegistration(
     customerId: string,
-    registration: SubmitProviderRegistrationRequest,
-  ): Promise<Result<SubmitProviderRegistrationResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response =
-        await httpClient.post<SubmitProviderRegistrationResponse>(
-          `${client.config.baseUrl}/api/v1/provider-registration/${customerId}/submit`,
-          registration,
-          {
-            headers: {
-              Authorization: `Bearer ${token.value}`,
-            },
-            retryOptions: client.retryOptions,
+    registration: Provider.Request,
+  ): Promise<Result<Provider.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Provider.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/provider-registration", customerId, "submit"),
+        registration,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
-
-      return ok(response);
-    } catch (error) {
-      const msg = getErrorBodyMessage(error) || "Unknown error";
-      return err(
-        new SDKError(
-          `Failed to submit provider registration for customer ${customerId}: ${msg}`,
-          error,
-        ),
-      );
-    }
+          retryOptions: client.retryOptions,
+        },
+      ),
+    );
   },
 });

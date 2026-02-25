@@ -13,5 +13,20 @@
     "**/.trunk/*plugins/": true,
     "**/.git/**": true,
     "**/.vscode/**": true
-  }
+  },
+  "jest.runMode": "on-demand",
+  "jest.virtualFolders": [
+    {
+      "name": "api",
+      "rootPath": "packages/api",
+      "jestCommandLine": "node packages/api/scripts/jest-run-exact.js --",
+      "pathToConfig": "jest.config.js"
+    },
+    {
+      "name": "contracts",
+      "rootPath": "packages/contracts",
+      "jestCommandLine": "pnpm --filter @oaknetwork/contracts test --",
+      "pathToConfig": "jest.config.js"
+    }
+  ]
 }

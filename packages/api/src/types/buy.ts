@@ -1,61 +1,57 @@
 import { ApiResponse } from "./common";
 
-// ----- Common Types -----
-export interface WalletDetails {
-  address: string;
-}
+export namespace Buy {
+  export interface PaymentMethod {
+    type: "customer_wallet";
+    chain?: "ethereum" | "polygon" | "arbitrum" | "solana";
+    evm_address: string;
+  }
 
-export interface PaymentMethod {
-  wallet_details: WalletDetails;
-}
+  export interface Source {
+    currency: "usd";
+    amount?: number;
+  }
 
-export interface CurrencyInfo {
-  currency: string;
-}
+  export interface Destination {
+    currency: "usdc" | "usdt" | "usdb";
+    customer: {
+      id: string;
+    };
+    payment_method: PaymentMethod;
+  }
 
-export interface BuySource extends CurrencyInfo {
-  customer_id: string;
-}
+  export interface ProviderData {
+    destination_payment_rail: string; // e.g., "polygon"
+  }
 
-export interface BuyDestination extends CurrencyInfo {
-  payment_method: PaymentMethod;
-}
+  export interface ProviderResponse {
+    [key: string]: any;
+  }
 
-export interface ProviderData {
-  destination_payment_rail: string; // e.g., "polygon"
-}
+  export interface Transaction {
+    id: string;
+    status: string; // e.g., "captured"
+    type: "buy";
+    source: Source;
+    provider: "bridge" | "brla";
+    destination: Destination;
+    provider_response: ProviderResponse;
+    created_at: string;
+    updated_at: string;
+  }
 
-export interface BuyProviderResponse {
-  currency: string;
-  bank_name: string;
-  bank_address: string;
-  bank_routing_number: string;
-  bank_account_number: string;
-  bank_beneficiary_name: string;
-  bank_beneficiary_address: string;
-  payment_rails: string[]; // e.g., ["ach_push", "wire"]
-  deposit_message: string;
-}
+  export interface Metadata {
+    [key: string]: any;
+  }
 
-// ----- Requests -----
-export interface CreateBuyRequest {
-  provider: string; // e.g., "bridge"
-  source: BuySource;
-  destination: BuyDestination;
-  provider_data: ProviderData;
-}
+  export interface Bridge {
+    provider: "bridge";
+    source: Source;
+    destination: Destination;
+    metadata?: Metadata;
+  }
 
-// ----- Transactions -----
-export interface BuyTransaction {
-  id: string;
-  status: string; // e.g., "captured"
-  type: string; // e.g., "buy"
-  source: BuySource;
-  provider: string;
-  destination: BuyDestination;
-  provider_data: ProviderData;
-  provider_response: BuyProviderResponse;
-}
+  export type Request = Bridge;
 
-// ----- Responses -----
-export type CreateBuyResponse = ApiResponse<BuyTransaction>;
+  export type Response = ApiResponse<Transaction>;
+}

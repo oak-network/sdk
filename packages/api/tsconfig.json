@@ -3,14 +3,17 @@
     "target": "ES2018",
     "module": "commonjs",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    // Required for @SandboxOnly decorator exported in public API
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "__tests__/**/*"],
   "exclude": ["node_modules", "dist"]
 }

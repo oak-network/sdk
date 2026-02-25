@@ -1,133 +1,139 @@
-import type {
-  CreateCustomerRequest,
-  CreateCustomerResponse,
-  CustomerListQueryParams,
-  GetAllCustomerResponse,
-  GetCustomerResponse,
-  OakClient,
-  Result,
-  UpdateCustomerRequest,
-  UpdateCustomerResponse,
-} from "../types";
+import type { Customer, OakClient, Result } from "../types";
+import { err } from "../types";
 import { httpClient } from "../utils/httpClient";
-import { SDKError } from "../utils/errorHandler";
 import { buildQueryString } from "./helpers";
-import { err, ok } from "../types";
+import { withAuth } from "../utils/withAuth";
+import { buildUrl } from "../utils/buildUrl";
 
 export interface CustomerService {
-  create(
-    customer: CreateCustomerRequest,
-  ): Promise<Result<CreateCustomerResponse>>;
-  get(id: string): Promise<Result<GetCustomerResponse>>;
+  create(customer: Customer.Request): Promise<Result<Customer.Response>>;
+  get(id: string): Promise<Result<Customer.Response>>;
   list(
-    params?: CustomerListQueryParams,
-  ): Promise<Result<GetAllCustomerResponse>>;
+    params?: Customer.ListQueryParams,
+  ): Promise<Result<Customer.ListResponse>>;
   update(
     id: string,
-    customer: UpdateCustomerRequest,
-  ): Promise<Result<UpdateCustomerResponse>>;
+    customer: Customer.Request,
+  ): Promise<Result<Customer.Response>>;
+
+  sync(id: string, sync: Customer.Sync): Promise<Result<Customer.SyncResponse>>;
+
+  balance(
+    customer_id: string,
+    filter: Customer.BalanceFilter,
+  ): Promise<Result<Customer.BalanceResponse>>;
 }
 
+/**
+ * @param client - Configured OakClient instance
+ * @returns CustomerService instance
+ */
 export const createCustomerService = (client: OakClient): CustomerService => ({
-  async create(
-    customer: CreateCustomerRequest,
-  ): Promise<Result<CreateCustomerResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.post<CreateCustomerResponse>(
-        `${client.config.baseUrl}/api/v1/customers`,
+  async create(customer: Customer.Request): Promise<Result<Customer.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Customer.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/customers"),
         customer,
         {
           headers: {
-            Authorization: `Bearer ${token.value}`,
+            Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
         },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(new SDKError("Failed to create customer", error));
-    }
+      ),
+    );
   },
 
-  async get(id: string): Promise<Result<GetCustomerResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.get<GetCustomerResponse>(
-        `${client.config.baseUrl}/api/v1/customers/${id}`,
+  async get(id: string): Promise<Result<Customer.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.get<Customer.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", id),
         {
           headers: {
-            Authorization: `Bearer ${token.value}`,
+            Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
         },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(new SDKError("Failed to retrieve customer", error));
-    }
+      ),
+    );
   },
 
   async list(
-    params?: CustomerListQueryParams,
-  ): Promise<Result<GetAllCustomerResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-      const queryString = buildQueryString(params);
+    params?: Customer.ListQueryParams,
+  ): Promise<Result<Customer.ListResponse>> {
+    const queryString = buildQueryString(params);
 
-      const response = await httpClient.get<GetAllCustomerResponse>(
-        `${client.config.baseUrl}/api/v1/customers${queryString}`,
+    return withAuth(client, (token) =>
+      httpClient.get<Customer.ListResponse>(
+        `${buildUrl(client.config.baseUrl, "api/v1/customers")}${queryString}`,
         {
           headers: {
-            Authorization: `Bearer ${token.value}`,
+            Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
         },
-      );
-
-      return ok(response);
-    } catch (error) {
-      return err(new SDKError("Failed to list customers", error));
-    }
+      ),
+    );
   },
 
   async update(
     id: string,
-    customer: UpdateCustomerRequest,
-  ): Promise<Result<UpdateCustomerResponse, SDKError>> {
-    try {
-      const token = await client.getAccessToken();
-      if (!token.ok) {
-        return err(token.error);
-      }
-
-      const response = await httpClient.put<UpdateCustomerResponse>(
-        `${client.config.baseUrl}/api/v1/customers/${id}`,
+    customer: Customer.Request,
+  ): Promise<Result<Customer.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.put<Customer.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", id),
         customer,
         {
           headers: {
-            Authorization: `Bearer ${token.value}`,
+            Authorization: `Bearer ${token}`,
           },
           retryOptions: client.retryOptions,
         },
-      );
+      ),
+    );
+  },
 
-      return ok(response);
-    } catch (error) {
-      return err(new SDKError("Failed to update customer", error));
+  async sync(
+    id: string,
+    sync: Customer.Sync,
+  ): Promise<Result<Customer.SyncResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
     }
+
+    return httpClient.post<Customer.SyncResponse>(
+      `${client.config.baseUrl}/api/v1/customers/${id}/sync`,
+      sync,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
+  },
+
+  async balance(
+    customer_id: string,
+    filter: Customer.BalanceFilter,
+  ): Promise<Result<Customer.BalanceResponse>> {
+    const token = await client.getAccessToken();
+    if (!token.ok) {
+      return err(token.error);
+    }
+
+    const queryString = buildQueryString(filter);
+
+    return httpClient.get<Customer.BalanceResponse>(
+      `${client.config.baseUrl}/api/v1/customers/${customer_id}/balance${queryString}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token.value}`,
+        },
+        retryOptions: client.retryOptions,
+      },
+    );
   },
 });

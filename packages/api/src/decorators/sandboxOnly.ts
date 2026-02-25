@@ -1,0 +1,124 @@
+import { EnvironmentViolationError } from "../utils/errorHandler";
+import type { ResolvedOakClientConfig } from "../types/client";
+
+interface HasConfig {
+  config: ResolvedOakClientConfig;
+}
+
+interface HasClient {
+  client: { config: ResolvedOakClientConfig };
+}
+
+/**
+ * @param obj - Object to check
+ * @returns True if object has a config property with environment
+ */
+function hasConfig(obj: unknown): obj is HasConfig {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "config" in obj &&
+    typeof (obj as HasConfig).config === "object" &&
+    (obj as HasConfig).config !== null &&
+    "environment" in (obj as HasConfig).config
+  );
+}
+
+/**
+ * @param obj - Object to check
+ * @returns True if object has a client.config property
+ */
+function hasClient(obj: unknown): obj is HasClient {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "client" in obj &&
+    typeof (obj as HasClient).client === "object" &&
+    (obj as HasClient).client !== null &&
+    "config" in (obj as HasClient).client
+  );
+}
+
+/**
+ * @typeParam T - Method signature type
+ * @param target - Class prototype
+ * @param propertyKey - Method name
+ * @param descriptor - Property descriptor
+ * @returns Modified descriptor or void
+ */
+export function SandboxOnly<T extends (...args: unknown[]) => unknown>(
+  target: object,
+  propertyKey: string | symbol,
+  descriptor: TypedPropertyDescriptor<T>
+): TypedPropertyDescriptor<T> | void {
+  const originalMethod = descriptor.value;
+
+  if (!originalMethod) {
+    return;
+  }
+
+  descriptor.value = function (this: unknown, ...args: unknown[]) {
+    let environment: string | undefined;
+
+    if (hasConfig(this)) {
+      environment = this.config.environment;
+    } else if (hasClient(this)) {
+      environment = this.client.config.environment;
+    }
+
+    if (!environment) {
+      throw new Error(
+        `@SandboxOnly decorator requires access to environment configuration. ` +
+          `Ensure the class has either a 'config' or 'client.config' property with 'environment' field.`
+      );
+    }
+
+    if (environment === "production") {
+      const methodName =
+        typeof propertyKey === "symbol"
+          ? propertyKey.toString()
+          : String(propertyKey);
+      const error = new EnvironmentViolationError(methodName, environment);
+
+      const isAsyncFunction =
+        originalMethod.constructor.name === "AsyncFunction";
+      if (isAsyncFunction) {
+        return Promise.reject(error) as ReturnType<T>;
+      }
+      throw error;
+    }
+
+    return originalMethod.apply(this, args);
+  } as T;
+
+  return descriptor;
+}
+
+/**
+ * @typeParam T - Function signature type
+ * @param fn - Function to wrap
+ * @param getEnvironment - Function that returns current environment
+ * @param methodName - Name for error messages
+ * @returns Wrapped function that throws in production
+ */
+export function sandboxOnlyFn<T extends (...args: unknown[]) => unknown>(
+  fn: T,
+  getEnvironment: () => string,
+  methodName: string
+): T {
+  return ((...args: unknown[]) => {
+    const environment = getEnvironment();
+
+    if (environment === "production") {
+      const error = new EnvironmentViolationError(methodName, environment);
+
+      const isAsyncFunction = fn.constructor.name === "AsyncFunction";
+      if (isAsyncFunction) {
+        return Promise.reject(error);
+      }
+      throw error;
+    }
+
+    return fn(...args);
+  }) as T;
+}

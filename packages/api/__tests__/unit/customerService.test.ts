@@ -1,14 +1,12 @@
 import { createOakClient } from "../../src";
 import { Crowdsplit } from "../../src/products/crowdsplit";
 import { httpClient } from "../../src/utils/httpClient";
-import { SDKError } from "../../src/utils/errorHandler";
+import { ApiError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils/defaultRetryConfig";
-import {
-  SDKConfig,
-  CreateCustomerRequest,
-  CustomerListQueryParams,
-  ok,
-} from "../../src/types";
+import { OakClientConfig, Customer, ok, err } from "../../src/types";
+import { ENVIRONMENT_URLS } from "../../src/types/environment";
+
+const SANDBOX_URL = ENVIRONMENT_URLS.sandbox;
 
 jest.mock("../../src/utils/httpClient", () => ({
   httpClient: {
@@ -21,56 +19,53 @@ jest.mock("../../src/utils/httpClient", () => ({
 describe("CustomerService - Unit", () => {
   let customers: ReturnType<typeof Crowdsplit>["customers"];
   let client: ReturnType<typeof createOakClient>;
-  let config: SDKConfig;
+  let config: OakClientConfig;
   let retryOptions: RetryOptions;
 
   beforeEach(() => {
     config = {
-      clientId: process.env.CLIENT_ID!,
-      clientSecret: process.env.CLIENT_SECRET!,
-      baseUrl: process.env.BASE_URL!, // staging URL
+      environment: "sandbox",
+      clientId: process.env.CLIENT_ID || "test-client-id",
+      clientSecret: process.env.CLIENT_SECRET || "test-client-secret",
     };
     retryOptions = { maxNumberOfRetries: 1, delay: 100, backoffFactor: 2 };
     client = createOakClient({
       ...config,
       retryOptions,
     });
-    jest
-      .spyOn(client, "getAccessToken")
-      .mockResolvedValue(ok("fake-token"));
+    jest.spyOn(client, "getAccessToken").mockResolvedValue(ok("fake-token"));
     customers = Crowdsplit(client).customers;
     jest.clearAllMocks();
   });
 
   describe("create", () => {
     it("should call POST /api/v1/customers with correct payload", async () => {
-      const request: CreateCustomerRequest = { email: "test@example.com" };
+      const request: Customer.Request = { email: "test@example.com" };
       const mockResponse = { data: { email: "test@example.com" } };
-      (httpClient.post as jest.Mock).mockResolvedValue(mockResponse);
+      (httpClient.post as jest.Mock).mockResolvedValue(ok(mockResponse));
 
       const result = await customers.create(request);
 
       expect(client.getAccessToken).toHaveBeenCalled();
       expect(httpClient.post).toHaveBeenCalledWith(
-        `${process.env.BASE_URL}/api/v1/customers`,
+        `${SANDBOX_URL}/api/v1/customers`,
         request,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
-        })
+        }),
       );
       expect(result).toEqual(ok(mockResponse));
     });
 
-    it("should return SDKError on failure", async () => {
-      (httpClient.post as jest.Mock).mockRejectedValue(
-        new Error("Network error")
-      );
+    it("should return ApiError on failure", async () => {
+      const apiError = new ApiError("HTTP error", 500, { msg: "fail" });
+      (httpClient.post as jest.Mock).mockResolvedValue(err(apiError));
 
       const result = await customers.create({ email: "fail@example.com" });
       expect(result.ok).toBe(false);
       if (!result.ok) {
-        expect(result.error).toBeInstanceOf(SDKError);
+        expect(result.error).toBeInstanceOf(ApiError);
       }
     });
   });
@@ -78,16 +73,16 @@ describe("CustomerService - Unit", () => {
   describe("get", () => {
     it("should call GET /api/v1/customers/:id", async () => {
       const mockResponse = { data: { email: "test@example.com" } };
-      (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+      (httpClient.get as jest.Mock).mockResolvedValue(ok(mockResponse));
 
       const result = await customers.get("123");
 
       expect(httpClient.get).toHaveBeenCalledWith(
-        `${process.env.BASE_URL}/api/v1/customers/123`,
+        `${SANDBOX_URL}/api/v1/customers/123`,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
-        })
+        }),
       );
       expect(result).toEqual(ok(mockResponse));
     });
@@ -95,18 +90,18 @@ describe("CustomerService - Unit", () => {
 
   describe("list", () => {
     it("should call GET /api/v1/customers with query params", async () => {
-      const params: CustomerListQueryParams = { limit: 10, offset: 5 };
+      const params: Customer.ListQueryParams = { limit: 10, offset: 5 };
       const mockResponse = { data: { count: 1, customer_list: [] } };
-      (httpClient.get as jest.Mock).mockResolvedValue(mockResponse);
+      (httpClient.get as jest.Mock).mockResolvedValue(ok(mockResponse));
 
       const result = await customers.list(params);
 
       expect(httpClient.get).toHaveBeenCalledWith(
-        `${process.env.BASE_URL}/api/v1/customers?limit=10&offset=5`,
+        `${SANDBOX_URL}/api/v1/customers?limit=10&offset=5`,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
-        })
+        }),
       );
       expect(result).toEqual(ok(mockResponse));
     });
@@ -116,17 +111,17 @@ describe("CustomerService - Unit", () => {
     it("should call PUT /api/v1/customers/:id", async () => {
       const updateData = { email: "updated@example.com" };
       const mockResponse = { data: { email: "updated@example.com" } };
-      (httpClient.put as jest.Mock).mockResolvedValue(mockResponse);
+      (httpClient.put as jest.Mock).mockResolvedValue(ok(mockResponse));
 
       const result = await customers.update("123", updateData);
 
       expect(httpClient.put).toHaveBeenCalledWith(
-        `${process.env.BASE_URL}/api/v1/customers/123`,
+        `${SANDBOX_URL}/api/v1/customers/123`,
         updateData,
         expect.objectContaining({
           headers: { Authorization: "Bearer fake-token" },
           retryOptions: expect.objectContaining(retryOptions),
-        })
+        }),
       );
       expect(result).toEqual(ok(mockResponse));
     });
