@@ -547,6 +547,10 @@ CLIENT_SECRET=your_sandbox_client_secret
 OAK_ENVIRONMENT=sandbox
 ```
 
+### Code coverage
+
+Coverage is reported to [Codecov](https://about.codecov.io) after each successful CI run. The Codecov workflow runs separately with minimal permissions and uploads coverage from the API package. For uploads on pushes and pull requests from this repository, a `CODECOV_TOKEN` secret (from your organization or Codecov dashboard) may be required; when the token is not set, the upload step is skipped and the workflow still succeeds.
+
 ---
 
 ## 📖 Documentation
