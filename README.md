@@ -2,6 +2,8 @@
 
 > **Status**: Pre-launch development (Expected launch: March 2026)
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/oak-network/sdk/badge)](https://scorecard.dev/viewer/?uri=github.com/oak-network/sdk)
+
 TypeScript SDK for the Oak Network Crowdsplit API. Build secure payment applications with type-safe interfaces, comprehensive error handling, and OAuth 2.0 authentication.
 
 ---
