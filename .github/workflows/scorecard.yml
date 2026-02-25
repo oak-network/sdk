@@ -3,7 +3,7 @@ on:
   schedule:
     - cron: "30 2 * * 1" # Run every Monday at 2:30 AM
   push:
-    branches: [main, develop]
+    branches: [main]
 
 permissions: read-all
 
@@ -30,7 +30,7 @@ jobs:
           publish_results: true
 
       - name: "Upload artifact"
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4.6.0
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: SARIF file
           path: results.sarif
