@@ -3,7 +3,7 @@ on:
   schedule:
     - cron: "30 2 * * 1" # Run every Monday at 2:30 AM
   push:
-    branches: [main]
+    branches: [main, develop]
 
 permissions: read-all
 
