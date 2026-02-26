@@ -1,0 +1,35 @@
+name: Codecov
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main, develop]
+
+concurrency:
+  group: codecov-${{ github.event.workflow_run.id }}
+  cancel-in-progress: true
+
+jobs:
+  upload-coverage:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports-20.x
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/api/coverage/lcov.info
+          fail_ci_if_error: false
+        continue-on-error: true
