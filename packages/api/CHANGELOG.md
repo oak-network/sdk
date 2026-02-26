@@ -1,5 +1,13 @@
 # @oaknetwork/api
 
+## 1.0.1
+
+### Patch Changes
+
+### Patch Changes
+
+- Initial release of SDK v1.0.1.
+
 ## 1.0.0
 
 ### Major Changes
