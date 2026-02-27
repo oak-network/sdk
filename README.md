@@ -248,13 +248,18 @@ const plans = createPlanService(client);
 
 await plans.create({
   name: 'Pro Plan',
-  amount: 2999,
+  description: 'Monthly pro subscription',
+  price: 2999,
   currency: 'USD',
-  interval: 'monthly',
+  frequency: 30,
+  start_date: '2026-03-01',
+  is_auto_renewable: true,
+  allow_amount_override: false,
+  created_by: customerId,
 });
 
 await plans.list();
-await plans.get('plan_id');
+await plans.details('plan_id');
 ```
 
 ### Transactions
@@ -296,7 +301,7 @@ if (wh.ok) {
 // List / update / delete
 await webhooks.list();
 await webhooks.update('webhook_id', { url: 'https://new-url.com/webhooks' });
-await webhooks.toggleStatus('webhook_id', 'inactive');
+await webhooks.toggle('webhook_id');
 await webhooks.delete('webhook_id');
 ```
 
