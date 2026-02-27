@@ -29,10 +29,9 @@ jobs:
       - name: Check lcov.info
         run: |
           echo "Checking where the file landed:"
-          ls -la
-          ls -la packages/api/coverage/
+          ls -la api/coverage/
           echo "Reading the first 5 lines of code source mapped:"
-          grep "SF:" packages/api/coverage/lcov.info | head -n 5
+          grep "SF:" api/coverage/lcov.info | head -n 5
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v5
