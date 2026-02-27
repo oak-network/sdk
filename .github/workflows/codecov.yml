@@ -30,6 +30,5 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: packages/api/coverage/lcov.info
+          files: api/coverage/lcov.info
           fail_ci_if_error: false
-        continue-on-error: true

@@ -1,4 +1,4 @@
-# Oak SDK Monorepo
+# Oak API SDK
 
 > **Status**: Pre-launch development (Expected launch: March 2026)
 
@@ -588,9 +588,13 @@ Before submitting PR:
 
 ## 📄 License
 
-MIT
+[MIT LICENSE](LICENSE)
 
 ---
+
+## Security
+
+[SECURITY POLICIES](SECURITY.md)
 
 ## 🔗 Links
 
