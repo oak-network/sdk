@@ -589,7 +589,7 @@ Before submitting PR:
 
 ## 📄 License
 
-MIT
+[MIT LICENSE](LICENSE)
 
 ---
 
