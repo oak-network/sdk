@@ -1,0 +1,5 @@
+codecov:
+  branch: main
+
+fixes:
+  - "src/::packages/api/src/"
