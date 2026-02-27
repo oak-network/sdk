@@ -2,7 +2,7 @@
 
 > **Status**: Pre-launch development (Expected launch: March 2026)
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/oak-network/sdk/badge)](https://scorecard.dev/viewer/?uri=github.com/oak-network/sdk) [![Codecov](https://codecov.io/github/oak-network/sdk/graph/badge.svg)](https://app.codecov.io/github/oak-network/sdk) [![CodeQL](https://img.shields.io/github/actions/workflow/status/oak-network/sdk/codeql.yml?label=CodeQL&logo=github)](https://github.com/oak-network/sdk/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/oak-network/sdk/badge)](https://scorecard.dev/viewer/?uri=github.com/oak-network/sdk) [![Codecov](https://codecov.io/github/oak-network/sdk/graph/badge.svg)](https://app.codecov.io/github/oak-network/sdk) [![CodeQL](https://github.com/oak-network/sdk/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/oak-network/sdk/actions/workflows/github-code-scanning/codeql)
 
 TypeScript SDK for the Oak Network Crowdsplit API. Build secure payment applications with type-safe interfaces, comprehensive error handling, and OAuth 2.0 authentication.
 
@@ -437,9 +437,8 @@ const customerData: Customer.Request = {
 };
 
 // Type-safe result handling
-const result: Result<Customer.Response> = await crowdsplit.customers.create(
-  customerData,
-);
+const result: Result<Customer.Response> =
+  await crowdsplit.customers.create(customerData);
 
 if (result.ok) {
   const customer: Customer.Data = result.value.data;
