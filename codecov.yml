@@ -2,4 +2,4 @@ codecov:
   branch: main
 
 fixes:
-  - src/::packages/api/src/
+  - "src/::packages/api/src/"
