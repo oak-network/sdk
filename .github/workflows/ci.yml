@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop, fix/codecov-badge]
+    branches: [main, develop]
   pull_request:
-    branches: [main, develop, fix/codecov-badge]
+    branches: [main, develop]
 
 jobs:
   build-and-test:
