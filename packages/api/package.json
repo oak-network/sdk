@@ -32,7 +32,8 @@
     "test:unit": "jest __tests__/unit --coverage",
     "test:integration": "jest __tests__/integration",
     "test:all": "jest --coverage",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "lint": "tsc -p tsconfig.build.json --noEmit"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

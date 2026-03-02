@@ -11,7 +11,8 @@
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "test": "jest --coverage",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "lint": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
