@@ -52,7 +52,7 @@ jobs:
       - name: Update npm for OIDC support
         if: steps.changesets.outputs.hasChangesets == 'false'
         run: |
-          npm install -g npm@10.9.2
+          npm install -g npm@11.11.0
           npm --version
 
       - name: Publish packages
