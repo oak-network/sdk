@@ -19,7 +19,7 @@ importers:
         specifier: ^30.0.0
         version: 30.0.0
 
-  packages/api:
+  packages/payment-sdk:
     devDependencies:
       '@types/jest':
         specifier: ^30.0.0

@@ -1,4 +1,4 @@
-# packages/api — Fix Backlog
+# packages/payment-sdk — Fix Backlog
 
 Based on code review (Feb 2026). Ordered by priority.
 
