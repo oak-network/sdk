@@ -523,6 +523,24 @@ We use Changesets to manage versions and changelogs:
    - Generates changelogs
    - Creates release PR
 
+### Git hooks & conventional commits
+
+This repository uses Git hooks (via `husky`) and conventional commits (via `commitlint`) to keep history clean and enforce quality checks.
+
+- **Pre-commit hook**:
+  - Runs `lint-staged` on staged TypeScript files in `packages/api` and `packages/contracts`.
+  - For each affected package, runs its `lint` script (currently TypeScript `tsc --noEmit`).
+  - Keeps commits fast by running only lightweight static checks (no tests).
+
+- **Commit message hook**:
+  - Uses `commitlint` with `@commitlint/config-conventional` to enforce [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+  - Example messages:
+    - `feat(api): add refunds service`
+    - `fix(ci): correct codecov token handling`
+    - `chore(release): prepare v0.2.0`
+
+CI also runs `commitlint` against the branch history to ensure all commits in a PR follow the convention, even if local hooks are bypassed.
+
 ### Running Tests
 
 ```bash
