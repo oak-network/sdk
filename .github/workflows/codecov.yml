@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: [CI]
     types: [completed]
-    branches: [main, develop]
+    branches: [main]
 
 concurrency:
   group: codecov-${{ github.event.workflow_run.id }}
@@ -22,7 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
@@ -32,8 +32,12 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: api/coverage/lcov.info
+          override_commit: ${{ github.event.workflow_run.head_sha }}
+          override_branch: ${{ github.event.workflow_run.head_branch }}
+          override_build: ${{ github.event.workflow_run.run_number }}
+          override_build_url: ${{ github.event.workflow_run.html_url }}
           fail_ci_if_error: false
