@@ -21,7 +21,7 @@ export namespace PaymentMethod {
     metadata?: Record<string, any>;
   }
 
-  export interface CrowdSplitBankAccount {
+  export interface OakBankAccount {
     type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
     provider?: string; // from PLATFORMS keys
     bank_branch_code: string;
@@ -77,7 +77,7 @@ export namespace PaymentMethod {
     metadata?: Record<string, any>;
   }
 
-  export interface CrowdSplitCustomerWallet {
+  export interface OakCustomerWallet {
     type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
     provider?: string; // from PLATFORMS keys
     evm_address: string; // validated as checksummed Ethereum address
@@ -100,7 +100,7 @@ export namespace PaymentMethod {
     metadata?: Record<string, any>;
   }
 
-  export interface CrowdSplitPix {
+  export interface OakPix {
     type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
     provider?: string; // from PLATFORMS keys
     pix_string: string;
@@ -137,14 +137,14 @@ export namespace PaymentMethod {
 
   export type Request =
     | BridgeBankAccount
-    | CrowdSplitBankAccount
+    | OakBankAccount
     | StripeBankAccount
     | MercadoPagoCard
     | PagarMeCard
     | StripeCard
-    | CrowdSplitCustomerWallet
+    | OakCustomerWallet
     | BridgeLiquidationAddress
-    | CrowdSplitPix
+    | OakPix
     | BridgePlaid
     | BridgeVirtualAccount;
 

@@ -1,8 +1,8 @@
 {
-  "name": "crowdsplit-sdk-monorepo",
+  "name": "oak-sdk-monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "Crowdsplit SDK Monorepo",
+  "description": "Oak Network SDK Monorepo",
   "pnpm": {
     "overrides": {
       "minimatch@<10.2.1": ">=10.2.1",

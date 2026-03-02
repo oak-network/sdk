@@ -1,13 +1,15 @@
-import { createOakClient } from "../../src";
-import { Crowdsplit } from "../../src/products/crowdsplit";
+import { createOakClient, createTransferService, createCustomerService, createPaymentMethodService } from "../../src";
+import { TransferService } from "../../src/services/transferService";
+import { CustomerService } from "../../src/services/customerService";
+import { PaymentMethodService } from "../../src/services/paymentMethodService";
 import { getConfigFromEnv } from "../config";
 
 const INTEGRATION_TEST_TIMEOUT = 30000;
 
 describe("TransferService - Integration", () => {
-  let transfers: ReturnType<typeof Crowdsplit>["transfers"];
-  let customers: ReturnType<typeof Crowdsplit>["customers"];
-  let paymentMethods: ReturnType<typeof Crowdsplit>["paymentMethods"];
+  let transfers: TransferService;
+  let customers: CustomerService;
+  let paymentMethods: PaymentMethodService;
 
   beforeAll(() => {
     const client = createOakClient({
@@ -18,9 +20,9 @@ describe("TransferService - Integration", () => {
         backoffFactor: 2,
       },
     });
-    transfers = Crowdsplit(client).transfers;
-    customers = Crowdsplit(client).customers;
-    paymentMethods = Crowdsplit(client).paymentMethods;
+    transfers = createTransferService(client);
+    customers = createCustomerService(client);
+    paymentMethods = createPaymentMethodService(client);
   });
 
   let customerId: string | undefined;

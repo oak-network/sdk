@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Webhook Verification Utilities**: New `verifyWebhookSignature()` and `parseWebhookPayload()` functions for secure webhook handling using HMAC-SHA256 with timing-safe comparison
-- **RefundService**: Added to Crowdsplit product facade, exposing refund functionality that was previously available but not exposed
+- **RefundService**: Exposed refund functionality that was previously available but not exported
 - **Helper Utilities**:
   - `withAuth()`: Higher-order function for wrapping HTTP operations with authentication (eliminates 35+ duplications)
   - `buildUrl()`: Centralized URL construction with consistent trailing slash handling (standardizes 36+ URL constructions)
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING**: Removed `createAuthService()` wrapper - use `client.getAccessToken()` and `client.grantToken()` directly
 - **Type System Improvements**:
   - Replaced `any` with `unknown` in httpClient methods (`post`, `put`, `patch`) and retryHandler for better type safety
-  - Converted `ReturnType<typeof>` to direct interface imports in Crowdsplit facade
+  - Converted `ReturnType<typeof>` to direct interface imports in service types
   - Converted intersection types to standalone interfaces in Payment and Transfer types
 - **Dependency Updates**:
   - Moved `nock` and `dotenv` from dependencies to devDependencies (reduces production bundle size)
@@ -173,13 +173,13 @@ app.post("/webhook", (req, res) => {
 #### RefundService Now Available
 
 ```typescript
-import { Crowdsplit } from "@oaknetwork/api/products/crowdsplit";
+import { createOakClient, createRefundService } from "@oaknetwork/api";
 
-const crowdsplit = Crowdsplit(client);
+const client = createOakClient({ /* config */ });
+const refunds = createRefundService(client);
 
-// Refund service is now exposed
-const result = await crowdsplit.refunds.create({
-  transaction_id: "txn_123",
+// Create a refund
+const result = await refunds.create("pay_123", {
   amount: 1000,
 });
 ```
@@ -219,7 +219,7 @@ const result = await crowdsplit.refunds.create({
 ### Added
 
 - Initial release of Oak SDK
-- Support for Crowdsplit API
+- Support for Oak Network API
 - Customer, Payment, PaymentMethod, Transaction services
 - Transfer, Webhook, Plan, Buy, Sell services
 - OAuth 2.0 client credentials flow
