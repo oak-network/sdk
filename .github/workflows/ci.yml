@@ -60,6 +60,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Type-check (tsc --noEmit)
+        run: pnpm typecheck
+
       - name: Calculate next versions from changesets
         run: pnpm changeset:status
       
