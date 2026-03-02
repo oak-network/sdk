@@ -8,7 +8,7 @@
  */
 
 const { getOakClient, resolveCustomerId } = require('../common/config');
-const { Crowdsplit } = require('../../dist/products/crowdsplit');
+const { createCustomerService, createPaymentMethodService, createWebhookService } = require('../../dist/index.js');
 const logger = require('../common/logger');
 
 async function main() {
@@ -16,7 +16,9 @@ async function main() {
 
   try {
     const client = getOakClient();
-    const { customers, paymentMethods, webhooks } = Crowdsplit(client);
+    const customers = createCustomerService(client);
+    const paymentMethods = createPaymentMethodService(client);
+    const webhooks = createWebhookService(client);
 
     let customerId;
 

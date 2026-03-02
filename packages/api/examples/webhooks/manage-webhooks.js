@@ -5,7 +5,7 @@
  */
 
 const { getOakClient } = require('../common/config');
-const { Crowdsplit } = require('../../dist/products/crowdsplit');
+const { createWebhookService } = require('../../dist/index.js');
 const logger = require('../common/logger');
 
 async function main() {
@@ -13,7 +13,7 @@ async function main() {
 
   try {
     const client = getOakClient();
-    const webhooks = Crowdsplit(client).webhooks;
+    const webhooks = createWebhookService(client);
 
     // Step 1: List all webhooks
     logger.step(1, 'Listing all webhooks...');

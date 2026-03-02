@@ -1,11 +1,11 @@
-import { createOakClient } from "../../src";
-import { Crowdsplit } from "../../src/products/crowdsplit";
+import { createOakClient, createCustomerService } from "../../src";
+import { CustomerService } from "../../src/services/customerService";
 import { getConfigFromEnv } from "../config";
 
 const INTEGRATION_TEST_TIMEOUT = 30000;
 
 describe("CustomerService - Integration", () => {
-  let customers: ReturnType<typeof Crowdsplit>["customers"];
+  let customers: CustomerService;
   /** Customer resolved from list so get/update tests don't depend on create succeeding. */
   let existingCustomerId: string | undefined;
 
@@ -18,7 +18,7 @@ describe("CustomerService - Integration", () => {
         backoffFactor: 2,
       },
     });
-    customers = Crowdsplit(client).customers;
+    customers = createCustomerService(client);
 
     const listResponse = await customers.list({ limit: 1 });
     if (listResponse.ok && listResponse.value.data.customer_list.length > 0) {

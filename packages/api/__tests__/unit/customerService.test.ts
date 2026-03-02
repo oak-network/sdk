@@ -1,5 +1,5 @@
-import { createOakClient } from "../../src";
-import { Crowdsplit } from "../../src/products/crowdsplit";
+import { createOakClient, createCustomerService } from "../../src";
+import { CustomerService } from "../../src/services/customerService";
 import { httpClient } from "../../src/utils/httpClient";
 import { ApiError } from "../../src/utils/errorHandler";
 import { RetryOptions } from "../../src/utils/defaultRetryConfig";
@@ -17,7 +17,7 @@ jest.mock("../../src/utils/httpClient", () => ({
 }));
 
 describe("CustomerService - Unit", () => {
-  let customers: ReturnType<typeof Crowdsplit>["customers"];
+  let customers: CustomerService;
   let client: ReturnType<typeof createOakClient>;
   let config: OakClientConfig;
   let retryOptions: RetryOptions;
@@ -34,7 +34,7 @@ describe("CustomerService - Unit", () => {
       retryOptions,
     });
     jest.spyOn(client, "getAccessToken").mockResolvedValue(ok("fake-token"));
-    customers = Crowdsplit(client).customers;
+    customers = createCustomerService(client);
     jest.clearAllMocks();
   });
 
