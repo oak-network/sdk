@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: [CI]
     types: [completed]
-    branches: [main, develop]
+    branches: [main]
 
 concurrency:
   group: codecov-${{ github.event.workflow_run.id }}
