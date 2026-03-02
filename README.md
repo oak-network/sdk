@@ -500,6 +500,7 @@ pnpm install          # Install dependencies
 pnpm build           # Build all packages
 pnpm test            # Run tests
 pnpm lint            # Lint code
+pnpm typecheck       # Run TypeScript type-checking in all workspaces
 ```
 
 **DO NOT** use npm or yarn. The repository enforces pnpm >= 10.0.0.
@@ -528,9 +529,9 @@ We use Changesets to manage versions and changelogs:
 This repository uses Git hooks (via `husky`) and conventional commits (via `commitlint`) to keep history clean and enforce quality checks.
 
 - **Pre-commit hook**:
-  - Runs `lint-staged` on staged TypeScript files in `packages/api` and `packages/contracts`.
-  - For each affected package, runs its `lint` script (currently TypeScript `tsc --noEmit`).
-  - Keeps commits fast by running only lightweight static checks (no tests).
+  - Runs `lint-staged` on staged files.
+  - For TypeScript/JavaScript files, runs ESLint with `--fix` and then Prettier with `--write` on the staged files only.
+  - Does **not** run `tsc --noEmit` locally, keeping commits fast while still auto-fixing issues.
 
 - **Commit message hook**:
   - Uses `commitlint` with `@commitlint/config-conventional` to enforce [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
@@ -539,7 +540,10 @@ This repository uses Git hooks (via `husky`) and conventional commits (via `comm
     - `fix(ci): correct codecov token handling`
     - `chore(release): prepare v0.2.0`
 
-CI also runs `commitlint` against the branch history to ensure all commits in a PR follow the convention, even if local hooks are bypassed.
+CI also runs:
+
+- `commitlint` against the branch history to ensure all commits in a PR follow the convention, even if local hooks are bypassed.
+- `pnpm typecheck` (TypeScript `tsc --noEmit` in workspaces) and `pnpm lint` (ESLint-based linting) as part of the main CI workflow.
 
 ### Running Tests
 
