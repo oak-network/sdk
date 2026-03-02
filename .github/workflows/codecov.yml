@@ -19,11 +19,6 @@ jobs:
       actions: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-
       - name: Download coverage artifact
         uses: actions/download-artifact@v4
         with:
@@ -32,8 +27,8 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: api/coverage/lcov.info
+          files: packages/api/coverage/lcov.info
           fail_ci_if_error: false
