@@ -1,7 +1,7 @@
 {
   "name": "@oaknetwork/api",
   "version": "1.0.1",
-  "description": "TypeScript SDK for Oak Network API",
+  "description": "A fully-typed TypeScript SDK for the Oak Network payment API.",
   "publishConfig": {
     "access": "public"
   },
