@@ -1,20 +1,18 @@
 # @oaknetwork/api
 
-## 1.1.0
+## 1.0.1
 
-### Minor Changes
+### Patch Changes
 
-### Minor Changes
+### Patch Changes
 
-- testing changeset for releases
+- Initial release of SDK v1.0.1.
 
 ## 1.0.0
 
 ### Major Changes
 
-### Major Changes
-
-- Adopt Result<T, E> responses across API services and auth flows.
+- Initial release of Oak SDK
 
 ## 0.1.0
 
