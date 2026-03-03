@@ -1,4 +1,4 @@
-# @oaknetwork/api
+# @oaknetwork/payments-sdk
 
 ## 1.0.1
 
