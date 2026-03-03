@@ -2,7 +2,7 @@
 
 A fully-typed TypeScript SDK for the Oak Network Payments API. Drop-in authentication, automatic retries, and zero boilerplate, production-ready from day one.
 
-> Full documentation: [oaknetwork.org/docs/sdk/api-sdk/overview](https://www.oaknetwork.org/docs/sdk/api-sdk/overview)
+> Full documentation: [oaknetwork.org/docs/sdk/overview](https://www.oaknetwork.org/docs/sdk/overview)
 
 ## Install
 
