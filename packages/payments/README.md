@@ -1,7 +1,6 @@
 # Oak Payments SDK
 
-TypeScript SDK for the Oak payments API.
-Build secure payment applications with type-safe interfaces, `Result<T, OakError>`-based error handling, automatic OAuth 2.0 authentication, and retry support.
+A fully-typed TypeScript SDK for the Oak Network Payments API. Drop-in authentication, automatic retries, and zero boilerplate, production-ready from day one.
 
 > Full documentation: [oaknetwork.org/docs/sdk/api-sdk/overview](https://www.oaknetwork.org/docs/sdk/api-sdk/overview)
 
