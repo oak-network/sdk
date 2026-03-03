@@ -1,17 +1,12 @@
-import { ApiResponse } from "./common";
+import { ApiResponse } from './common';
 
 export namespace Provider {
   // ----------------------
   // Enums / literals
   // ----------------------
-  export type Name =
-    | "avenia"
-    | "mercado_pago"
-    | "bridge"
-    | "stripe"
-    | "pagar_me";
+  export type Name = 'avenia' | 'mercado_pago' | 'bridge' | 'stripe' | 'pagar_me';
 
-  export type TargetRole = "subaccount" | "customer" | "connected_account";
+  export type TargetRole = 'subaccount' | 'customer' | 'connected_account';
 
   // ----------------------
   // Schema
@@ -56,9 +51,9 @@ export namespace Provider {
     provider: string;
     status: string; // e.g., "created"
     target_role: string | null;
-    provider_response: any | null;
+    provider_response: unknown;
     rejection_reason: string | null;
-    readiness: any | null;
+    readiness: unknown;
     created_at: string;
     updated_at: string;
   }
@@ -88,9 +83,9 @@ export namespace Provider {
     status: string;
     provider: string;
     target_role: string;
-    provider_response: any | null;
+    provider_response: unknown;
     rejection_reason: string | null;
-    readiness: any | null;
+    readiness: unknown;
     created_at: string;
     updated_at: string;
   }

@@ -1,5 +1,4 @@
-import { ApiResponse } from "./common";
-import { PaymentMethod } from "./paymentMethod";
+import { ApiResponse } from './common';
 
 export namespace Payment {
   // ----------------------------------------
@@ -10,7 +9,7 @@ export namespace Payment {
   }
 
   export interface Metadata {
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   export interface FraudCheckData {
@@ -20,9 +19,9 @@ export namespace Payment {
   }
 
   export interface FraudCheckConfig {
-    threshold?: "low" | "medium" | "high";
-    sequence?: "fraud_before_auth" | "fraud_after_auth";
-    action_on_fail?: "reject" | "review";
+    threshold?: 'low' | 'medium' | 'high';
+    sequence?: 'fraud_before_auth' | 'fraud_after_auth';
+    action_on_fail?: 'reject' | 'review';
   }
 
   export interface FraudCheck {
@@ -33,11 +32,11 @@ export namespace Payment {
   }
 
   export interface ProviderResponse {
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   export interface PaymentMethod {
-    type: "card";
+    type: 'card';
     id?: string;
   }
 
@@ -48,7 +47,7 @@ export namespace Payment {
     payment_method: PaymentMethod;
     installments?: number;
     float_rate?: number;
-    capture_method: "automatic";
+    capture_method: 'automatic';
     fraud_check?: FraudCheck;
   }
 
@@ -56,33 +55,33 @@ export namespace Payment {
   // Create payment (provider-specific requests)
   // ----------------------------------------
   export interface MercadoPagoRequest {
-    provider: "mercado_pago";
+    provider: 'mercado_pago';
     source: {
       amount: number;
-      currency: "COP";
+      currency: 'COP';
       customer: {
         id: string; // UUID
       };
       payment_method: {
-        type: "card";
+        type: 'card';
         card_token: string;
       };
-      capture_method: "automatic";
+      capture_method: 'automatic';
     };
     confirm?: boolean;
     metadata?: Record<string, string>;
   }
 
   export interface PagarMeRequest {
-    provider: "pagar_me";
+    provider: 'pagar_me';
     source: {
       amount: number;
-      currency: "BRL";
+      currency: 'BRL';
       customer: {
         id: string; // UUID
       };
       payment_method: {
-        type: "card";
+        type: 'card';
         id?: string; // if present, card_token and billing_address are forbidden
         card_token?: string; // required when id is absent
         billing_address?: {
@@ -95,10 +94,10 @@ export namespace Payment {
           country_code: string;
         }; // required when id is absent
       };
-      capture_method: "automatic" | "manual"; // from CARD_CAPTURE_METHOD
+      capture_method: 'automatic' | 'manual'; // from CARD_CAPTURE_METHOD
       fraud_check: {
         enabled: boolean;
-        provider?: "konduto"; // required when enabled=true
+        provider?: 'konduto'; // required when enabled=true
         config?: {
           sequence: string; // from FRAUD_SEQUENCE keys
           threshold: string;
@@ -116,33 +115,33 @@ export namespace Payment {
   }
 
   export interface StripeRequest {
-    provider: "stripe";
+    provider: 'stripe';
     source: {
       amount: number;
       currency: string;
       customer?: { id?: string };
       payment_method: {
-        type: "card";
+        type: 'card';
         id?: string;
       };
       installments?: number;
       float_rate?: number;
-      capture_method: "automatic";
+      capture_method: 'automatic';
       fraud_check?: { enabled: false };
     };
     destination?: {
       amount?: number;
-      currency?: "usd";
+      currency?: 'usd';
       customer?: { id?: string };
     };
     fee?: {
-      bearer: "platform" | "connected_account";
+      bearer: 'platform' | 'connected_account';
     };
-    flow?: "platform" | "destination";
+    flow?: 'platform' | 'destination';
     allocations?: Array<{
       type?: string;
       receiver: {
-        type?: "platform" | "connected_account";
+        type?: 'platform' | 'connected_account';
         id?: string;
       };
       amount: number;
@@ -163,7 +162,7 @@ export namespace Payment {
     metadata?: Record<string, string>;
     id: string;
     status: string;
-    type: "payment";
+    type: 'payment';
     created_at: string;
     updated_at: string;
     provider_response?: ProviderResponse;

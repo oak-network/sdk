@@ -1,4 +1,4 @@
-import { ApiResponse } from "./common";
+import { ApiResponse } from './common';
 
 export namespace Webhook {
   // ----------------------
@@ -12,7 +12,7 @@ export namespace Webhook {
     is_active: boolean;
   }
 
-  export type PublicData = Omit<Data, "secret">;
+  export type PublicData = Omit<Data, 'secret'>;
 
   // ----------------------
   // Requests
@@ -35,7 +35,7 @@ export namespace Webhook {
     is_acknowledged: boolean;
     event: string | null;
     category: string | null;
-    data: any;
+    data: unknown;
   }
 
   export interface ListNotificationsQuery {

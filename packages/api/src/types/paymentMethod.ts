@@ -1,4 +1,4 @@
-import { ApiResponse } from "./common";
+import { ApiResponse } from './common';
 
 export namespace PaymentMethod {
   export interface BridgeBankAccount {
@@ -18,7 +18,7 @@ export namespace PaymentMethod {
       postal_code: string;
       country: string;
     };
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface CrowdSplitBankAccount {
@@ -30,7 +30,7 @@ export namespace PaymentMethod {
     bank_account_type: string; // from SUBJECT_BANK_ACCOUNT_TYPE keys
     bank_name: string;
     bank_swift_code: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface StripeBankAccount {
@@ -42,8 +42,8 @@ export namespace PaymentMethod {
     bank_routing_number: string; // pattern: digits only
     bank_account_type: string;
     bank_account_name: string;
-    bank_metadata?: Record<string, any>;
-    metadata?: Record<string, any>;
+    bank_metadata?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface MercadoPagoCard {
@@ -52,7 +52,7 @@ export namespace PaymentMethod {
     card_details: {
       card_token: string;
     };
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface PagarMeCard {
@@ -68,13 +68,13 @@ export namespace PaymentMethod {
       state: string;
       country_code: string; // validated externally
     };
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface StripeCard {
     type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
     provider: string; // from PLATFORMS keys
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface CrowdSplitCustomerWallet {
@@ -83,7 +83,7 @@ export namespace PaymentMethod {
     evm_address: string; // validated as checksummed Ethereum address
     chain: string; // from WALLET_CHAIN keys
     currency: string; // from ASSET_TYPE keys
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface BridgeLiquidationAddress {
@@ -97,14 +97,14 @@ export namespace PaymentMethod {
       destination_payment_rail: string;
       chain: string;
     };
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface CrowdSplitPix {
     type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
     provider?: string; // from PLATFORMS keys
     pix_string: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface BridgePlaid {
@@ -123,7 +123,7 @@ export namespace PaymentMethod {
       evm_address: string;
     };
     destination_payment_method_id?: string; // UUID v4
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   // export type MethodData =

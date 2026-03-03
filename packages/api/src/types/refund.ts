@@ -1,15 +1,15 @@
-import { ApiResponse } from "./common";
+import { ApiResponse } from './common';
 
 export namespace Refund {
   export interface Request {
     amount?: number;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   interface Data {
     id: string;
     status: string; // e.g., "created"
-    type: "refund";
+    type: 'refund';
     amount?: number;
     provider?: string;
   }

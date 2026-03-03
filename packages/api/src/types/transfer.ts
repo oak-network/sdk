@@ -1,11 +1,11 @@
-import { ApiResponse } from "./common";
+import { ApiResponse } from './common';
 
 export namespace Transfer {
   export interface BrlaRequest {
-    provider: "brla";
+    provider: 'brla';
     source: {
       amount: number; // integer, positive
-      currency: "brla"; // from ASSET_TYPE.BRLA
+      currency: 'brla'; // from ASSET_TYPE.BRLA
       customer?: {
         id: string;
       };
@@ -21,26 +21,26 @@ export namespace Transfer {
         evm_address?: string; // required when id is absent, validated as checksummed address
       };
     };
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     provider_data?: {
       wallet_memo?: string; // max 50 characters
     };
   }
 
   export interface PagarMeRequest {
-    provider: "pagar_me";
+    provider: 'pagar_me';
     source: {
       amount: number; // integer, positive
-      currency: "brl"; // from CURRENCY.BRL
+      currency: 'brl'; // from CURRENCY.BRL
     };
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }
 
   export interface StripeRequest {
-    provider: "stripe";
+    provider: 'stripe';
     source: {
       amount: number; // integer, positive
-      currency: "usd"; // from CURRENCY.USD
+      currency: 'usd'; // from CURRENCY.USD
       customer: {
         id: string; // must equal destination.customer.id
       };
@@ -51,10 +51,10 @@ export namespace Transfer {
       };
       payment_method: {
         id: string;
-        type: "bank";
+        type: 'bank';
       };
     };
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     provider_data?: {
       statement_descriptor?: string;
     };
@@ -85,11 +85,11 @@ export namespace Transfer {
         evm_address?: string;
       };
     };
-    metadata?: Record<string, any>;
-    provider_data?: Record<string, any>;
+    metadata?: Record<string, unknown>;
+    provider_data?: Record<string, unknown>;
     id: string;
     status: string;
-    type: "transfer";
+    type: 'transfer';
     created_at: string;
     updated_at: string;
   }
