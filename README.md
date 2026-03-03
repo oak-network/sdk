@@ -1,6 +1,6 @@
 # Oak Network SDK
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/oak-network/sdk/badge)](https://scorecard.dev/viewer/?uri=github.com/oak-network/sdk) [![Codecov](https://codecov.io/github/oak-network/sdk/graph/badge.svg)](https://app.codecov.io/github/oak-network/sdk) [![CodeQL](https://github.com/oak-network/sdk/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/oak-network/sdk/actions/workflows/github-code-scanning/codeql)
+[![Codecov](https://codecov.io/github/oak-network/sdk/graph/badge.svg)](https://app.codecov.io/github/oak-network/sdk) [![CodeQL](https://github.com/oak-network/sdk/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/oak-network/sdk/actions/workflows/github-code-scanning/codeql)
 
 TypeScript SDK for the [Oak Network](https://www.oaknetwork.org/) payment API. Build secure payment applications with type-safe interfaces, a `Result<T, OakError>` error handling pattern, automatic OAuth 2.0 authentication, and built-in retries.
 
@@ -21,10 +21,10 @@ CLIENT_SECRET=your-client-secret
 
 Install `dotenv` to load these automatically: `pnpm add dotenv`, then add `import 'dotenv/config'` at the top of your entry file.
 
-| Variable | Required | Description |
-|---|---|---|
-| `CLIENT_ID` | Yes | Your merchant client ID |
-| `CLIENT_SECRET` | Yes | Your merchant client secret |
+| Variable        | Required | Description                 |
+| --------------- | -------- | --------------------------- |
+| `CLIENT_ID`     | Yes      | Your merchant client ID     |
+| `CLIENT_SECRET` | Yes      | Your merchant client secret |
 
 > Use different credentials for sandbox and production. Never commit `.env` files or log secrets.
 
@@ -47,11 +47,11 @@ yarn add @oaknetwork/api
 ### Basic usage
 
 ```typescript
-import 'dotenv/config';
-import { createOakClient, createCustomerService } from '@oaknetwork/api';
+import "dotenv/config";
+import { createOakClient, createCustomerService } from "@oaknetwork/api";
 
 const client = createOakClient({
-  environment: 'sandbox',
+  environment: "sandbox",
   clientId: process.env.CLIENT_ID!,
   clientSecret: process.env.CLIENT_SECRET!,
 });
@@ -75,18 +75,18 @@ if (result.ok) {
 
 The SDK ships 10 service modules. Import the factory function for each service you need.
 
-| Service | Factory | What it does |
-|---|---|---|
-| [Customers](https://www.oaknetwork.org/docs/sdk/api-sdk/customers) | `createCustomerService(client)` | Create, get, list, update, sync, and check balances |
-| [Payments](https://www.oaknetwork.org/docs/sdk/api-sdk/payments) | `createPaymentService(client)` | Create, confirm, cancel payments |
-| [Payment Methods](https://www.oaknetwork.org/docs/sdk/api-sdk/payment-methods) | `createPaymentMethodService(client)` | Add, list, get, delete payment methods |
-| [Webhooks](https://www.oaknetwork.org/docs/sdk/api-sdk/webhooks) | `createWebhookService(client)` | Register, manage, and monitor webhooks |
-| [Transactions](https://www.oaknetwork.org/docs/sdk/api-sdk/transactions) | `createTransactionService(client)` | List, get, and settle transactions |
-| [Transfers](https://www.oaknetwork.org/docs/sdk/api-sdk/transfers) | `createTransferService(client)` | Create provider transfers (Stripe, PagarMe, BRLA) |
-| [Plans](https://www.oaknetwork.org/docs/sdk/api-sdk/plans) | `createPlanService(client)` | CRUD subscription plans |
-| [Refunds](https://www.oaknetwork.org/docs/sdk/api-sdk/refunds) | `createRefundService(client)` | Refund a payment (full or partial) |
-| [Buy](https://www.oaknetwork.org/docs/sdk/api-sdk/buy-and-sell) | `createBuyService(client)` | Crypto on-ramp via Bridge |
-| [Sell](https://www.oaknetwork.org/docs/sdk/api-sdk/buy-and-sell) | `createSellService(client)` | Crypto off-ramp via Avenia |
+| Service                                                                        | Factory                              | What it does                                        |
+| ------------------------------------------------------------------------------ | ------------------------------------ | --------------------------------------------------- |
+| [Customers](https://www.oaknetwork.org/docs/sdk/api-sdk/customers)             | `createCustomerService(client)`      | Create, get, list, update, sync, and check balances |
+| [Payments](https://www.oaknetwork.org/docs/sdk/api-sdk/payments)               | `createPaymentService(client)`       | Create, confirm, cancel payments                    |
+| [Payment Methods](https://www.oaknetwork.org/docs/sdk/api-sdk/payment-methods) | `createPaymentMethodService(client)` | Add, list, get, delete payment methods              |
+| [Webhooks](https://www.oaknetwork.org/docs/sdk/api-sdk/webhooks)               | `createWebhookService(client)`       | Register, manage, and monitor webhooks              |
+| [Transactions](https://www.oaknetwork.org/docs/sdk/api-sdk/transactions)       | `createTransactionService(client)`   | List, get, and settle transactions                  |
+| [Transfers](https://www.oaknetwork.org/docs/sdk/api-sdk/transfers)             | `createTransferService(client)`      | Create provider transfers (Stripe, PagarMe, BRLA)   |
+| [Plans](https://www.oaknetwork.org/docs/sdk/api-sdk/plans)                     | `createPlanService(client)`          | CRUD subscription plans                             |
+| [Refunds](https://www.oaknetwork.org/docs/sdk/api-sdk/refunds)                 | `createRefundService(client)`        | Refund a payment (full or partial)                  |
+| [Buy](https://www.oaknetwork.org/docs/sdk/api-sdk/buy-and-sell)                | `createBuyService(client)`           | Crypto on-ramp via Bridge                           |
+| [Sell](https://www.oaknetwork.org/docs/sdk/api-sdk/buy-and-sell)               | `createSellService(client)`          | Crypto off-ramp via Avenia                          |
 
 ---
 
@@ -95,47 +95,47 @@ The SDK ships 10 service modules. Import the factory function for each service y
 ### Customers
 
 ```typescript
-import { createCustomerService } from '@oaknetwork/api';
+import { createCustomerService } from "@oaknetwork/api";
 
 const customers = createCustomerService(client);
 
 // Create
 const result = await customers.create({
-  email: 'user@example.com',
-  first_name: 'John',
-  last_name: 'Doe',
-  country_code: 'US',
+  email: "user@example.com",
+  first_name: "John",
+  last_name: "Doe",
+  country_code: "US",
 });
 
 // List
 await customers.list({ limit: 10, offset: 0 });
 
 // Get
-await customers.get('customer_id');
+await customers.get("customer_id");
 
 // Update
-await customers.update('customer_id', { email: 'new@example.com' });
+await customers.update("customer_id", { email: "new@example.com" });
 ```
 
 ### Providers
 
 ```typescript
-import { createProviderService } from '@oaknetwork/api';
+import { createProviderService } from "@oaknetwork/api";
 
 const providers = createProviderService(client);
 
 // Register as Stripe customer (buyer)
 await providers.submitRegistration(customerId, {
-  provider: 'stripe',
-  target_role: 'customer',
+  provider: "stripe",
+  target_role: "customer",
 });
 
 // Register as Stripe connected account (seller)
 await providers.submitRegistration(customerId, {
-  provider: 'stripe',
-  target_role: 'connected_account',
+  provider: "stripe",
+  target_role: "connected_account",
   provider_data: {
-    account_type: 'express',
+    account_type: "express",
     transfers_requested: true,
     card_payments_requested: true,
     tax_reporting_us_1099_k_requested: false,
@@ -151,76 +151,76 @@ const status = await providers.getRegistrationStatus(customerId);
 ### Payments
 
 ```typescript
-import { createPaymentService } from '@oaknetwork/api';
+import { createPaymentService } from "@oaknetwork/api";
 
 const payments = createPaymentService(client);
 
 // Create and capture a payment
 const result = await payments.create({
-  provider: 'stripe',
+  provider: "stripe",
   source: {
     amount: 5000,
-    currency: 'usd',
+    currency: "usd",
     customer: { id: customerId },
-    payment_method: { type: 'card', id: paymentMethodId },
-    capture_method: 'automatic',
+    payment_method: { type: "card", id: paymentMethodId },
+    capture_method: "automatic",
   },
   confirm: true,
 });
 
 // Confirm / cancel
-await payments.confirm('payment_id');
-await payments.cancel('payment_id');
+await payments.confirm("payment_id");
+await payments.cancel("payment_id");
 ```
 
 ### Payment methods
 
 ```typescript
-import { createPaymentMethodService } from '@oaknetwork/api';
+import { createPaymentMethodService } from "@oaknetwork/api";
 
 const paymentMethods = createPaymentMethodService(client);
 
 // Add a card
 await paymentMethods.add(customerId, {
-  type: 'card',
-  provider: 'stripe',
+  type: "card",
+  provider: "stripe",
 });
 
 // Add a bank account
 await paymentMethods.add(customerId, {
-  type: 'bank',
-  provider: 'stripe',
-  currency: 'usd',
-  bank_name: 'Chase',
-  bank_account_number: '000123456789',
-  bank_routing_number: '021000021',
-  bank_account_type: 'checking',
-  bank_account_name: 'John Doe',
+  type: "bank",
+  provider: "stripe",
+  currency: "usd",
+  bank_name: "Chase",
+  bank_account_number: "000123456789",
+  bank_routing_number: "021000021",
+  bank_account_type: "checking",
+  bank_account_name: "John Doe",
 });
 
 // List / get / delete
 await paymentMethods.list(customerId);
-await paymentMethods.get(customerId, 'pm_id');
-await paymentMethods.delete(customerId, 'pm_id');
+await paymentMethods.get(customerId, "pm_id");
+await paymentMethods.delete(customerId, "pm_id");
 ```
 
 ### Transfers
 
 ```typescript
-import { createTransferService } from '@oaknetwork/api';
+import { createTransferService } from "@oaknetwork/api";
 
 const transfers = createTransferService(client);
 
 await transfers.create({
-  provider: 'stripe',
+  provider: "stripe",
   source: {
     amount: 1000,
-    currency: 'usd',
+    currency: "usd",
     customer: { id: customerId },
   },
   destination: {
     customer: { id: customerId },
-    payment_method: { type: 'bank', id: bankPmId },
+    payment_method: { type: "bank", id: bankPmId },
   },
 });
 ```
@@ -228,7 +228,7 @@ await transfers.create({
 ### Refunds
 
 ```typescript
-import { createRefundService } from '@oaknetwork/api';
+import { createRefundService } from "@oaknetwork/api";
 
 const refunds = createRefundService(client);
 
@@ -242,35 +242,35 @@ await refunds.create(paymentId, { amount: 500 });
 ### Plans
 
 ```typescript
-import { createPlanService } from '@oaknetwork/api';
+import { createPlanService } from "@oaknetwork/api";
 
 const plans = createPlanService(client);
 
 await plans.create({
-  name: 'Pro Plan',
-  description: 'Monthly pro subscription',
+  name: "Pro Plan",
+  description: "Monthly pro subscription",
   price: 2999,
-  currency: 'USD',
+  currency: "USD",
   frequency: 30,
-  start_date: '2026-03-01',
+  start_date: "2026-03-01",
   is_auto_renewable: true,
   allow_amount_override: false,
   created_by: customerId,
 });
 
 await plans.list();
-await plans.details('plan_id');
+await plans.details("plan_id");
 ```
 
 ### Transactions
 
 ```typescript
-import { createTransactionService } from '@oaknetwork/api';
+import { createTransactionService } from "@oaknetwork/api";
 
 const transactions = createTransactionService(client);
 
 await transactions.list({ limit: 20 });
-await transactions.get('txn_id');
+await transactions.get("txn_id");
 ```
 
 ---
@@ -284,57 +284,61 @@ import {
   createWebhookService,
   verifyWebhookSignature,
   parseWebhookPayload,
-} from '@oaknetwork/api';
+} from "@oaknetwork/api";
 
 const webhooks = createWebhookService(client);
 
 // Register
 const wh = await webhooks.register({
-  url: 'https://your-server.com/webhooks/oak',
-  description: 'Payment events',
+  url: "https://your-server.com/webhooks/oak",
+  description: "Payment events",
 });
 
 if (wh.ok) {
-  console.log('Secret:', wh.value.data.secret); // store securely
+  console.log("Secret:", wh.value.data.secret); // store securely
 }
 
 // List / update / delete
 await webhooks.list();
-await webhooks.update('webhook_id', { url: 'https://new-url.com/webhooks' });
-await webhooks.toggle('webhook_id');
-await webhooks.delete('webhook_id');
+await webhooks.update("webhook_id", { url: "https://new-url.com/webhooks" });
+await webhooks.toggle("webhook_id");
+await webhooks.delete("webhook_id");
 ```
 
 ### Verify and parse incoming events
 
 ```typescript
-import { parseWebhookPayload } from '@oaknetwork/api';
-import express from 'express';
+import { parseWebhookPayload } from "@oaknetwork/api";
+import express from "express";
 
 const app = express();
 
-app.post('/webhooks/oak', express.raw({ type: 'application/json' }), (req, res) => {
-  const result = parseWebhookPayload(
-    req.body.toString(),
-    req.headers['x-oak-signature'] as string,
-    process.env.WEBHOOK_SECRET!,
-  );
+app.post(
+  "/webhooks/oak",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const result = parseWebhookPayload(
+      req.body.toString(),
+      req.headers["x-oak-signature"] as string,
+      process.env.WEBHOOK_SECRET!,
+    );
 
-  if (!result.ok) {
-    return res.status(401).json({ error: 'Invalid signature' });
-  }
+    if (!result.ok) {
+      return res.status(401).json({ error: "Invalid signature" });
+    }
 
-  switch (result.value.event) {
-    case 'payment.succeeded':
-      break;
-    case 'payment.failed':
-      break;
-    case 'provider_registration.approved':
-      break;
-  }
+    switch (result.value.event) {
+      case "payment.succeeded":
+        break;
+      case "payment.failed":
+        break;
+      case "provider_registration.approved":
+        break;
+    }
 
-  res.json({ received: true });
-});
+    res.json({ received: true });
+  },
+);
 ```
 
 > Full webhook reference — [oaknetwork.org/docs/sdk/api-sdk/webhooks](https://www.oaknetwork.org/docs/sdk/api-sdk/webhooks)
@@ -346,24 +350,27 @@ app.post('/webhooks/oak', express.raw({ type: 'application/json' }), (req, res) 
 Every method returns `Result<T, OakError>` — no uncaught exceptions. Check `result.ok` to branch on success or failure.
 
 ```typescript
-const result = await customers.create({ email: 'user@example.com', first_name: 'John' });
+const result = await customers.create({
+  email: "user@example.com",
+  first_name: "John",
+});
 
 if (result.ok) {
   const customer = result.value.data;
-  console.log('Created:', customer.id);
+  console.log("Created:", customer.id);
 } else {
-  console.error('Failed:', result.error.message);
-  console.error('Status:', result.error.statusCode);
-  console.error('Code:', result.error.code);
+  console.error("Failed:", result.error.message);
+  console.error("Status:", result.error.statusCode);
+  console.error("Code:", result.error.code);
 }
 ```
 
-| Error type | Description |
-|---|---|
-| `ApiError` | HTTP errors from the API (4xx, 5xx) |
-| `NetworkError` | Network failures, timeouts |
-| `ParseError` | Invalid JSON responses |
-| `AbortError` | Request aborted |
+| Error type                  | Description                              |
+| --------------------------- | ---------------------------------------- |
+| `ApiError`                  | HTTP errors from the API (4xx, 5xx)      |
+| `NetworkError`              | Network failures, timeouts               |
+| `ParseError`                | Invalid JSON responses                   |
+| `AbortError`                | Request aborted                          |
 | `EnvironmentViolationError` | Sandbox-only method called in production |
 
 > Full error handling guide — [oaknetwork.org/docs/sdk/api-sdk/error-handling](https://www.oaknetwork.org/docs/sdk/api-sdk/error-handling)
@@ -374,19 +381,19 @@ if (result.ok) {
 
 ### Environments
 
-| Environment | API Base URL | Description |
-|---|---|---|
-| `sandbox` | `https://api-stage.usecrowdpay.xyz` | Testing — all operations allowed |
-| `production` | `https://app.usecrowdpay.xyz` | Live — test operations blocked |
+| Environment  | API Base URL                        | Description                      |
+| ------------ | ----------------------------------- | -------------------------------- |
+| `sandbox`    | `https://api-stage.usecrowdpay.xyz` | Testing — all operations allowed |
+| `production` | `https://app.usecrowdpay.xyz`       | Live — test operations blocked   |
 
 ```typescript
 const client = createOakClient({
-  environment: 'sandbox',
+  environment: "sandbox",
   clientId: process.env.CLIENT_ID!,
   clientSecret: process.env.CLIENT_SECRET!,
 
   // Optional: point to a custom API server
-  customUrl: 'https://my-dev-server.example.com',
+  customUrl: "https://my-dev-server.example.com",
 });
 ```
 
@@ -396,7 +403,7 @@ The SDK automatically retries failed requests with exponential backoff and jitte
 
 ```typescript
 const client = createOakClient({
-  environment: 'sandbox',
+  environment: "sandbox",
   clientId: process.env.CLIENT_ID!,
   clientSecret: process.env.CLIENT_SECRET!,
   retryOptions: {
@@ -417,7 +424,7 @@ Retried status codes: `408`, `429`, `500`, `502`, `503`, `504`.
 The SDK ships full type declarations. All service methods, request payloads, and responses are typed.
 
 ```typescript
-import type { Result } from '@oaknetwork/api';
+import type { Result } from "@oaknetwork/api";
 ```
 
 ---
@@ -479,6 +486,7 @@ See [CLAUDE.md](./CLAUDE.md) for coding standards including architecture princip
 - **Quickstart** — [oaknetwork.org/docs/sdk/api-sdk/quickstart](https://www.oaknetwork.org/docs/sdk/api-sdk/quickstart)
 - **API package README** — [packages/api/README.md](./packages/api/README.md)
 - **Changelog** — [CHANGELOG.md](./CHANGELOG.md)
+
 ---
 
 ## License
