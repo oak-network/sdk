@@ -28,6 +28,8 @@ module.exports = [
       sourceType: "module",
       globals: {
         ...globals.node,
+        RequestInit: "readonly",
+        Response: "readonly",
       },
     },
     plugins: {
@@ -37,6 +39,7 @@ module.exports = [
       ...eslintJs.configs.recommended.rules,
       ...tseslint.configs.recommended.rules,
       ...eslintConfigPrettier.rules,
+      "@typescript-eslint/no-namespace": "off",
     },
   },
   {
