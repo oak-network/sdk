@@ -467,7 +467,7 @@ Coverage is reported to [Codecov](https://about.codecov.io) after each successfu
 
 ### Development guidelines
 
-See [CLAUDE.md](./CLAUDE.md) for coding standards including architecture principles, security rules, testing requirements, and anti-patterns.
+See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture principles, security rules, testing requirements, and anti-patterns.
 
 ### Code review checklist
 
@@ -483,18 +483,18 @@ See [CLAUDE.md](./CLAUDE.md) for coding standards including architecture princip
 
 - **Full docs** — [oaknetwork.org/docs/sdk/overview](https://www.oaknetwork.org/docs/sdk/overview)
 - **Quickstart** — [oaknetwork.org/docs/sdk/quickstart](https://www.oaknetwork.org/docs/sdk/quickstart)
-- **API package README** — [packages/api/README.md](./packages/api/README.md)
+- **Monorepo README** — [README.md](../../README.md)
 - **Changelog** — [CHANGELOG.md](./CHANGELOG.md)
 
 ---
 
 ## License
 
-[MIT](LICENSE)
+[MIT](../../LICENSE)
 
 ## Security
 
-[Security Policy](SECURITY.md)
+[Security Policy](../../SECURITY.md)
 
 ## Links
 
