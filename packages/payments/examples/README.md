@@ -12,7 +12,7 @@ This directory contains comprehensive, modular examples demonstrating how to use
 
 ### 1. Install Dependencies
 
-From the `packages/api` directory:
+From the `packages/payments` directory:
 
 ```bash
 npm install

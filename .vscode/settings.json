@@ -17,9 +17,9 @@
   "jest.runMode": "on-demand",
   "jest.virtualFolders": [
     {
-      "name": "api",
-      "rootPath": "packages/api",
-      "jestCommandLine": "node packages/api/scripts/jest-run-exact.js --",
+      "name": "payments",
+      "rootPath": "packages/payments",
+      "jestCommandLine": "node packages/payments/scripts/jest-run-exact.js --",
       "pathToConfig": "jest.config.js"
     },
     {

@@ -2,7 +2,7 @@
 
 ## Setup (One-time)
 
-1. **Build the SDK** (from `packages/api` directory):
+1. **Build the SDK** (from `packages/payments` directory):
    ```bash
    npm run build
    ```
