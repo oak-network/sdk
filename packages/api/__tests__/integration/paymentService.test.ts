@@ -1,6 +1,5 @@
 import { createOakClient, Payment } from '../../src';
 import { Crowdsplit } from '../../src/products/crowdsplit';
-import { ApiError } from '../../src/utils/errorHandler';
 import { getConfigFromEnv } from '../config';
 
 const INTEGRATION_TEST_TIMEOUT = 30000;
