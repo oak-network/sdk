@@ -9,13 +9,13 @@ Oak Network helps teams build global payment products with secure APIs, typed de
 
 ## SDK packages
 
-### Payment SDK
+### Payments SDK
 
-Primary SDK for Oak payment APIs (customers, payments, webhooks, transfers, refunds, and more).
+Primary SDK for Oak payments APIs (customers, payments, webhooks, transfers, refunds, and more).
 
 - Package: `@oaknetwork/api`
-- Folder: [`packages/payment-sdk`](./packages/payment-sdk)
-- Public folder link: [github.com/oak-network/sdk/tree/main/packages/payment-sdk](https://github.com/oak-network/sdk/tree/main/packages/payment-sdk)
+- Folder: [`packages/payments`](./packages/payments)
+- Public folder link: [github.com/oak-network/sdk/tree/main/packages/payments](https://github.com/oak-network/sdk/tree/main/packages/payments)
 - Documentation: [oaknetwork.org/docs/sdk/api-sdk/overview](https://www.oaknetwork.org/docs/sdk/api-sdk/overview)
 - npm: [npmjs.com/package/@oaknetwork/api](https://www.npmjs.com/package/@oaknetwork/api)
 
