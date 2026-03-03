@@ -7,7 +7,7 @@ A fully-typed TypeScript SDK for the Oak Network Payments API. Drop-in authentic
 ## Install
 
 ```bash
-pnpm add @oaknetwork/api
+pnpm add @oaknetwork/payments-sdk
 ```
 
 ## Quick start
