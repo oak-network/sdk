@@ -230,7 +230,6 @@ create(customer: Customer.Request): Promise<Result<Customer.Response>>;
    ```
 
 4. **NEVER log sensitive data**:
-
    - No passwords, tokens, or API keys in logs
    - Sanitize error messages before logging
    - Use structured logging with sensitive field filtering
@@ -632,7 +631,7 @@ When introducing breaking changes:
 
 1. Remove references to `client.config.clientSecret`
 2. Store secret in environment variables
-3. Update to latest `@oaknetwork/api` version
+3. Update to latest `@oaknetwork/payments-sdk` version
 ```
 
 ### TSDoc Examples
