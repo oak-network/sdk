@@ -1,5 +1,5 @@
 ---
-'@oaknetwork/api': major
+'@oaknetwork/api': minor
 ---
 
 Remove Crowdsplit product facade and rename CrowdSplit types to Oak
