@@ -1,6 +1,5 @@
 # Oak Network SDKs
 
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/oak-network/sdk/badge)](https://scorecard.dev/viewer/?uri=github.com/oak-network/sdk)
 [![Codecov](https://codecov.io/github/oak-network/sdk/graph/badge.svg)](https://app.codecov.io/github/oak-network/sdk)
 [![CodeQL](https://github.com/oak-network/sdk/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/oak-network/sdk/actions/workflows/github-code-scanning/codeql)
 
