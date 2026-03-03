@@ -1,5 +1,6 @@
-import { createOakClient, Payment } from '../../src';
-import { Crowdsplit } from '../../src/products/crowdsplit';
+import { createOakClient, Payment, createPaymentService, createCustomerService } from '../../src';
+import { PaymentService } from '../../src/services/paymentService';
+import { CustomerService } from '../../src/services/customerService';
 import { ApiError } from '../../src/utils/errorHandler';
 import { getConfigFromEnv } from '../config';
 
@@ -53,8 +54,8 @@ const buildStripePaymentRequest = (
 };
 
 describe('PaymentService - Integration', () => {
-  let payments: ReturnType<typeof Crowdsplit>['payments'];
-  let customers: ReturnType<typeof Crowdsplit>['customers'];
+  let payments: PaymentService;
+  let customers: CustomerService;
 
   /** A KYC-approved customer ID fetched via filtered customer list. */
   let approvedCustomerId: string | undefined;
@@ -68,9 +69,8 @@ describe('PaymentService - Integration', () => {
         backoffFactor: 2,
       },
     });
-    const cs = Crowdsplit(client);
-    customers = cs.customers;
-    payments = cs.payments;
+    customers = createCustomerService(client);
+    payments = createPaymentService(client);
   });
 
   // ---------------------------------------------------------------

@@ -1,13 +1,14 @@
-import { createOakClient } from '../../src';
-import { Crowdsplit } from '../../src/products/crowdsplit';
+import { createOakClient, createProviderService, createCustomerService } from '../../src';
+import { ProviderService } from '../../src/services/providerService';
+import { CustomerService } from '../../src/services/customerService';
 import { getConfigFromEnv } from '../config';
 import { ApiError } from '../../src/utils/errorHandler';
 
 const INTEGRATION_TEST_TIMEOUT = 30000;
 
 describe('ProviderService - Integration', () => {
-  let providers: ReturnType<typeof Crowdsplit>['providers'];
-  let customers: ReturnType<typeof Crowdsplit>['customers'];
+  let providers: ProviderService;
+  let customers: CustomerService;
 
   /** An existing customer ID fetched from the database. */
   let existingCustomerId: string | undefined;
@@ -21,9 +22,8 @@ describe('ProviderService - Integration', () => {
         backoffFactor: 2,
       },
     });
-    const cs = Crowdsplit(client);
-    providers = cs.providers;
-    customers = cs.customers;
+    providers = createProviderService(client);
+    customers = createCustomerService(client);
   });
 
   // ---------------------------------------------------------------

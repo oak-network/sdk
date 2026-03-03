@@ -5,7 +5,7 @@
  */
 
 const { getOakClient } = require('../common/config');
-const { Crowdsplit } = require('../../dist/products/crowdsplit');
+const { createCustomerService } = require('../../dist/index.js');
 const logger = require('../common/logger');
 
 async function main() {
@@ -13,7 +13,7 @@ async function main() {
 
   try {
     const client = getOakClient();
-    const customers = Crowdsplit(client).customers;
+    const customers = createCustomerService(client);
 
     // Example 1: List first 5 customers
     logger.step(1, 'Listing first 5 customers...');

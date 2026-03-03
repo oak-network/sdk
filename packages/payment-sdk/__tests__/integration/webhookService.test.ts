@@ -1,11 +1,11 @@
-import { createOakClient } from "../../src";
-import { Crowdsplit } from "../../src/products/crowdsplit";
+import { createOakClient, createWebhookService } from "../../src";
+import { WebhookService } from "../../src/services/webhookService";
 import { getConfigFromEnv } from "../config";
 
 const INTEGRATION_TEST_TIMEOUT = 30000;
 
 describe("WebhookService - Integration", () => {
-  let webhooks: ReturnType<typeof Crowdsplit>["webhooks"];
+  let webhooks: WebhookService;
 
   beforeAll(() => {
     const client = createOakClient({
@@ -16,7 +16,7 @@ describe("WebhookService - Integration", () => {
         backoffFactor: 2,
       },
     });
-    webhooks = Crowdsplit(client).webhooks;
+    webhooks = createWebhookService(client);
   });
 
   let createdWebhookId: string | undefined;

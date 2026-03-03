@@ -1,14 +1,16 @@
-import { createOakClient } from '../../src';
-import { Crowdsplit } from '../../src/products/crowdsplit';
+import { createOakClient, createTransactionService, createPaymentService, createCustomerService } from '../../src';
+import { TransactionService } from '../../src/services/transactionService';
+import { PaymentService } from '../../src/services/paymentService';
+import { CustomerService } from '../../src/services/customerService';
 import { getConfigFromEnv } from '../config';
 import { ApiError } from '../../src/utils/errorHandler';
 
 const INTEGRATION_TEST_TIMEOUT = 30000;
 
 describe('TransactionService - Integration', () => {
-  let transactions: ReturnType<typeof Crowdsplit>['transactions'];
-  let payments: ReturnType<typeof Crowdsplit>['payments'];
-  let customers: ReturnType<typeof Crowdsplit>['customers'];
+  let transactions: TransactionService;
+  let payments: PaymentService;
+  let customers: CustomerService;
 
   /** A KYC-approved customer ID fetched via filtered customer list. */
   let approvedCustomerId: string | undefined;
@@ -26,10 +28,9 @@ describe('TransactionService - Integration', () => {
         backoffFactor: 2,
       },
     });
-    const cs = Crowdsplit(client);
-    transactions = cs.transactions;
-    payments = cs.payments;
-    customers = cs.customers;
+    transactions = createTransactionService(client);
+    payments = createPaymentService(client);
+    customers = createCustomerService(client);
   });
 
   // ---------------------------------------------------------------

@@ -121,7 +121,7 @@ const expectTokenFailure = async (call: () => Promise<unknown>) => {
   }
 };
 
-describe("Crowdsplit services (Unit)", () => {
+describe("Oak services (Unit)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -143,13 +143,13 @@ function processData(data: any): any {
 
    ```typescript
    // ✅ CORRECT
-   export interface CrowdsplitProduct {
+   export interface OakServices {
      customers: CustomerService;
      payments: PaymentService;
    }
 
    // ❌ WRONG
-   export interface CrowdsplitProduct {
+   export interface OakServices {
      customers: ReturnType<typeof createCustomerService>;
    }
    ```
