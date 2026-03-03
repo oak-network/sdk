@@ -97,7 +97,7 @@ const client = createOakClient({
 **Before:**
 
 ```typescript
-import { createAuthService } from "@oaknetwork/api";
+import { createAuthService } from "@oaknetwork/payments-sdk";
 
 const auth = createAuthService(client);
 const token = await auth.getAccessToken();
@@ -136,7 +136,10 @@ httpClient.post<ResponseType>(url, requestData as RequestType, config);
 #### Webhook Verification
 
 ```typescript
-import { verifyWebhookSignature, parseWebhookPayload } from "@oaknetwork/api";
+import {
+  verifyWebhookSignature,
+  parseWebhookPayload,
+} from "@oaknetwork/payments-sdk";
 
 // Option 1: Verify signature only
 app.post("/webhook", (req, res) => {
@@ -173,9 +176,11 @@ app.post("/webhook", (req, res) => {
 #### RefundService Now Available
 
 ```typescript
-import { createOakClient, createRefundService } from "@oaknetwork/api";
+import { createOakClient, createRefundService } from "@oaknetwork/payments-sdk";
 
-const client = createOakClient({ /* config */ });
+const client = createOakClient({
+  /* config */
+});
 const refunds = createRefundService(client);
 
 // Create a refund
@@ -189,23 +194,20 @@ const result = await refunds.create("pay_123", {
 1. **Update Package**:
 
    ```bash
-   pnpm update @oaknetwork/api@latest
+   pnpm update @oaknetwork/payments-sdk@latest
    ```
 
 2. **Remove `clientSecret` Access**:
-
    - Search codebase for `client.config.clientSecret`
    - Store separately if needed for non-SDK purposes
    - Update to use environment variables
 
 3. **Replace `createAuthService()`**:
-
    - Search for `createAuthService`
    - Replace with direct `client.getAccessToken()` or `client.grantToken()` calls
    - Remove import
 
 4. **Add Type Assertions** (if needed):
-
    - TypeScript may require type assertions for HTTP client methods
    - Add `as RequestType` where compiler indicates `unknown` cannot be assigned
 
