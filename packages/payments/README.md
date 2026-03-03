@@ -14,7 +14,10 @@ pnpm add @oaknetwork/payments-sdk
 
 ```typescript
 import "dotenv/config";
-import { createOakClient, createCustomerService } from "@oaknetwork/api";
+import {
+  createOakClient,
+  createCustomerService,
+} from "@oaknetwork/payments-sdk";
 
 const client = createOakClient({
   environment: "sandbox",
@@ -34,7 +37,7 @@ if (result.ok) {
 
 ## Resources
 
-- Package: `@oaknetwork/api`
+- Package: `@oaknetwork/payments-sdk`
 - Public folder link: [github.com/oak-network/sdk/tree/main/packages/payments](https://github.com/oak-network/sdk/tree/main/packages/payments)
 - Examples: [`./examples`](./examples)
 - Security policy: [`../../SECURITY.md`](../../SECURITY.md)
