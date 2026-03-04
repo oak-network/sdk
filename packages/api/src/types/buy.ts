@@ -1,19 +1,19 @@
-import { ApiResponse } from "./common";
+import { ApiResponse } from './common';
 
 export namespace Buy {
   export interface PaymentMethod {
-    type: "customer_wallet";
-    chain?: "ethereum" | "polygon" | "arbitrum" | "solana";
+    type: 'customer_wallet';
+    chain?: 'ethereum' | 'polygon' | 'arbitrum' | 'solana';
     evm_address: string;
   }
 
   export interface Source {
-    currency: "usd";
+    currency: 'usd';
     amount?: number;
   }
 
   export interface Destination {
-    currency: "usdc" | "usdt" | "usdb";
+    currency: 'usdc' | 'usdt' | 'usdb';
     customer: {
       id: string;
     };
@@ -25,15 +25,15 @@ export namespace Buy {
   }
 
   export interface ProviderResponse {
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   export interface Transaction {
     id: string;
     status: string; // e.g., "captured"
-    type: "buy";
+    type: 'buy';
     source: Source;
-    provider: "bridge" | "brla";
+    provider: 'bridge' | 'brla';
     destination: Destination;
     provider_response: ProviderResponse;
     created_at: string;
@@ -41,11 +41,11 @@ export namespace Buy {
   }
 
   export interface Metadata {
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
   export interface Bridge {
-    provider: "bridge";
+    provider: 'bridge';
     source: Source;
     destination: Destination;
     metadata?: Metadata;

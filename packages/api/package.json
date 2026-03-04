@@ -32,7 +32,11 @@
     "test:unit": "jest __tests__/unit --coverage",
     "test:integration": "jest __tests__/integration",
     "test:all": "jest --coverage",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" \"__tests__/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" \"__tests__/**/*.{ts,tsx}\" --fix",
+    "format": "prettier \"src/**/*.{ts,tsx,js,jsx,json,md}\" \"__tests__/**/*.{ts,tsx,js,jsx,json,md}\" --write",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

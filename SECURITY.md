@@ -4,9 +4,9 @@
 
 We actively maintain and provide security updates for the following versions of `@oaknetwork/api`:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.x     | ✅ Active support  |
+| Version | Supported         |
+| ------- | ----------------- |
+| 1.x     | ✅ Active support |
 
 ## Reporting a Vulnerability
 
@@ -30,12 +30,12 @@ When reporting, please include as much detail as possible:
 
 ### What to Expect
 
-| Timeline | Action |
-| -------- | ------ |
-| **Within 48 hours** | Acknowledgment of your report |
-| **Within 7 days** | Initial severity assessment and triage |
-| **Within 30 days** | A patch or mitigation plan for confirmed vulnerabilities |
-| **Within 90 days** | Public disclosure (coordinated with reporter) |
+| Timeline            | Action                                                   |
+| ------------------- | -------------------------------------------------------- |
+| **Within 48 hours** | Acknowledgment of your report                            |
+| **Within 7 days**   | Initial severity assessment and triage                   |
+| **Within 30 days**  | A patch or mitigation plan for confirmed vulnerabilities |
+| **Within 90 days**  | Public disclosure (coordinated with reporter)            |
 
 We follow **coordinated vulnerability disclosure (CVD)** principles. We will keep you informed throughout the process and aim to resolve confirmed vulnerabilities within 30 days. For complex issues, we may request an extension and will communicate transparently about the timeline.
 

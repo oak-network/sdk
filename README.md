@@ -21,10 +21,10 @@ CLIENT_SECRET=your-client-secret
 
 Install `dotenv` to load these automatically: `pnpm add dotenv`, then add `import 'dotenv/config'` at the top of your entry file.
 
-| Variable | Required | Description |
-|---|---|---|
-| `CLIENT_ID` | Yes | Your merchant client ID |
-| `CLIENT_SECRET` | Yes | Your merchant client secret |
+| Variable        | Required | Description                 |
+| --------------- | -------- | --------------------------- |
+| `CLIENT_ID`     | Yes      | Your merchant client ID     |
+| `CLIENT_SECRET` | Yes      | Your merchant client secret |
 
 > Use different credentials for sandbox and production. Never commit `.env` files or log secrets.
 
@@ -75,18 +75,18 @@ if (result.ok) {
 
 The SDK ships 10 service modules. Import the factory function for each service you need.
 
-| Service | Factory | What it does |
-|---|---|---|
-| [Customers](https://www.oaknetwork.org/docs/sdk/api-sdk/customers) | `createCustomerService(client)` | Create, get, list, update, sync, and check balances |
-| [Payments](https://www.oaknetwork.org/docs/sdk/api-sdk/payments) | `createPaymentService(client)` | Create, confirm, cancel payments |
-| [Payment Methods](https://www.oaknetwork.org/docs/sdk/api-sdk/payment-methods) | `createPaymentMethodService(client)` | Add, list, get, delete payment methods |
-| [Webhooks](https://www.oaknetwork.org/docs/sdk/api-sdk/webhooks) | `createWebhookService(client)` | Register, manage, and monitor webhooks |
-| [Transactions](https://www.oaknetwork.org/docs/sdk/api-sdk/transactions) | `createTransactionService(client)` | List, get, and settle transactions |
-| [Transfers](https://www.oaknetwork.org/docs/sdk/api-sdk/transfers) | `createTransferService(client)` | Create provider transfers (Stripe, PagarMe, BRLA) |
-| [Plans](https://www.oaknetwork.org/docs/sdk/api-sdk/plans) | `createPlanService(client)` | CRUD subscription plans |
-| [Refunds](https://www.oaknetwork.org/docs/sdk/api-sdk/refunds) | `createRefundService(client)` | Refund a payment (full or partial) |
-| [Buy](https://www.oaknetwork.org/docs/sdk/api-sdk/buy-and-sell) | `createBuyService(client)` | Crypto on-ramp via Bridge |
-| [Sell](https://www.oaknetwork.org/docs/sdk/api-sdk/buy-and-sell) | `createSellService(client)` | Crypto off-ramp via Avenia |
+| Service                                                                        | Factory                              | What it does                                        |
+| ------------------------------------------------------------------------------ | ------------------------------------ | --------------------------------------------------- |
+| [Customers](https://www.oaknetwork.org/docs/sdk/api-sdk/customers)             | `createCustomerService(client)`      | Create, get, list, update, sync, and check balances |
+| [Payments](https://www.oaknetwork.org/docs/sdk/api-sdk/payments)               | `createPaymentService(client)`       | Create, confirm, cancel payments                    |
+| [Payment Methods](https://www.oaknetwork.org/docs/sdk/api-sdk/payment-methods) | `createPaymentMethodService(client)` | Add, list, get, delete payment methods              |
+| [Webhooks](https://www.oaknetwork.org/docs/sdk/api-sdk/webhooks)               | `createWebhookService(client)`       | Register, manage, and monitor webhooks              |
+| [Transactions](https://www.oaknetwork.org/docs/sdk/api-sdk/transactions)       | `createTransactionService(client)`   | List, get, and settle transactions                  |
+| [Transfers](https://www.oaknetwork.org/docs/sdk/api-sdk/transfers)             | `createTransferService(client)`      | Create provider transfers (Stripe, PagarMe, BRLA)   |
+| [Plans](https://www.oaknetwork.org/docs/sdk/api-sdk/plans)                     | `createPlanService(client)`          | CRUD subscription plans                             |
+| [Refunds](https://www.oaknetwork.org/docs/sdk/api-sdk/refunds)                 | `createRefundService(client)`        | Refund a payment (full or partial)                  |
+| [Buy](https://www.oaknetwork.org/docs/sdk/api-sdk/buy-and-sell)                | `createBuyService(client)`           | Crypto on-ramp via Bridge                           |
+| [Sell](https://www.oaknetwork.org/docs/sdk/api-sdk/buy-and-sell)               | `createSellService(client)`          | Crypto off-ramp via Avenia                          |
 
 ---
 
@@ -346,7 +346,10 @@ app.post('/webhooks/oak', express.raw({ type: 'application/json' }), (req, res) 
 Every method returns `Result<T, OakError>` — no uncaught exceptions. Check `result.ok` to branch on success or failure.
 
 ```typescript
-const result = await customers.create({ email: 'user@example.com', first_name: 'John' });
+const result = await customers.create({
+  email: 'user@example.com',
+  first_name: 'John',
+});
 
 if (result.ok) {
   const customer = result.value.data;
@@ -358,12 +361,12 @@ if (result.ok) {
 }
 ```
 
-| Error type | Description |
-|---|---|
-| `ApiError` | HTTP errors from the API (4xx, 5xx) |
-| `NetworkError` | Network failures, timeouts |
-| `ParseError` | Invalid JSON responses |
-| `AbortError` | Request aborted |
+| Error type                  | Description                              |
+| --------------------------- | ---------------------------------------- |
+| `ApiError`                  | HTTP errors from the API (4xx, 5xx)      |
+| `NetworkError`              | Network failures, timeouts               |
+| `ParseError`                | Invalid JSON responses                   |
+| `AbortError`                | Request aborted                          |
 | `EnvironmentViolationError` | Sandbox-only method called in production |
 
 > Full error handling guide — [oaknetwork.org/docs/sdk/api-sdk/error-handling](https://www.oaknetwork.org/docs/sdk/api-sdk/error-handling)
@@ -374,10 +377,10 @@ if (result.ok) {
 
 ### Environments
 
-| Environment | API Base URL | Description |
-|---|---|---|
-| `sandbox` | `https://api-stage.usecrowdpay.xyz` | Testing — all operations allowed |
-| `production` | `https://app.usecrowdpay.xyz` | Live — test operations blocked |
+| Environment  | API Base URL                        | Description                      |
+| ------------ | ----------------------------------- | -------------------------------- |
+| `sandbox`    | `https://api-stage.usecrowdpay.xyz` | Testing — all operations allowed |
+| `production` | `https://app.usecrowdpay.xyz`       | Live — test operations blocked   |
 
 ```typescript
 const client = createOakClient({
@@ -430,9 +433,10 @@ This project uses **pnpm** exclusively:
 
 ```bash
 pnpm install          # Install dependencies
-pnpm build            # Build all packages
-pnpm test             # Run tests
-pnpm lint             # Lint code
+pnpm build           # Build all packages
+pnpm test            # Run tests
+pnpm lint            # Lint code
+pnpm typecheck       # Run TypeScript type-checking in all workspaces
 ```
 
 **Do not** use npm or yarn. The repository enforces pnpm >= 10.0.0.
@@ -450,10 +454,67 @@ pnpm test:watch         # Watch mode
 
 We use Changesets to manage versions and changelogs:
 
-1. After making changes, run `pnpm changeset`
-2. Select impact (Major / Minor / Patch) for affected packages
-3. Commit the generated file in `.changeset/`
-4. CI automatically calculates versions, generates changelogs, and creates a release PR
+1. **After making changes**, run:
+
+   ```bash
+   pnpm changeset
+   ```
+
+2. **Select impact** (Major/Minor/Patch) for affected packages
+
+3. **Commit** the generated file in `.changeset/`
+
+4. **CI automatically**:
+   - Calculates next versions
+   - Generates changelogs
+   - Creates release PR
+
+### Git hooks & conventional commits
+
+This repository uses Git hooks (via `husky`) and conventional commits (via `commitlint`) to keep history clean and enforce quality checks.
+
+- **Pre-commit hook**:
+  - Runs `lint-staged` on staged files.
+  - For TypeScript/JavaScript files, runs ESLint with `--fix` and then Prettier with `--write` on the staged files only.
+  - Does **not** run `tsc --noEmit` locally, keeping commits fast while still auto-fixing issues.
+
+- **Commit message hook**:
+  - Uses `commitlint` with `@commitlint/config-conventional` to enforce [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+  - Example messages:
+    - `feat(api): add refunds service`
+    - `fix(ci): correct codecov token handling`
+    - `chore(release): prepare v0.2.0`
+
+CI also runs:
+
+- `commitlint` against the branch history to ensure all commits in a PR follow the convention, even if local hooks are bypassed.
+- `pnpm typecheck` (TypeScript `tsc --noEmit` in workspaces) and `pnpm lint` (ESLint-based linting) as part of the main CI workflow.
+
+### Running Tests
+
+```bash
+# Unit tests
+pnpm test:unit
+
+# Integration tests (requires credentials)
+pnpm test:integration
+
+# All tests with coverage
+pnpm test:all
+
+# Watch mode
+pnpm test:watch
+```
+
+### Environment Variables for Testing
+
+Create `.env` file in `packages/api`:
+
+```env
+CLIENT_ID=your_sandbox_client_id
+CLIENT_SECRET=your_sandbox_client_secret
+OAK_ENVIRONMENT=sandbox
+```
 
 ### Code coverage
 
@@ -479,6 +540,7 @@ See [CLAUDE.md](./CLAUDE.md) for coding standards including architecture princip
 - **Quickstart** — [oaknetwork.org/docs/sdk/api-sdk/quickstart](https://www.oaknetwork.org/docs/sdk/api-sdk/quickstart)
 - **API package README** — [packages/api/README.md](./packages/api/README.md)
 - **Changelog** — [CHANGELOG.md](./CHANGELOG.md)
+
 ---
 
 ## License

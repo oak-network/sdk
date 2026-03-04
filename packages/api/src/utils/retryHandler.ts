@@ -1,4 +1,4 @@
-import { RetryOptions } from "./defaultRetryConfig";
+import { RetryOptions } from './defaultRetryConfig';
 
 /**
  * @typeParam T - Return type of the function
@@ -9,7 +9,7 @@ import { RetryOptions } from "./defaultRetryConfig";
  */
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  options: RetryOptions
+  options: RetryOptions,
 ): Promise<T> {
   const {
     maxNumberOfRetries,
@@ -17,7 +17,8 @@ export async function withRetry<T>(
     backoffFactor = 2,
     maxDelay = 30000,
     retryOnStatus = [408, 429, 500, 502, 503, 504],
-    retryOnError = (err) => Boolean(err?.isNetworkError),
+    retryOnError = (err) =>
+      Boolean((err as { isNetworkError?: boolean })?.isNetworkError),
     onRetry,
     signal,
   } = options;
@@ -27,7 +28,7 @@ export async function withRetry<T>(
 
   while (attempt <= maxNumberOfRetries) {
     try {
-      if (signal?.aborted) throw new Error("Retry aborted");
+      if (signal?.aborted) throw new Error('Retry aborted');
       return await fn();
     } catch (error: unknown) {
       const status = (error as { status?: number })?.status;
@@ -38,7 +39,9 @@ export async function withRetry<T>(
       onRetry?.(attempt + 1, error);
 
       // Honor Retry-After header if present
-      let retryAfter = (error as { headers?: Record<string, string> })?.headers?.["retry-after"];
+      let retryAfter = (error as { headers?: Record<string, string> })?.headers?.[
+        'retry-after'
+      ];
       if (retryAfter) {
         waitTime = Number(retryAfter) * 1000;
       } else {
@@ -52,5 +55,5 @@ export async function withRetry<T>(
     }
   }
 
-  throw new Error("Retry failed after maximum attempts");
+  throw new Error('Retry failed after maximum attempts');
 }
