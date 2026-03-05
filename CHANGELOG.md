@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Webhook Verification Utilities**: New `verifyWebhookSignature()` and `parseWebhookPayload()` functions for secure webhook handling using HMAC-SHA256 with timing-safe comparison
-- **RefundService**: Added to Crowdsplit product facade, exposing refund functionality that was previously available but not exposed
+- **RefundService**: Exposed refund functionality that was previously available but not exported
 - **Helper Utilities**:
   - `withAuth()`: Higher-order function for wrapping HTTP operations with authentication (eliminates 35+ duplications)
   - `buildUrl()`: Centralized URL construction with consistent trailing slash handling (standardizes 36+ URL constructions)
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING**: Removed `createAuthService()` wrapper - use `client.getAccessToken()` and `client.grantToken()` directly
 - **Type System Improvements**:
   - Replaced `any` with `unknown` in httpClient methods (`post`, `put`, `patch`) and retryHandler for better type safety
-  - Converted `ReturnType<typeof>` to direct interface imports in Crowdsplit facade
+  - Converted `ReturnType<typeof>` to direct interface imports in service types
   - Converted intersection types to standalone interfaces in Payment and Transfer types
 - **Dependency Updates**:
   - Moved `nock` and `dotenv` from dependencies to devDependencies (reduces production bundle size)
@@ -97,7 +97,7 @@ const client = createOakClient({
 **Before:**
 
 ```typescript
-import { createAuthService } from "@oaknetwork/api";
+import { createAuthService } from "@oaknetwork/payments-sdk";
 
 const auth = createAuthService(client);
 const token = await auth.getAccessToken();
@@ -136,7 +136,10 @@ httpClient.post<ResponseType>(url, requestData as RequestType, config);
 #### Webhook Verification
 
 ```typescript
-import { verifyWebhookSignature, parseWebhookPayload } from "@oaknetwork/api";
+import {
+  verifyWebhookSignature,
+  parseWebhookPayload,
+} from "@oaknetwork/payments-sdk";
 
 // Option 1: Verify signature only
 app.post("/webhook", (req, res) => {
@@ -173,13 +176,15 @@ app.post("/webhook", (req, res) => {
 #### RefundService Now Available
 
 ```typescript
-import { Crowdsplit } from "@oaknetwork/api/products/crowdsplit";
+import { createOakClient, createRefundService } from "@oaknetwork/payments-sdk";
 
-const crowdsplit = Crowdsplit(client);
+const client = createOakClient({
+  /* config */
+});
+const refunds = createRefundService(client);
 
-// Refund service is now exposed
-const result = await crowdsplit.refunds.create({
-  transaction_id: "txn_123",
+// Create a refund
+const result = await refunds.create("pay_123", {
   amount: 1000,
 });
 ```
@@ -189,23 +194,20 @@ const result = await crowdsplit.refunds.create({
 1. **Update Package**:
 
    ```bash
-   pnpm update @oaknetwork/api@latest
+   pnpm update @oaknetwork/payments-sdk@latest
    ```
 
 2. **Remove `clientSecret` Access**:
-
    - Search codebase for `client.config.clientSecret`
    - Store separately if needed for non-SDK purposes
    - Update to use environment variables
 
 3. **Replace `createAuthService()`**:
-
    - Search for `createAuthService`
    - Replace with direct `client.getAccessToken()` or `client.grantToken()` calls
    - Remove import
 
 4. **Add Type Assertions** (if needed):
-
    - TypeScript may require type assertions for HTTP client methods
    - Add `as RequestType` where compiler indicates `unknown` cannot be assigned
 
@@ -219,7 +221,7 @@ const result = await crowdsplit.refunds.create({
 ### Added
 
 - Initial release of Oak SDK
-- Support for Crowdsplit API
+- Support for Oak Network API
 - Customer, Payment, PaymentMethod, Transaction services
 - Transfer, Webhook, Plan, Buy, Sell services
 - OAuth 2.0 client credentials flow

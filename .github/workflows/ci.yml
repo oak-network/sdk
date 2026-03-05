@@ -38,7 +38,7 @@ jobs:
         run: pnpm changeset:status
 
       - name: Build all packages
-        run: pnpm -r --workspace-concurrency=Infinity --filter=!@oaknetwork/contracts build
+        run: pnpm -r --workspace-concurrency=Infinity build
 
       - name: Run tests with coverage (enforces 100% threshold)
         run: pnpm -r --workspace-concurrency=Infinity --filter=!@oaknetwork/contracts test --coverage
