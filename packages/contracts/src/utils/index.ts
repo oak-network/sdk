@@ -6,7 +6,11 @@ export {
   isAddress,
   getAddress,
   stringToHex,
-} from "../viem";
+  toHex,
+} from "viem";
+
+// Re-export chain IDs for simple client config
+export { CHAIN_IDS } from "../constants";
 
 import {
   keccak256 as viemKeccak256,
@@ -19,8 +23,8 @@ import {
   type Account,
   type PublicClient,
   type WalletClient,
-  type Chain,
-} from "../viem";
+} from "viem";
+import type { Chain } from "viem/chains";
 import type { JsonRpcProvider, Wallet } from "../types";
 
 /**

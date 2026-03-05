@@ -1,15 +1,26 @@
-import { defineChain } from "../viem";
-import { mainnet, sepolia, goerli } from "../viem";
-import type { Chain } from "../viem";
+import { defineChain } from "viem";
+import { mainnet, sepolia, goerli } from "viem/chains";
+import type { Chain } from "viem/chains";
+
+/** Celo Sepolia testnet */
+const celoSepolia = defineChain({
+  id: 11142220,
+  name: "Celo Sepolia",
+  nativeCurrency: { decimals: 18, name: "CELO", symbol: "CELO" },
+  rpcUrls: {
+    default: { http: ["https://forno.celo-sepolia.celo-testnet.org"] },
+  },
+});
 
 /**
  * Registry mapping chain IDs to Chain objects
- * Contains common Ethereum chains
+ * Contains common Ethereum and Celo chains
  */
 const CHAIN_REGISTRY: Record<number, Chain> = {
   1: mainnet,
   11155111: sepolia,
   5: goerli,
+  11142220: celoSepolia,
 };
 
 /**
