@@ -9,8 +9,8 @@ export type {
   Hex,
   PublicClient,
   WalletClient,
-  Chain,
-} from "./viem";
+} from "viem";
+export type { Chain } from "viem/chains";
 
 export {
   createPublicClient,
@@ -19,15 +19,14 @@ export {
   custom,
   keccak256,
   stringToHex,
+  toHex,
   parseEther,
   formatEther,
   parseUnits,
   isAddress,
   getAddress,
-  mainnet,
-  sepolia,
-  goerli,
-} from "./viem";
+} from "viem";
+export { mainnet, sepolia, goerli } from "viem/chains";
 
 export * from "./constants";
 export * from "./errors";
