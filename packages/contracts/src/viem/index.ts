@@ -1,16 +1,11 @@
-export { createOakContractsClient } from "./client";
-
-export * from "./utils";
-export * from "./types";
-
+// Re-export commonly used viem types and functions
 export type {
   Account,
   Address,
   Hex,
   PublicClient,
   WalletClient,
-  Chain,
-} from "./viem";
+} from "viem";
 
 export {
   createPublicClient,
@@ -24,10 +19,9 @@ export {
   parseUnits,
   isAddress,
   getAddress,
-  mainnet,
-  sepolia,
-  goerli,
-} from "./viem";
+  defineChain,
+} from "viem";
 
-export * from "./constants";
-export * from "./errors";
+// Re-export Chain type and common chains
+export type { Chain } from "viem/chains";
+export { mainnet, sepolia, goerli } from "viem/chains";
