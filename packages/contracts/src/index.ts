@@ -1,10 +1,32 @@
-// Contract definitions and types
-// Add your contract code here
+export { createOakContractsClient } from "./client";
 
-/**
- * Placeholder function to ensure coverage collection works
- * Remove this once you add actual contract code
- */
-export function placeholder(): void {
-  // This ensures coverage is calculated
-}
+export * from "./utils";
+export * from "./types";
+
+export type {
+  Account,
+  Address,
+  Hex,
+  PublicClient,
+  WalletClient,
+} from "viem";
+export type { Chain } from "viem/chains";
+
+export {
+  createPublicClient,
+  createWalletClient,
+  http,
+  custom,
+  keccak256,
+  stringToHex,
+  toHex,
+  parseEther,
+  formatEther,
+  parseUnits,
+  isAddress,
+  getAddress,
+} from "viem";
+export { mainnet, sepolia, goerli } from "viem/chains";
+
+export * from "./constants";
+export * from "./errors";
