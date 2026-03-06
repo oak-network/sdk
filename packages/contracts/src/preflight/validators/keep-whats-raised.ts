@@ -9,6 +9,7 @@ import {
   checkTokenAccepted,
   checkCampaignWindowStateful,
   checkErc20BalanceAndAllowance,
+  checkRewardValidity,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
 import type { MethodValidator, PreflightIssue } from "../types.js";
@@ -158,9 +159,21 @@ export const kwrPledgeForARewardValidator: MethodValidator<KwrPledgeForARewardIn
       );
     },
 
+    // Reward existence and first-tier validity
+    async (input, ctx) => {
+      return checkRewardValidity(
+        ctx.stateReader,
+        ctx.contractAddress,
+        input.rewardNames,
+        codes.KWR_UNKNOWN_REWARD,
+        codes.KWR_INVALID_FIRST_REWARD_TIER,
+        "rewardNames",
+      );
+    },
+
     // ERC20 balance/allowance for backer
     // Note: For pledgeForAReward, required amount depends on reward values + tip.
-    // Reward value resolution requires additional state reads. Defer to simulation.
+    // Reward value resolution requires summing per-reward reads. Defer to simulation.
   ],
 
   normalize: (input) => normalizeAddresses({ ...input }, ["backer", "pledgeToken"]),
