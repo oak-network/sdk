@@ -197,10 +197,19 @@ function buildContext(
   addresses: Record<string, Address>,
 ): PreflightContext {
   const stateReader = createStateReader(client.publicClient, options.blockTag);
+
+  // Auto-derive sender from walletClient if not explicitly provided
+  const resolvedOptions = options.effectiveSender
+    ? options
+    : {
+        ...options,
+        effectiveSender: client.walletClient.account?.address,
+      };
+
   return {
     publicClient: client.publicClient,
     contractAddress,
-    options,
+    options: resolvedOptions,
     stateReader,
     addresses,
   };
