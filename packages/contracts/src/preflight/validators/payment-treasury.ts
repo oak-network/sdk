@@ -9,6 +9,7 @@ import {
   checkArrayLengthParity,
   checkTokenAccepted,
   checkErc20BalanceAndAllowance,
+  checkLineItemTypes,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
 import type { MethodValidator, PreflightContext, PreflightIssue } from "../types.js";
@@ -117,9 +118,31 @@ async function checkCreatePaymentStateful(
     );
   }
 
+  // Check line item types exist
+  if (infoAddress && input.lineItems.length > 0) {
+    const platformHash = await ctx.stateReader.getPlatformHash(ctx.contractAddress);
+    if (platformHash === null) {
+      issues.push(
+        createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read platform hash for line item type validation.", {
+          fieldPath: `${p}lineItems`,
+        }),
+      );
+    } else {
+      issues.push(
+        ...(await checkLineItemTypes(ctx.stateReader, infoAddress, platformHash, input.lineItems, codes.PAYMENT_UNKNOWN_LINE_ITEM_TYPE, `${p}lineItems`)),
+      );
+    }
+  }
+
   // Check expiration not in the past
   const now = await ctx.stateReader.getBlockTimestamp();
-  if (now !== null && input.expiration > 0n && input.expiration <= now) {
+  if (now === null) {
+    issues.push(
+      createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read block timestamp for expiration checks.", {
+        fieldPath: `${p}expiration`,
+      }),
+    );
+  } else if (input.expiration > 0n && input.expiration <= now) {
     issues.push(
       createIssue(codes.PAYMENT_EXPIRED, "error", `${p}expiration (${input.expiration}) is in the past.`, {
         fieldPath: `${p}expiration`,
@@ -131,7 +154,13 @@ async function checkCreatePaymentStateful(
   // Check expiration not too long
   if (gpAddress && now !== null && input.expiration > 0n) {
     const maxHex = await ctx.stateReader.getFromRegistry(gpAddress, DATA_REGISTRY_KEYS.MAX_PAYMENT_EXPIRATION);
-    if (maxHex !== null) {
+    if (maxHex === null) {
+      issues.push(
+        createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read max payment expiration from registry.", {
+          fieldPath: `${p}expiration`,
+        }),
+      );
+    } else {
       const max = BigInt(maxHex);
       if (max > 0n && input.expiration > now + max) {
         issues.push(
@@ -148,7 +177,13 @@ async function checkCreatePaymentStateful(
 
   // Check duplicate paymentId
   const paymentData = await ctx.stateReader.getPaymentData(ctx.contractAddress, input.paymentId);
-  if (paymentData !== null && paymentData.amount > 0n) {
+  if (paymentData === null) {
+    issues.push(
+      createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read payment data for duplicate check.", {
+        fieldPath: `${p}paymentId`,
+      }),
+    );
+  } else if (paymentData.amount > 0n) {
     issues.push(
       createIssue(
         codes.PAYMENT_DUPLICATE_PAYMENT_ID,
@@ -198,6 +233,9 @@ export const createPaymentBatchValidator: MethodValidator<CreatePaymentBatchInpu
         issues.push(...checkArrayLengthParity(input.paymentIds, arr, "paymentIds", name));
       }
 
+      // If any parity error, skip per-item checks to avoid out-of-bounds access
+      if (issues.length > 0) return issues;
+
       // Per-item structural checks
       for (let i = 0; i < len; i++) {
         const item: CreatePaymentInput = {
@@ -235,8 +273,22 @@ export const createPaymentBatchValidator: MethodValidator<CreatePaymentBatchInpu
 
   stateful: [
     async (input, ctx) => {
+      // Skip if arrays are mismatched (structural already reported this)
+      const len = input.paymentIds.length;
+      if (
+        input.buyerIds.length !== len ||
+        input.itemIds.length !== len ||
+        input.paymentTokens.length !== len ||
+        input.amounts.length !== len ||
+        input.expirations.length !== len ||
+        input.lineItemsArray.length !== len ||
+        input.externalFeesArray.length !== len
+      ) {
+        return [];
+      }
+
       const issues: PreflightIssue[] = [];
-      for (let i = 0; i < input.paymentIds.length; i++) {
+      for (let i = 0; i < len; i++) {
         const item: CreatePaymentInput = {
           paymentId: input.paymentIds[i],
           buyerId: input.buyerIds[i],
@@ -303,7 +355,13 @@ export const confirmPaymentValidator: MethodValidator<ConfirmPaymentInput> = {
       }
 
       const now = await ctx.stateReader.getBlockTimestamp();
-      if (now !== null && paymentData.expiration > 0n && paymentData.expiration <= now) {
+      if (now === null) {
+        issues.push(
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read block timestamp for expiration check.", {
+            fieldPath: "paymentId",
+          }),
+        );
+      } else if (paymentData.expiration > 0n && paymentData.expiration <= now) {
         issues.push(
           createIssue(codes.PAYMENT_ALREADY_EXPIRED, "error", `Payment ${input.paymentId} has expired.`, {
             fieldPath: "paymentId",
@@ -327,6 +385,9 @@ export const confirmPaymentBatchValidator: MethodValidator<ConfirmPaymentBatchIn
     (input) => {
       const issues: PreflightIssue[] = [];
       issues.push(...checkArrayLengthParity(input.paymentIds, input.buyerAddresses, "paymentIds", "buyerAddresses"));
+
+      // If parity error, skip per-item checks to avoid out-of-bounds access
+      if (issues.length > 0) return issues;
 
       for (let i = 0; i < input.paymentIds.length; i++) {
         issues.push(...checkZeroBytes32(input.paymentIds[i], `paymentIds[${i}]`, codes.PAYMENT_ZERO_PAYMENT_ID));
@@ -356,6 +417,9 @@ export const confirmPaymentBatchValidator: MethodValidator<ConfirmPaymentBatchIn
 
   stateful: [
     async (input, ctx) => {
+      // Skip if arrays are mismatched (structural already reported this)
+      if (input.paymentIds.length !== input.buyerAddresses.length) return [];
+
       const issues: PreflightIssue[] = [];
       for (let i = 0; i < input.paymentIds.length; i++) {
         const confirmInput: ConfirmPaymentInput = {
@@ -424,9 +488,31 @@ export const processCryptoPaymentValidator: MethodValidator<ProcessCryptoPayment
         );
       }
 
+      // Check line item types exist
+      if (infoAddress && input.lineItems.length > 0) {
+        const platformHash = await ctx.stateReader.getPlatformHash(ctx.contractAddress);
+        if (platformHash === null) {
+          issues.push(
+            createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read platform hash for line item type validation.", {
+              fieldPath: "lineItems",
+            }),
+          );
+        } else {
+          issues.push(
+            ...(await checkLineItemTypes(ctx.stateReader, infoAddress, platformHash, input.lineItems, codes.PAYMENT_UNKNOWN_LINE_ITEM_TYPE, "lineItems")),
+          );
+        }
+      }
+
       // Check duplicate paymentId
       const paymentData = await ctx.stateReader.getPaymentData(ctx.contractAddress, input.paymentId);
-      if (paymentData !== null && paymentData.amount > 0n) {
+      if (paymentData === null) {
+        issues.push(
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read payment data for duplicate check.", {
+            fieldPath: "paymentId",
+          }),
+        );
+      } else if (paymentData.amount > 0n) {
         issues.push(
           createIssue(codes.PAYMENT_DUPLICATE_PAYMENT_ID, "error", `Payment with id ${input.paymentId} already exists.`, {
             fieldPath: "paymentId",

@@ -3,6 +3,7 @@ import { GLOBAL_PARAMS_ABI } from "../abis/global-params.js";
 import { CAMPAIGN_INFO_FACTORY_ABI } from "../abis/campaign-info-factory.js";
 import { CAMPAIGN_INFO_ABI } from "../abis/campaign-info.js";
 import { PAYMENT_TREASURY_ABI } from "../abis/payment-treasury.js";
+import { ALL_OR_NOTHING_ABI } from "../abis/all-or-nothing.js";
 import type { StateReader } from "./types.js";
 
 /** Minimal ERC20 ABI for balance and allowance reads. */
@@ -198,6 +199,57 @@ export function createStateReader(
           ...(blockNumber !== undefined && { blockNumber }),
         }),
       );
+    },
+
+    async getLineItemType(
+      infoAddress: Address,
+      platformHash: Hex,
+      typeId: Hex,
+    ): Promise<{ exists: boolean } | null> {
+      return cachedRead(`info:lineItemType:${infoAddress}:${platformHash}:${typeId}`, async () => {
+        const result = await publicClient.readContract({
+          address: infoAddress,
+          abi: CAMPAIGN_INFO_ABI,
+          functionName: "getLineItemType",
+          args: [platformHash, typeId],
+          ...(blockNumber !== undefined && { blockNumber }),
+        });
+        const [exists] = result as [boolean, string, boolean, boolean, boolean, boolean];
+        return { exists };
+      });
+    },
+
+    // ── Treasury common reads ─────────────────────────────────────────────
+
+    async getPlatformHash(treasuryAddress: Address): Promise<Hex | null> {
+      return cachedRead(`treasury:platformHash:${treasuryAddress}`, () =>
+        publicClient.readContract({
+          address: treasuryAddress,
+          abi: PAYMENT_TREASURY_ABI,
+          functionName: "getplatformHash",
+          ...(blockNumber !== undefined && { blockNumber }),
+        }),
+      );
+    },
+
+    // ── Treasury reward reads ─────────────────────────────────────────────
+
+    async getReward(
+      treasuryAddress: Address,
+      rewardName: Hex,
+    ): Promise<{ rewardValue: bigint; isRewardTier: boolean } | null> {
+      return cachedRead(`reward:${treasuryAddress}:${rewardName}`, async () => {
+        // Both AON and KWR share the same getReward(bytes32) signature
+        const result = await publicClient.readContract({
+          address: treasuryAddress,
+          abi: ALL_OR_NOTHING_ABI,
+          functionName: "getReward",
+          args: [rewardName],
+          ...(blockNumber !== undefined && { blockNumber }),
+        });
+        const data = result as unknown as { rewardValue: bigint; isRewardTier: boolean };
+        return { rewardValue: data.rewardValue, isRewardTier: data.isRewardTier };
+      });
     },
 
     // ── PaymentTreasury ──────────────────────────────────────────────────
