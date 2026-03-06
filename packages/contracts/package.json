@@ -28,6 +28,10 @@
     "./errors": {
       "types": "./dist/errors/index.d.ts",
       "import": "./dist/errors/index.js"
+    },
+    "./preflight": {
+      "types": "./dist/preflight/index.d.ts",
+      "import": "./dist/preflight/index.js"
     }
   },
   "scripts": {

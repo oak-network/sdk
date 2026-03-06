@@ -7,6 +7,7 @@ export default defineConfig({
     "contracts/index": "src/contracts/index.ts",
     "client/index": "src/client/index.ts",
     "errors/index": "src/errors/index.ts",
+    "preflight/index": "src/preflight/index.ts",
   },
   format: ["esm"],
   dts: true,
