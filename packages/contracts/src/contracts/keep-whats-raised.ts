@@ -55,8 +55,8 @@ export function createKeepWhatsRaisedEntity(
     async getPlatformHash() {
       return publicClient.readContract({ ...contract, functionName: "getPlatformHash" });
     },
-    async getplatformFeePercent() {
-      return publicClient.readContract({ ...contract, functionName: "getplatformFeePercent" });
+    async getPlatformFeePercent() {
+      return publicClient.readContract({ ...contract, functionName: "getPlatformFeePercent" });
     },
     async getWithdrawalApprovalStatus() {
       return publicClient.readContract({ ...contract, functionName: "getWithdrawalApprovalStatus" });
