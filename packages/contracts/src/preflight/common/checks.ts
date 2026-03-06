@@ -1,5 +1,4 @@
 import type { Address, Hex } from "viem";
-import { getAddress, isAddress } from "viem";
 import { BYTES32_ZERO } from "../../constants/index.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
@@ -250,6 +249,100 @@ export async function checkErc20BalanceAndAllowance(
     );
   }
 
+  return issues;
+}
+
+/**
+ * Checks that each line item's typeId exists for the given platform on-chain.
+ *
+ * @param stateReader - State reader instance
+ * @param infoAddress - CampaignInfo contract address
+ * @param platformHash - Platform hash for the line item type lookup
+ * @param lineItems - Array of line items to validate
+ * @param code - Issue code for unknown line item types
+ * @param fieldPrefix - Field prefix for issue paths
+ * @returns Array of issues (empty if all valid or state unavailable)
+ */
+export async function checkLineItemTypes(
+  stateReader: StateReader,
+  infoAddress: Address,
+  platformHash: Hex,
+  lineItems: readonly { typeId: Hex; amount: bigint }[],
+  code: string,
+  fieldPrefix: string,
+): Promise<PreflightIssue[]> {
+  const issues: PreflightIssue[] = [];
+  for (let i = 0; i < lineItems.length; i++) {
+    const result = await stateReader.getLineItemType(infoAddress, platformHash, lineItems[i].typeId);
+    if (result === null) {
+      issues.push(
+        createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", `Could not verify line item type at ${fieldPrefix}[${i}].`, {
+          fieldPath: `${fieldPrefix}[${i}].typeId`,
+        }),
+      );
+    } else if (!result.exists) {
+      issues.push(
+        createIssue(code, "error", `Unknown line item type at ${fieldPrefix}[${i}]: ${lineItems[i].typeId}.`, {
+          fieldPath: `${fieldPrefix}[${i}].typeId`,
+          suggestion: "Use a valid line item type registered for this platform.",
+        }),
+      );
+    }
+  }
+  return issues;
+}
+
+/**
+ * Checks that each reward name exists on-chain and the first is a reward tier.
+ *
+ * @param stateReader - State reader instance
+ * @param treasuryAddress - Treasury contract address (AON or KWR)
+ * @param rewardNames - Array of reward name hashes
+ * @param unknownCode - Issue code for unknown reward
+ * @param invalidFirstTierCode - Issue code for invalid first reward tier
+ * @param fieldPath - Field path for issue paths
+ * @returns Array of issues
+ */
+export async function checkRewardValidity(
+  stateReader: StateReader,
+  treasuryAddress: Address,
+  rewardNames: readonly Hex[],
+  unknownCode: string,
+  invalidFirstTierCode: string,
+  fieldPath: string,
+): Promise<PreflightIssue[]> {
+  const issues: PreflightIssue[] = [];
+  for (let i = 0; i < rewardNames.length; i++) {
+    const reward = await stateReader.getReward(treasuryAddress, rewardNames[i]);
+    if (reward === null) {
+      issues.push(
+        createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", `Could not verify reward at ${fieldPath}[${i}].`, {
+          fieldPath: `${fieldPath}[${i}]`,
+        }),
+      );
+      continue;
+    }
+    if (reward.rewardValue === 0n) {
+      issues.push(
+        createIssue(unknownCode, "error", `Reward ${rewardNames[i]} at ${fieldPath}[${i}] does not exist.`, {
+          fieldPath: `${fieldPath}[${i}]`,
+          suggestion: "Use a reward name that has been added to the treasury.",
+        }),
+      );
+    } else if (i === 0 && !reward.isRewardTier) {
+      issues.push(
+        createIssue(
+          invalidFirstTierCode,
+          "error",
+          `First reward at ${fieldPath}[0] must be a reward tier.`,
+          {
+            fieldPath: `${fieldPath}[0]`,
+            suggestion: "The first reward in the array must have isRewardTier = true.",
+          },
+        ),
+      );
+    }
+  }
   return issues;
 }
 

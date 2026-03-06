@@ -112,6 +112,23 @@ export interface StateReader {
   isTokenAccepted(infoAddress: Address, token: Address): Promise<boolean | null>;
   getLaunchTime(infoAddress: Address): Promise<bigint | null>;
   getDeadline(infoAddress: Address): Promise<bigint | null>;
+  /** Check if a line item type exists for a given platform on a CampaignInfo contract. */
+  getLineItemType(
+    infoAddress: Address,
+    platformHash: Hex,
+    typeId: Hex,
+  ): Promise<{ exists: boolean } | null>;
+
+  // ── Treasury reward reads ─────────────────────────────────────────────
+  /** Read a reward from an AON or KWR treasury contract. Returns null on failure. */
+  getReward(
+    treasuryAddress: Address,
+    rewardName: Hex,
+  ): Promise<{ rewardValue: bigint; isRewardTier: boolean } | null>;
+
+  // ── Treasury common reads ──────────────────────────────────────────────
+  /** Read the platformHash from a treasury contract. */
+  getPlatformHash(treasuryAddress: Address): Promise<Hex | null>;
 
   // ── PaymentTreasury reads ────────────────────────────────────────────
   getPaymentData(treasuryAddress: Address, paymentId: Hex): Promise<{
