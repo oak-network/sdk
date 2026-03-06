@@ -404,7 +404,7 @@ export interface AllOrNothingTreasuryEntity {
   getRefundedAmount(): Promise<bigint>;
   getReward(rewardName: Hex): Promise<TieredReward>;
   getPlatformHash(): Promise<Hex>;
-  getplatformFeePercent(): Promise<bigint>;
+  getPlatformFeePercent(): Promise<bigint>;
   paused(): Promise<boolean>;
   balanceOf(owner: Address): Promise<bigint>;
   ownerOf(tokenId: bigint): Promise<Address>;
@@ -442,7 +442,7 @@ export interface KeepWhatsRaisedTreasuryEntity {
   getAvailableRaisedAmount(): Promise<bigint>;
   getReward(rewardName: Hex): Promise<TieredReward>;
   getPlatformHash(): Promise<Hex>;
-  getplatformFeePercent(): Promise<bigint>;
+  getPlatformFeePercent(): Promise<bigint>;
   getWithdrawalApprovalStatus(): Promise<boolean>;
   getLaunchTime(): Promise<bigint>;
   getDeadline(): Promise<bigint>;
