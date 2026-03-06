@@ -6,6 +6,7 @@ import {
   checkTokenAccepted,
   checkCampaignWindowStateful,
   checkErc20BalanceAndAllowance,
+  checkRewardValidity,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
 import type { MethodValidator, PreflightIssue } from "../types.js";
@@ -71,10 +72,21 @@ export const aonPledgeForARewardValidator: MethodValidator<AonPledgeForARewardIn
       );
     },
 
+    // Reward existence and first-tier validity
+    async (input, ctx) => {
+      return checkRewardValidity(
+        ctx.stateReader,
+        ctx.contractAddress,
+        input.rewardNames,
+        codes.AON_UNKNOWN_REWARD,
+        codes.AON_INVALID_FIRST_REWARD_TIER,
+        "rewardNames",
+      );
+    },
+
     // ERC20 balance/allowance for backer
     // Note: For pledgeForAReward, the required amount depends on reward values which
-    // would need additional state reads. We skip the amount-based check here since
-    // the reward value resolution is complex. Simulation will catch insufficient funds.
+    // would need additional state reads to sum. Defer to simulation for amount check.
   ],
 
   normalize: (input) => normalizeAddresses({ ...input }, ["backer", "pledgeToken"]),
