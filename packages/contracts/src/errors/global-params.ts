@@ -84,14 +84,12 @@ export class GlobalParamsPlatformFeePercentIsZeroError extends Error implements 
 
 export class GlobalParamsPlatformNotListedError extends Error implements ContractErrorBase {
   readonly name = "GlobalParamsPlatformNotListed";
-  readonly args: { platformBytes: string; platformAdminAddress: string };
+  readonly args: { platformBytes: string };
   readonly recoveryHint =
     "Platform is not enlisted in GlobalParams. Enlist the platform first.";
 
-  constructor(args: { platformBytes: string; platformAdminAddress: string }) {
-    super(
-      `GlobalParamsPlatformNotListed(platformBytes: ${args.platformBytes}, platformAdminAddress: ${args.platformAdminAddress})`,
-    );
+  constructor(args: { platformBytes: string }) {
+    super(`GlobalParamsPlatformNotListed(platformBytes: ${args.platformBytes})`);
     this.args = args;
     Object.setPrototypeOf(this, GlobalParamsPlatformNotListedError.prototype);
   }
