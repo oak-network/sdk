@@ -19,10 +19,7 @@ export const GLOBAL_PARAMS_ABI = [
     type: "error",
   },
   {
-    inputs: [
-      { internalType: "bytes32", name: "platformBytes", type: "bytes32" },
-      { internalType: "address", name: "platformAdminAddress", type: "address" },
-    ],
+    inputs: [{ internalType: "bytes32", name: "platformBytes", type: "bytes32" }],
     name: "GlobalParamsPlatformNotListed",
     type: "error",
   },

@@ -84,9 +84,6 @@ export const KEEP_WHATS_RAISED_ABI = [
   { inputs: [], name: "TreasuryCampaignInfoIsPaused", type: "error" },
   { inputs: [], name: "TreasuryFeeNotDisbursed", type: "error" },
   { inputs: [], name: "TreasuryTransferFailed", type: "error" },
-  { inputs: [], name: "TreasuryCampaignInfoIsPaused", type: "error" },
-  { inputs: [], name: "TreasuryFeeNotDisbursed", type: "error" },
-  { inputs: [], name: "TreasuryTransferFailed", type: "error" },
   {
     anonymous: false,
     inputs: [
@@ -110,6 +107,7 @@ export const KEEP_WHATS_RAISED_ABI = [
   {
     anonymous: false,
     inputs: [
+      { indexed: true, internalType: "address", name: "token", type: "address" },
       { indexed: false, internalType: "uint256", name: "protocolShare", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "platformShare", type: "uint256" },
     ],
@@ -255,15 +253,6 @@ export const KEEP_WHATS_RAISED_ABI = [
     inputs: [
       { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
-    ],
-    name: "WithdrawalSuccessful",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "address", name: "to", type: "address" },
-      { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "fee", type: "uint256" },
     ],
     name: "WithdrawalWithFeeSuccessful",
@@ -311,6 +300,20 @@ export const KEEP_WHATS_RAISED_ABI = [
     name: "unpauseTreasury",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "bytes32", name: "message", type: "bytes32" }],
+    name: "cancelTreasury",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "cancelled",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -552,7 +555,7 @@ export const KEEP_WHATS_RAISED_ABI = [
   },
   {
     inputs: [],
-    name: "getplatformFeePercent",
+    name: "getPlatformFeePercent",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",

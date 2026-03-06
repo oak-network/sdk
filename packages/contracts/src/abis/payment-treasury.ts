@@ -190,6 +190,17 @@ export const PAYMENT_TREASURY_ABI = [
     type: "event",
   },
   {
+    inputs: [
+      { internalType: "bytes32", name: "_platformHash", type: "bytes32" },
+      { internalType: "address", name: "_infoAddress", type: "address" },
+      { internalType: "address", name: "_trustedForwarder", type: "address" },
+    ],
+    name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "getplatformHash",
     outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],

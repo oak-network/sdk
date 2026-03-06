@@ -73,28 +73,10 @@ export const CAMPAIGN_INFO_ABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "previousOwner", type: "address" },
-      { indexed: true, internalType: "address", name: "newOwner", type: "address" },
-    ],
-    name: "CampaignInfoOwnershipTransferred",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
       { indexed: true, internalType: "bytes32", name: "platformBytes", type: "bytes32" },
       { indexed: true, internalType: "address", name: "platformTreasury", type: "address" },
     ],
     name: "CampaignInfoPlatformInfoUpdated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      { indexed: true, internalType: "bytes32", name: "platformBytes", type: "bytes32" },
-      { indexed: true, internalType: "address", name: "platformTreasury", type: "address" },
-    ],
-    name: "CampaignInfoPlatformSelected",
     type: "event",
   },
   {
@@ -132,6 +114,13 @@ export const CAMPAIGN_INFO_ABI = [
     ],
     name: "Unpaused",
     type: "event",
+  },
+  {
+    inputs: [{ internalType: "bytes32", name: "message", type: "bytes32" }],
+    name: "_cancelCampaign",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [{ internalType: "bytes32", name: "message", type: "bytes32" }],

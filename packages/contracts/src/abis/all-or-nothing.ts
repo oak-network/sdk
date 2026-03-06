@@ -76,6 +76,7 @@ export const ALL_OR_NOTHING_ABI = [
   {
     anonymous: false,
     inputs: [
+      { indexed: true, internalType: "address", name: "token", type: "address" },
       { indexed: false, internalType: "uint256", name: "protocolShare", type: "uint256" },
       { indexed: false, internalType: "uint256", name: "platformShare", type: "uint256" },
     ],
@@ -118,16 +119,16 @@ export const ALL_OR_NOTHING_ABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "bytes32", name: "rewardName", type: "bytes32" },
+      { indexed: false, internalType: "bytes32[]", name: "rewardNames", type: "bytes32[]" },
       {
-        components: REWARD_TIER_COMPONENTS,
+        components: [...REWARD_TIER_COMPONENTS],
         indexed: false,
-        internalType: "struct AllOrNothing.Reward",
-        name: "reward",
-        type: "tuple",
+        internalType: "struct AllOrNothing.Reward[]",
+        name: "rewards",
+        type: "tuple[]",
       },
     ],
-    name: "RewardAdded",
+    name: "RewardsAdded",
     type: "event",
   },
   {
@@ -159,7 +160,8 @@ export const ALL_OR_NOTHING_ABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "to", type: "address" },
+      { indexed: true, internalType: "address", name: "token", type: "address" },
+      { indexed: false, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
     ],
     name: "WithdrawalSuccessful",
@@ -177,6 +179,20 @@ export const ALL_OR_NOTHING_ABI = [
     name: "unpauseTreasury",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "bytes32", name: "message", type: "bytes32" }],
+    name: "cancelTreasury",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "cancelled",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -294,7 +310,7 @@ export const ALL_OR_NOTHING_ABI = [
   },
   {
     inputs: [],
-    name: "getplatformFeePercent",
+    name: "getPlatformFeePercent",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function",
