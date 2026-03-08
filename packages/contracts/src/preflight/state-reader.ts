@@ -4,6 +4,7 @@ import { CAMPAIGN_INFO_FACTORY_ABI } from "../abis/campaign-info-factory.js";
 import { CAMPAIGN_INFO_ABI } from "../abis/campaign-info.js";
 import { PAYMENT_TREASURY_ABI } from "../abis/payment-treasury.js";
 import { ALL_OR_NOTHING_ABI } from "../abis/all-or-nothing.js";
+import { KEEP_WHATS_RAISED_ABI } from "../abis/keep-whats-raised.js";
 import type { StateReader } from "./types.js";
 
 /** Minimal ERC20 ABI for balance and allowance reads. */
@@ -227,6 +228,63 @@ export function createStateReader(
           address: treasuryAddress,
           abi: PAYMENT_TREASURY_ABI,
           functionName: "getplatformHash",
+          ...(blockNumber !== undefined && { blockNumber }),
+        }),
+      );
+    },
+
+    async getCancelled(treasuryAddress: Address): Promise<boolean | null> {
+      return cachedRead(`treasury:cancelled:${treasuryAddress}`, () =>
+        publicClient.readContract({
+          address: treasuryAddress,
+          abi: ALL_OR_NOTHING_ABI,
+          functionName: "cancelled",
+          ...(blockNumber !== undefined && { blockNumber }),
+        }),
+      );
+    },
+
+    async getPaused(treasuryAddress: Address): Promise<boolean | null> {
+      return cachedRead(`treasury:paused:${treasuryAddress}`, () =>
+        publicClient.readContract({
+          address: treasuryAddress,
+          abi: ALL_OR_NOTHING_ABI,
+          functionName: "paused",
+          ...(blockNumber !== undefined && { blockNumber }),
+        }),
+      );
+    },
+
+    async getRaisedAmount(treasuryAddress: Address): Promise<bigint | null> {
+      return cachedRead(`treasury:raisedAmount:${treasuryAddress}`, () =>
+        publicClient.readContract({
+          address: treasuryAddress,
+          abi: ALL_OR_NOTHING_ABI,
+          functionName: "getRaisedAmount",
+          ...(blockNumber !== undefined && { blockNumber }),
+        }),
+      );
+    },
+
+    // ── KWR-specific reads ──────────────────────────────────────────────
+
+    async getWithdrawalApprovalStatus(treasuryAddress: Address): Promise<boolean | null> {
+      return cachedRead(`kwr:withdrawalApproval:${treasuryAddress}`, () =>
+        publicClient.readContract({
+          address: treasuryAddress,
+          abi: KEEP_WHATS_RAISED_ABI,
+          functionName: "getWithdrawalApprovalStatus",
+          ...(blockNumber !== undefined && { blockNumber }),
+        }),
+      );
+    },
+
+    async getGoalAmount(treasuryAddress: Address): Promise<bigint | null> {
+      return cachedRead(`kwr:goalAmount:${treasuryAddress}`, () =>
+        publicClient.readContract({
+          address: treasuryAddress,
+          abi: KEEP_WHATS_RAISED_ABI,
+          functionName: "getGoalAmount",
           ...(blockNumber !== undefined && { blockNumber }),
         }),
       );

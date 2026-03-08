@@ -1,5 +1,6 @@
 import type { Address, Hex } from "viem";
 import { BYTES32_ZERO } from "../../constants/index.js";
+import type { TieredReward } from "../../types/index.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
 import type { PreflightIssue, StateReader } from "../types.js";
@@ -374,4 +375,100 @@ export async function checkCampaignWindowStateful(
   }
 
   return checkCampaignWindow(launchTime, deadline, now, notStartedCode, endedCode);
+}
+
+/**
+ * Validates that each TieredReward's itemId, itemValue, and itemQuantity arrays have matching lengths.
+ *
+ * @param rewards - Array of tiered rewards to validate
+ * @param fieldPrefix - Field prefix for issue paths
+ * @returns Array of issues (empty if all valid)
+ */
+export function checkRewardItemArrayParity(
+  rewards: readonly TieredReward[],
+  fieldPrefix: string,
+): PreflightIssue[] {
+  const issues: PreflightIssue[] = [];
+  for (let i = 0; i < rewards.length; i++) {
+    const r = rewards[i];
+    const idLen = r.itemId.length;
+    if (r.itemValue.length !== idLen || r.itemQuantity.length !== idLen) {
+      issues.push(
+        createIssue(
+          codes.REWARD_ITEM_ARRAY_MISMATCH,
+          "error",
+          `Reward at ${fieldPrefix}[${i}] has mismatched item arrays: itemId(${idLen}), itemValue(${r.itemValue.length}), itemQuantity(${r.itemQuantity.length}).`,
+          {
+            fieldPath: `${fieldPrefix}[${i}]`,
+            suggestion: "Ensure itemId, itemValue, and itemQuantity arrays have the same length.",
+          },
+        ),
+      );
+    }
+  }
+  return issues;
+}
+
+/**
+ * Checks if the campaign deadline has passed (for settlement methods).
+ *
+ * @param stateReader - State reader instance
+ * @param infoAddress - CampaignInfo contract address
+ * @param code - Issue code for campaign still active
+ * @returns Array of issues (warn if deadline not yet passed)
+ */
+export async function checkCampaignEnded(
+  stateReader: StateReader,
+  infoAddress: Address,
+  code: string,
+): Promise<PreflightIssue[]> {
+  const [deadline, now] = await Promise.all([
+    stateReader.getDeadline(infoAddress),
+    stateReader.getBlockTimestamp(),
+  ]);
+
+  if (deadline === null || now === null) {
+    return [
+      createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read campaign deadline from on-chain state."),
+    ];
+  }
+
+  if (now <= deadline) {
+    return [
+      createIssue(code, "warn", `Campaign deadline has not passed yet. Deadline: ${deadline}, current time: ${now}.`, {
+        suggestion: "Wait until the campaign deadline has passed before performing this operation.",
+      }),
+    ];
+  }
+
+  return [];
+}
+
+/**
+ * Checks if a treasury is paused.
+ *
+ * @param stateReader - State reader instance
+ * @param treasuryAddress - Treasury contract address
+ * @param code - Issue code for treasury paused
+ * @returns Array of issues (warn if paused)
+ */
+export async function checkTreasuryPaused(
+  stateReader: StateReader,
+  treasuryAddress: Address,
+  code: string,
+): Promise<PreflightIssue[]> {
+  const paused = await stateReader.getPaused(treasuryAddress);
+  if (paused === null) {
+    return [
+      createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read treasury paused state."),
+    ];
+  }
+  if (paused) {
+    return [
+      createIssue(code, "warn", "Treasury is currently paused.", {
+        suggestion: "Unpause the treasury before performing this operation.",
+      }),
+    ];
+  }
+  return [];
 }

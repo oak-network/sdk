@@ -8,11 +8,15 @@ import {
   checkDuplicates,
   checkTokenAccepted,
   checkCampaignWindowStateful,
+  checkCampaignEnded,
   checkErc20BalanceAndAllowance,
   checkRewardValidity,
+  checkTreasuryPaused,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
 import type { MethodValidator, PreflightIssue } from "../types.js";
+import { addRewardsValidator } from "./all-or-nothing.js";
+import type { AddRewardsInput } from "./all-or-nothing.js";
 
 // ─── Input shapes ──────────────────────────────────────────────────────────────
 
@@ -236,4 +240,199 @@ export const kwrPledgeWithoutARewardValidator: MethodValidator<KwrPledgeWithoutA
   ],
 
   normalize: (input) => normalizeAddresses({ ...input }, ["backer", "pledgeToken"]),
+};
+
+// ─── addRewards (re-export shared validator from AON) ─────────────────────────
+
+export { addRewardsValidator } from "./all-or-nothing.js";
+export type { AddRewardsInput } from "./all-or-nothing.js";
+
+// ─── setFeeAndPledge ──────────────────────────────────────────────────────────
+
+/** Input shape for KeepWhatsRaised.setFeeAndPledge preflight. */
+export interface SetFeeAndPledgeInput {
+  pledgeId: Hex;
+  backer: Address;
+  pledgeToken: Address;
+  pledgeAmount: bigint;
+  tip: bigint;
+  fee: bigint;
+  reward: readonly Hex[];
+  isPledgeForAReward: boolean;
+}
+
+/**
+ * Preflight validator for KeepWhatsRaised.setFeeAndPledge.
+ */
+export const setFeeAndPledgeValidator: MethodValidator<SetFeeAndPledgeInput> = {
+  structural: [
+    (input) => checkZeroBytes32(input.pledgeId, "pledgeId", codes.KWR_ZERO_PLEDGE_ID),
+    (input) => checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+    (input) => {
+      if (input.isPledgeForAReward && input.reward.length === 0) {
+        return [
+          createIssue(codes.KWR_EMPTY_REWARD_NAMES, "error", "reward must not be empty when isPledgeForAReward is true.", {
+            fieldPath: "reward",
+            suggestion: "Provide at least one reward name, or set isPledgeForAReward to false.",
+          }),
+        ];
+      }
+      return [];
+    },
+  ],
+
+  semantic: [
+    (input) => {
+      if (input.pledgeAmount === 0n && input.tip === 0n && input.fee === 0n) {
+        return [
+          createIssue(codes.KWR_ZERO_PLEDGE_AMOUNT_AND_FEE, "warn", "pledgeAmount, tip, and fee are all zero.", {
+            suggestion: "Verify that a zero-value pledge is intentional.",
+          }),
+        ];
+      }
+      return [];
+    },
+  ],
+
+  stateful: [
+    // Token acceptance
+    async (input, ctx) => {
+      const infoAddress = ctx.addresses.infoAddress;
+      if (!infoAddress) return [];
+      return checkTokenAccepted(ctx.stateReader, infoAddress, input.pledgeToken, "pledgeToken", codes.KWR_UNACCEPTED_TOKEN);
+    },
+
+    // Campaign window
+    async (_input, ctx) => {
+      const infoAddress = ctx.addresses.infoAddress;
+      if (!infoAddress) return [];
+      return checkCampaignWindowStateful(
+        ctx.stateReader,
+        infoAddress,
+        codes.KWR_CAMPAIGN_NOT_STARTED,
+        codes.KWR_CAMPAIGN_ENDED,
+      );
+    },
+
+    // Reward validity (only when isPledgeForAReward)
+    async (input, ctx) => {
+      if (!input.isPledgeForAReward) return [];
+      return checkRewardValidity(
+        ctx.stateReader,
+        ctx.contractAddress,
+        input.reward,
+        codes.KWR_UNKNOWN_REWARD,
+        codes.KWR_INVALID_FIRST_REWARD_TIER,
+        "reward",
+      );
+    },
+
+    // ERC20 balance/allowance for backer
+    async (input, ctx) => {
+      const totalRequired = input.pledgeAmount + input.tip + input.fee;
+      return checkErc20BalanceAndAllowance(
+        ctx.stateReader,
+        input.pledgeToken,
+        input.backer,
+        ctx.contractAddress,
+        totalRequired,
+        "backer",
+      );
+    },
+  ],
+
+  normalize: (input) => normalizeAddresses({ ...input }, ["backer", "pledgeToken"]),
+};
+
+// ─── KWR Settlement validators ────────────────────────────────────────────────
+
+/** Input shape for KeepWhatsRaised.claimRefund preflight. */
+export interface KwrClaimRefundInput {
+  tokenId: bigint;
+}
+
+/** Input shape for KeepWhatsRaised.claimTip preflight. */
+export type KwrClaimTipInput = Record<string, never>;
+
+/** Input shape for KeepWhatsRaised.claimFund preflight. */
+export type KwrClaimFundInput = Record<string, never>;
+
+/** Input shape for KeepWhatsRaised.disburseFees preflight. */
+export type KwrDisburseFeesInput = Record<string, never>;
+
+/**
+ * Preflight validator for KeepWhatsRaised.claimRefund.
+ * Lightweight — tokenId 0 may be valid.
+ */
+export const kwrClaimRefundValidator: MethodValidator<KwrClaimRefundInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [
+    async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
+  ],
+};
+
+/**
+ * Preflight validator for KeepWhatsRaised.claimTip.
+ * Lightweight — checks paused state and campaign deadline.
+ */
+export const kwrClaimTipValidator: MethodValidator<KwrClaimTipInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [
+    async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
+    async (_input, ctx) => {
+      const infoAddress = ctx.addresses.infoAddress;
+      if (!infoAddress) return [];
+      return checkCampaignEnded(ctx.stateReader, infoAddress, codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE);
+    },
+  ],
+};
+
+/**
+ * Preflight validator for KeepWhatsRaised.claimFund.
+ * Checks withdrawal approval (error), paused state, and campaign deadline.
+ */
+export const kwrClaimFundValidator: MethodValidator<KwrClaimFundInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [
+    async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
+    async (_input, ctx) => {
+      const infoAddress = ctx.addresses.infoAddress;
+      if (!infoAddress) return [];
+      return checkCampaignEnded(ctx.stateReader, infoAddress, codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE);
+    },
+    async (_input, ctx) => {
+      const approved = await ctx.stateReader.getWithdrawalApprovalStatus(ctx.contractAddress);
+      if (approved === null) {
+        return [
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read withdrawal approval status."),
+        ];
+      }
+      if (!approved) {
+        return [
+          createIssue(
+            codes.SETTLEMENT_WITHDRAWAL_NOT_APPROVED,
+            "error",
+            "Withdrawal has not been approved. Call approveWithdrawal() first.",
+            { suggestion: "The campaign creator must approve withdrawal before funds can be claimed." },
+          ),
+        ];
+      }
+      return [];
+    },
+  ],
+};
+
+/**
+ * Preflight validator for KeepWhatsRaised.disburseFees.
+ * Lightweight — defers most logic to simulation.
+ */
+export const kwrDisburseFeesValidator: MethodValidator<KwrDisburseFeesInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [
+    async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
+  ],
 };

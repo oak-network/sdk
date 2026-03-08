@@ -30,13 +30,29 @@ export type {
   ConfirmPaymentInput,
   ConfirmPaymentBatchInput,
   ProcessCryptoPaymentInput,
+  CancelPaymentInput,
+  PtWithdrawInput,
+  PtClaimRefundInput,
+  PtClaimRefundSelfInput,
+  PtClaimExpiredFundsInput,
+  PtDisburseFeesInput,
+  PtClaimNonGoalLineItemsInput,
 } from "./validators/payment-treasury.js";
 export type {
   AonPledgeForARewardInput,
   AonPledgeWithoutARewardInput,
+  AddRewardsInput,
+  AonWithdrawInput,
+  AonClaimRefundInput,
+  AonDisburseFeesInput,
 } from "./validators/all-or-nothing.js";
 export type {
   ConfigureTreasuryInput,
   KwrPledgeForARewardInput,
   KwrPledgeWithoutARewardInput,
+  SetFeeAndPledgeInput,
+  KwrClaimRefundInput,
+  KwrClaimTipInput,
+  KwrClaimFundInput,
+  KwrDisburseFeesInput,
 } from "./validators/keep-whats-raised.js";

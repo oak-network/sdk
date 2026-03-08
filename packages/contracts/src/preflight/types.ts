@@ -138,6 +138,20 @@ export interface StateReader {
     amount: bigint;
   } | null>;
 
+  // ── Treasury common reads ─────────────────────────────────────────
+  /** Check if a treasury contract is cancelled. Works for AON, KWR, and PaymentTreasury. */
+  getCancelled(treasuryAddress: Address): Promise<boolean | null>;
+  /** Check if a treasury contract is paused. Works for AON and KWR (not PaymentTreasury). */
+  getPaused(treasuryAddress: Address): Promise<boolean | null>;
+  /** Read the raised amount from a treasury contract. */
+  getRaisedAmount(treasuryAddress: Address): Promise<bigint | null>;
+
+  // ── KWR-specific reads ──────────────────────────────────────────
+  /** Check if withdrawal has been approved for a KWR treasury. */
+  getWithdrawalApprovalStatus(treasuryAddress: Address): Promise<boolean | null>;
+  /** Read the goal amount from a KWR treasury. */
+  getGoalAmount(treasuryAddress: Address): Promise<bigint | null>;
+
   // ── ERC20 reads ──────────────────────────────────────────────────────
   erc20BalanceOf(token: Address, owner: Address): Promise<bigint | null>;
   erc20Allowance(token: Address, owner: Address, spender: Address): Promise<bigint | null>;

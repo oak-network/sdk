@@ -10,6 +10,7 @@ import {
   checkTokenAccepted,
   checkErc20BalanceAndAllowance,
   checkLineItemTypes,
+  checkCampaignEnded,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
 import type { MethodValidator, PreflightContext, PreflightIssue } from "../types.js";
@@ -538,4 +539,217 @@ export const processCryptoPaymentValidator: MethodValidator<ProcessCryptoPayment
   ],
 
   normalize: (input) => normalizeAddresses({ ...input }, ["buyerAddress", "paymentToken"]),
+};
+
+// ─── cancelPayment ────────────────────────────────────────────────────────────
+
+/** Input shape for PaymentTreasury.cancelPayment preflight. */
+export interface CancelPaymentInput {
+  paymentId: Hex;
+}
+
+/**
+ * Preflight validator for PaymentTreasury.cancelPayment.
+ */
+export const cancelPaymentValidator: MethodValidator<CancelPaymentInput> = {
+  structural: [
+    (input) => checkZeroBytes32(input.paymentId, "paymentId", codes.PAYMENT_ZERO_PAYMENT_ID),
+  ],
+
+  semantic: [],
+
+  stateful: [
+    async (input, ctx) => {
+      const issues: PreflightIssue[] = [];
+
+      const paymentData = await ctx.stateReader.getPaymentData(ctx.contractAddress, input.paymentId);
+      if (paymentData === null) {
+        issues.push(
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read payment data from on-chain state.", {
+            fieldPath: "paymentId",
+          }),
+        );
+        return issues;
+      }
+
+      if (paymentData.amount === 0n) {
+        issues.push(
+          createIssue(codes.PAYMENT_NOT_FOUND, "error", `Payment ${input.paymentId} does not exist.`, {
+            fieldPath: "paymentId",
+            suggestion: "Ensure the payment has been created before cancelling.",
+          }),
+        );
+        return issues;
+      }
+
+      if (paymentData.isConfirmed) {
+        issues.push(
+          createIssue(codes.PAYMENT_ALREADY_CONFIRMED, "error", `Payment ${input.paymentId} is already confirmed and cannot be cancelled.`, {
+            fieldPath: "paymentId",
+          }),
+        );
+      }
+
+      const now = await ctx.stateReader.getBlockTimestamp();
+      if (now === null) {
+        issues.push(
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read block timestamp for expiration check.", {
+            fieldPath: "paymentId",
+          }),
+        );
+      } else if (paymentData.expiration > 0n && paymentData.expiration <= now) {
+        issues.push(
+          createIssue(codes.PAYMENT_ALREADY_EXPIRED, "error", `Payment ${input.paymentId} has already expired.`, {
+            fieldPath: "paymentId",
+            suggestion: "Expired payments cannot be cancelled.",
+          }),
+        );
+      }
+
+      return issues;
+    },
+  ],
+};
+
+// ─── PaymentTreasury Settlement validators ────────────────────────────────────
+
+/** Input shape for PaymentTreasury.withdraw preflight. */
+export type PtWithdrawInput = Record<string, never>;
+
+/** Input shape for PaymentTreasury.claimRefund preflight. */
+export interface PtClaimRefundInput {
+  paymentId: Hex;
+  refundAddress: Address;
+}
+
+/** Input shape for PaymentTreasury.claimRefundSelf preflight. */
+export interface PtClaimRefundSelfInput {
+  paymentId: Hex;
+}
+
+/** Input shape for PaymentTreasury.claimExpiredFunds preflight. */
+export type PtClaimExpiredFundsInput = Record<string, never>;
+
+/** Input shape for PaymentTreasury.disburseFees preflight. */
+export type PtDisburseFeesInput = Record<string, never>;
+
+/** Input shape for PaymentTreasury.claimNonGoalLineItems preflight. */
+export interface PtClaimNonGoalLineItemsInput {
+  token: Address;
+}
+
+/**
+ * Preflight validator for PaymentTreasury.withdraw.
+ * Lightweight — defers most logic to simulation.
+ */
+export const ptWithdrawValidator: MethodValidator<PtWithdrawInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [
+    async (_input, ctx) => {
+      const infoAddress = ctx.addresses.infoAddress;
+      if (!infoAddress) return [];
+      return checkCampaignEnded(ctx.stateReader, infoAddress, codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE);
+    },
+  ],
+};
+
+/**
+ * Preflight validator for PaymentTreasury.claimRefund.
+ */
+export const ptClaimRefundValidator: MethodValidator<PtClaimRefundInput> = {
+  structural: [
+    (input) => [
+      ...checkZeroBytes32(input.paymentId, "paymentId", codes.PAYMENT_ZERO_PAYMENT_ID),
+      ...checkZeroAddress(input.refundAddress, "refundAddress", codes.COMMON_ZERO_ADDRESS),
+    ],
+  ],
+  semantic: [],
+  stateful: [
+    async (input, ctx) => {
+      const issues: PreflightIssue[] = [];
+      const paymentData = await ctx.stateReader.getPaymentData(ctx.contractAddress, input.paymentId);
+      if (paymentData === null) {
+        issues.push(
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read payment data from on-chain state.", {
+            fieldPath: "paymentId",
+          }),
+        );
+        return issues;
+      }
+      if (paymentData.amount === 0n) {
+        issues.push(
+          createIssue(codes.PAYMENT_NOT_FOUND, "error", `Payment ${input.paymentId} does not exist.`, {
+            fieldPath: "paymentId",
+          }),
+        );
+      }
+      return issues;
+    },
+  ],
+  normalize: (input) => normalizeAddresses({ ...input }, ["refundAddress"]),
+};
+
+/**
+ * Preflight validator for PaymentTreasury.claimRefundSelf.
+ */
+export const ptClaimRefundSelfValidator: MethodValidator<PtClaimRefundSelfInput> = {
+  structural: [
+    (input) => checkZeroBytes32(input.paymentId, "paymentId", codes.PAYMENT_ZERO_PAYMENT_ID),
+  ],
+  semantic: [],
+  stateful: [
+    async (input, ctx) => {
+      const issues: PreflightIssue[] = [];
+      const paymentData = await ctx.stateReader.getPaymentData(ctx.contractAddress, input.paymentId);
+      if (paymentData === null) {
+        issues.push(
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read payment data from on-chain state.", {
+            fieldPath: "paymentId",
+          }),
+        );
+        return issues;
+      }
+      if (paymentData.amount === 0n) {
+        issues.push(
+          createIssue(codes.PAYMENT_NOT_FOUND, "error", `Payment ${input.paymentId} does not exist.`, {
+            fieldPath: "paymentId",
+          }),
+        );
+      }
+      return issues;
+    },
+  ],
+};
+
+/**
+ * Preflight validator for PaymentTreasury.claimExpiredFunds.
+ * Lightweight — defers to simulation.
+ */
+export const ptClaimExpiredFundsValidator: MethodValidator<PtClaimExpiredFundsInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [],
+};
+
+/**
+ * Preflight validator for PaymentTreasury.disburseFees.
+ * Lightweight — defers to simulation.
+ */
+export const ptDisburseFeesValidator: MethodValidator<PtDisburseFeesInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [],
+};
+
+/**
+ * Preflight validator for PaymentTreasury.claimNonGoalLineItems.
+ */
+export const ptClaimNonGoalLineItemsValidator: MethodValidator<PtClaimNonGoalLineItemsInput> = {
+  structural: [
+    (input) => checkZeroAddress(input.token, "token", codes.COMMON_ZERO_ADDRESS),
+  ],
+  semantic: [],
+  stateful: [],
+  normalize: (input) => normalizeAddresses({ ...input }, ["token"]),
 };

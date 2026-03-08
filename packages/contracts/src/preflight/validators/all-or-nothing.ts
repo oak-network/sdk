@@ -1,12 +1,18 @@
 import type { Address, Hex } from "viem";
+import { BYTES32_ZERO } from "../../constants/index.js";
+import type { TieredReward } from "../../types/index.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
 import {
   checkZeroAddress,
   checkTokenAccepted,
   checkCampaignWindowStateful,
+  checkCampaignEnded,
   checkErc20BalanceAndAllowance,
   checkRewardValidity,
+  checkRewardItemArrayParity,
+  checkDuplicates,
+  checkTreasuryPaused,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
 import type { MethodValidator, PreflightIssue } from "../types.js";
@@ -148,4 +154,156 @@ export const aonPledgeWithoutARewardValidator: MethodValidator<AonPledgeWithoutA
   ],
 
   normalize: (input) => normalizeAddresses({ ...input }, ["backer", "pledgeToken"]),
+};
+
+// ─── addRewards ───────────────────────────────────────────────────────────────
+
+/** Input shape for addRewards preflight (shared between AON and KWR). */
+export interface AddRewardsInput {
+  rewardNames: readonly Hex[];
+  rewards: readonly TieredReward[];
+}
+
+/**
+ * Preflight validator for addRewards (shared between AON and KWR).
+ */
+export const addRewardsValidator: MethodValidator<AddRewardsInput> = {
+  structural: [
+    // Array length parity
+    (input) => {
+      if (input.rewardNames.length !== input.rewards.length) {
+        return [
+          createIssue(
+            codes.REWARD_ARRAY_MISMATCH,
+            "error",
+            `rewardNames (length ${input.rewardNames.length}) and rewards (length ${input.rewards.length}) must have the same length.`,
+            { fieldPath: "rewardNames", suggestion: "Ensure both arrays have equal length." },
+          ),
+        ];
+      }
+      return [];
+    },
+
+    // Zero reward names
+    (input) => {
+      const issues: PreflightIssue[] = [];
+      for (let i = 0; i < input.rewardNames.length; i++) {
+        if (input.rewardNames[i] === BYTES32_ZERO) {
+          issues.push(
+            createIssue(codes.REWARD_ZERO_NAME, "error", `rewardNames[${i}] must not be zero bytes32.`, {
+              fieldPath: `rewardNames[${i}]`,
+              suggestion: "Provide a valid non-zero reward name.",
+            }),
+          );
+        }
+      }
+      return issues;
+    },
+
+    // Zero reward values
+    (input) => {
+      const issues: PreflightIssue[] = [];
+      for (let i = 0; i < input.rewards.length; i++) {
+        if (input.rewards[i].rewardValue === 0n) {
+          issues.push(
+            createIssue(codes.REWARD_ZERO_VALUE, "error", `rewards[${i}].rewardValue must not be zero.`, {
+              fieldPath: `rewards[${i}].rewardValue`,
+              suggestion: "Provide a non-zero reward value.",
+            }),
+          );
+        }
+      }
+      return issues;
+    },
+
+    // Item array parity within each reward
+    (input) => checkRewardItemArrayParity(input.rewards, "rewards"),
+  ],
+
+  semantic: [
+    // Duplicate reward names — error because the contract will revert on the second
+    // occurrence once the first has already been created in the same addRewards call.
+    (input) => checkDuplicates(input.rewardNames as Hex[], "rewardNames", codes.REWARD_DUPLICATE_NAME, "error"),
+  ],
+
+  stateful: [
+    // Reward already exists on-chain
+    async (input, ctx) => {
+      const issues: PreflightIssue[] = [];
+      for (let i = 0; i < input.rewardNames.length; i++) {
+        const reward = await ctx.stateReader.getReward(ctx.contractAddress, input.rewardNames[i]);
+        if (reward === null) {
+          issues.push(
+            createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", `Could not verify reward at rewardNames[${i}].`, {
+              fieldPath: `rewardNames[${i}]`,
+            }),
+          );
+          continue;
+        }
+        if (reward.rewardValue !== 0n) {
+          issues.push(
+            createIssue(codes.REWARD_ALREADY_EXISTS, "error", `Reward ${input.rewardNames[i]} at rewardNames[${i}] already exists.`, {
+              fieldPath: `rewardNames[${i}]`,
+              suggestion: "Use a reward name that has not already been added.",
+            }),
+          );
+        }
+      }
+      return issues;
+    },
+  ],
+};
+
+// ─── AON Settlement validators ────────────────────────────────────────────────
+
+/** Input shape for AllOrNothing.withdraw preflight. */
+export type AonWithdrawInput = Record<string, never>;
+
+/** Input shape for AllOrNothing.claimRefund preflight. */
+export interface AonClaimRefundInput {
+  tokenId: bigint;
+}
+
+/** Input shape for AllOrNothing.disburseFees preflight. */
+export type AonDisburseFeesInput = Record<string, never>;
+
+/**
+ * Preflight validator for AllOrNothing.withdraw.
+ * Lightweight — checks only publicly readable state.
+ */
+export const aonWithdrawValidator: MethodValidator<AonWithdrawInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [
+    async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
+    async (_input, ctx) => {
+      const infoAddress = ctx.addresses.infoAddress;
+      if (!infoAddress) return [];
+      return checkCampaignEnded(ctx.stateReader, infoAddress, codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE);
+    },
+  ],
+};
+
+/**
+ * Preflight validator for AllOrNothing.claimRefund.
+ * Lightweight — tokenId 0 may be valid, so no structural checks.
+ */
+export const aonClaimRefundValidator: MethodValidator<AonClaimRefundInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [
+    async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
+  ],
+};
+
+/**
+ * Preflight validator for AllOrNothing.disburseFees.
+ * Lightweight — defers most logic to simulation.
+ */
+export const aonDisburseFeesValidator: MethodValidator<AonDisburseFeesInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [
+    async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
+  ],
 };
