@@ -21,6 +21,7 @@ import {
   http,
   custom,
   type Account,
+  type EIP1193Provider,
   type PublicClient,
   type WalletClient,
 } from "viem";
@@ -123,7 +124,7 @@ export function createWallet(
   // For http transports, we need the URL; for custom transports, we reuse the transport
   const transport = rpcUrl
     ? http(rpcUrl)
-    : (provider as any).transport || http();
+    : custom(provider.transport);
 
   const account = privateKeyToAccount(privateKey);
 
@@ -154,7 +155,7 @@ export function createWallet(
  * ```
  */
 export function createBrowserProvider(
-  ethereum: any,
+  ethereum: EIP1193Provider,
   chain: Chain,
 ): JsonRpcProvider {
   return createPublicClient({
@@ -179,7 +180,7 @@ export function createBrowserProvider(
  * ```
  */
 export async function getSigner(
-  ethereum: any,
+  ethereum: EIP1193Provider,
   chain: Chain,
 ): Promise<Wallet> {
   // Request accounts from the provider
