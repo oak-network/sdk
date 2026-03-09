@@ -17,7 +17,6 @@ export {
   createWalletClient,
   http,
   custom,
-  keccak256,
   stringToHex,
   toHex,
   parseEther,
