@@ -52,14 +52,14 @@ function resolveChain(chain: ChainIdentifier): Chain {
 /**
  * Builds viem publicClient and walletClient from the given config.
  */
-function buildClients(config: OakContractsClientConfig): {
+function buildClients(config: OakContractsClientConfig, options: OakContractsClientOptions): {
   chain: Chain;
   publicClient: PublicClient;
   walletClient: WalletClient;
 } {
   if (isSimpleConfig(config)) {
     const chain = getChainFromId(config.chainId);
-    const transport = http(config.rpcUrl);
+    const transport = http(config.rpcUrl, { timeout: options.timeout });
     const publicClient = createPublicClient({ chain, transport });
     const account = privateKeyToAccount(config.privateKey);
     const walletClient = createWalletClient({ account, chain, transport });
@@ -105,11 +105,11 @@ export function createOakContractsClient(
     ...config?.options,
   };
 
-  const { chain, publicClient, walletClient } = buildClients(config);
+  const { chain, publicClient, walletClient } = buildClients(config, options);
   const publicConfig: PublicOakContractsClientConfig = { chain };
 
   async function waitForReceipt(txHash: Hex): Promise<TransactionReceipt> {
-    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: options.timeout });
     return {
       blockNumber: receipt.blockNumber,
       gasUsed: receipt.gasUsed,
