@@ -14,7 +14,7 @@ pnpm add @oaknetwork/contracts
 import { createOakContractsClient, CHAIN_IDS, toHex } from "@oaknetwork/contracts";
 
 const oak = createOakContractsClient({
-  chainId:    CHAIN_IDS.CELO_SEPOLIA,
+  chainId:    CHAIN_IDS.CELO_TESTNET_SEPOLIA,
   rpcUrl:     "https://forno.celo-sepolia.celo-testnet.org",
   privateKey: "0x...",
 });
@@ -28,7 +28,7 @@ Two config shapes are supported:
 
 ```typescript
 const oak = createOakContractsClient({
-  chainId:    CHAIN_IDS.CELO_SEPOLIA,
+  chainId:    CHAIN_IDS.CELO_TESTNET_SEPOLIA,
   rpcUrl:     "https://forno.celo-sepolia.celo-testnet.org",
   privateKey: "0x...",
 });
@@ -46,7 +46,7 @@ import {
   CHAIN_IDS,
 } from "@oaknetwork/contracts";
 
-const chain    = getChainFromId(CHAIN_IDS.CELO_SEPOLIA);
+const chain    = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
 const provider = createPublicClient({ chain, transport: http(RPC_URL) });
 const signer   = createWalletClient({ account, chain, transport: http(RPC_URL) });
 
@@ -58,10 +58,10 @@ const oak = createOakContractsClient({ chain, provider, signer });
 ```typescript
 import { CHAIN_IDS } from "@oaknetwork/contracts";
 
-CHAIN_IDS.MAINNET       // 1
-CHAIN_IDS.SEPOLIA        // 11155111
-CHAIN_IDS.CELO_SEPOLIA   // 11142220
-CHAIN_IDS.ALFAJORES      // 44787
+CHAIN_IDS.ETHEREUM_MAINNET       // 1
+CHAIN_IDS.ETHEREUM_TESTNET_SEPOLIA        // 11155111
+CHAIN_IDS.CELO_TESTNET_SEPOLIA   // 11142220
+CHAIN_IDS.CELO_TESTNET_ALFAJORES      // 44787
 ```
 
 ## Contracts
@@ -380,7 +380,7 @@ const deadline = addDays(now, 30);              // 30 days from now
 const feeAmount = (raisedAmount * platformFee) / BPS_DENOMINATOR;
 
 // Browser wallet (frontend)
-const chain    = getChainFromId(CHAIN_IDS.CELO_SEPOLIA);
+const chain    = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
 const provider = createBrowserProvider(window.ethereum, chain);
 const signer   = await getSigner(window.ethereum, chain);
 ```
