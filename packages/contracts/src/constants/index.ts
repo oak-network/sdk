@@ -3,7 +3,6 @@ import { keccak256, toHex, encodeAbiParameters, type Hex } from "viem";
 /**
  * Common chain IDs for use with createOakContractsClient({ chainId, rpcUrl, privateKey }).
  * Naming convention: {CHAIN}_{MAINNET|TESTNET}
- * CELO_TESTNET_ALFAJORES is the legacy Celo testnet (44787); use CELO_TESTNET_SEPOLIA for new development.
  */
 export const CHAIN_IDS = {
   // Mainnets
@@ -13,7 +12,6 @@ export const CHAIN_IDS = {
   ETHEREUM_TESTNET_SEPOLIA: 11155111,
   ETHEREUM_TESTNET_GOERLI: 5,
   CELO_TESTNET_SEPOLIA: 11142220,
-  CELO_TESTNET_ALFAJORES: 44787,
 } as const;
 
 /** Basis points denominator used for fee calculations (100% = 10_000 bps) */
