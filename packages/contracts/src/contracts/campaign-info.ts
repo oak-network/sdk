@@ -171,6 +171,10 @@ export function createCampaignInfoEntity(
       const account = requireAccount();
       return walletClient.writeContract({ ...contract, chain, account, functionName: "_unpauseCampaign", args: [message] });
     },
+    async cancelCampaign(message: Hex) {
+      const account = requireAccount();
+      return walletClient.writeContract({ ...contract, chain, account, functionName: "_cancelCampaign", args: [message] });
+    },
     async setPlatformInfo(platformBytes: Hex, platformTreasuryAddress: Address) {
       const account = requireAccount();
       return walletClient.writeContract({ ...contract, chain, account, functionName: "_setPlatformInfo", args: [platformBytes, platformTreasuryAddress] });

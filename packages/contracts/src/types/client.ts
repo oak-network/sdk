@@ -355,6 +355,7 @@ export interface CampaignInfoEntity {
   burn(tokenId: bigint): Promise<Hex>;
   pauseCampaign(message: Hex): Promise<Hex>;
   unpauseCampaign(message: Hex): Promise<Hex>;
+  cancelCampaign(message: Hex): Promise<Hex>;
   setPlatformInfo(platformBytes: Hex, platformTreasuryAddress: Address): Promise<Hex>;
   transferOwnership(newOwner: Address): Promise<Hex>;
   renounceOwnership(): Promise<Hex>;
@@ -406,6 +407,7 @@ export interface AllOrNothingTreasuryEntity {
   getPlatformHash(): Promise<Hex>;
   getPlatformFeePercent(): Promise<bigint>;
   paused(): Promise<boolean>;
+  cancelled(): Promise<boolean>;
   balanceOf(owner: Address): Promise<bigint>;
   ownerOf(tokenId: bigint): Promise<Address>;
   tokenURI(tokenId: bigint): Promise<string>;
@@ -417,6 +419,7 @@ export interface AllOrNothingTreasuryEntity {
   // Writes
   pauseTreasury(message: Hex): Promise<Hex>;
   unpauseTreasury(message: Hex): Promise<Hex>;
+  cancelTreasury(message: Hex): Promise<Hex>;
   addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[]): Promise<Hex>;
   removeReward(rewardName: Hex): Promise<Hex>;
   pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[]): Promise<Hex>;
@@ -450,6 +453,7 @@ export interface KeepWhatsRaisedTreasuryEntity {
   getPaymentGatewayFee(pledgeId: Hex): Promise<bigint>;
   getFeeValue(feeKey: Hex): Promise<bigint>;
   paused(): Promise<boolean>;
+  cancelled(): Promise<boolean>;
   balanceOf(owner: Address): Promise<bigint>;
   ownerOf(tokenId: bigint): Promise<Address>;
   tokenURI(tokenId: bigint): Promise<string>;
@@ -461,6 +465,7 @@ export interface KeepWhatsRaisedTreasuryEntity {
   // Writes
   pauseTreasury(message: Hex): Promise<Hex>;
   unpauseTreasury(message: Hex): Promise<Hex>;
+  cancelTreasury(message: Hex): Promise<Hex>;
   configureTreasury(config: KeepWhatsRaisedConfig, campaignData: CampaignData, feeKeys: KeepWhatsRaisedFeeKeys, feeValues: KeepWhatsRaisedFeeValues): Promise<Hex>;
   addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[]): Promise<Hex>;
   removeReward(rewardName: Hex): Promise<Hex>;
@@ -473,6 +478,7 @@ export interface KeepWhatsRaisedTreasuryEntity {
   claimTip(): Promise<Hex>;
   claimFund(): Promise<Hex>;
   disburseFees(): Promise<Hex>;
+  withdraw(token: Address, amount: bigint): Promise<Hex>;
   updateDeadline(deadline: bigint): Promise<Hex>;
   updateGoalAmount(goalAmount: bigint): Promise<Hex>;
   approve(to: Address, tokenId: bigint): Promise<Hex>;

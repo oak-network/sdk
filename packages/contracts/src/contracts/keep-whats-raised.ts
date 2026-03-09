@@ -79,6 +79,9 @@ export function createKeepWhatsRaisedEntity(
     async paused() {
       return publicClient.readContract({ ...contract, functionName: "paused" });
     },
+    async cancelled() {
+      return publicClient.readContract({ ...contract, functionName: "cancelled" });
+    },
     async balanceOf(owner: Address) {
       return publicClient.readContract({ ...contract, functionName: "balanceOf", args: [owner] });
     },
@@ -113,6 +116,10 @@ export function createKeepWhatsRaisedEntity(
     async unpauseTreasury(message: Hex) {
       const account = requireAccount();
       return walletClient.writeContract({ ...contract, chain, account, functionName: "unpauseTreasury", args: [message] });
+    },
+    async cancelTreasury(message: Hex) {
+      const account = requireAccount();
+      return walletClient.writeContract({ ...contract, chain, account, functionName: "cancelTreasury", args: [message] });
     },
     async configureTreasury(config: KeepWhatsRaisedConfig, campaignData: CampaignData, feeKeys: KeepWhatsRaisedFeeKeys, feeValues: KeepWhatsRaisedFeeValues) {
       const account = requireAccount();
@@ -172,6 +179,10 @@ export function createKeepWhatsRaisedEntity(
     async disburseFees() {
       const account = requireAccount();
       return walletClient.writeContract({ ...contract, chain, account, functionName: "disburseFees", args: [] });
+    },
+    async withdraw(token: Address, amount: bigint) {
+      const account = requireAccount();
+      return walletClient.writeContract({ ...contract, chain, account, functionName: "withdraw", args: [token, amount] });
     },
     async updateDeadline(deadline: bigint) {
       const account = requireAccount();
