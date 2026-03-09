@@ -120,11 +120,7 @@ export function createWallet(
   provider: PublicClient,
   rpcUrl?: string,
 ): Wallet {
-  // Use the provided RPC URL or try to extract from provider's transport
-  // For http transports, we need the URL; for custom transports, we reuse the transport
-  const transport = rpcUrl
-    ? http(rpcUrl)
-    : custom(provider.transport);
+  const transport = http(rpcUrl ?? (provider.transport as { url?: string }).url);
 
   const account = privateKeyToAccount(privateKey);
 
