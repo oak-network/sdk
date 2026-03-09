@@ -24,6 +24,7 @@ import {
   type PublicClient,
   type WalletClient,
 } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import type { Chain } from "viem/chains";
 import type { JsonRpcProvider, Wallet } from "../types";
 
@@ -124,14 +125,13 @@ export function createWallet(
     ? http(rpcUrl)
     : (provider as any).transport || http();
 
+  const account = privateKeyToAccount(privateKey);
+
   const walletClient = createWalletClient({
-    account: privateKey as `0x${string}`,
+    account,
     chain: provider.chain,
     transport,
   });
-
-  // Get the account from the wallet client
-  const account = walletClient.account as Account;
 
   return {
     ...walletClient,
