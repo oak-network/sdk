@@ -2,6 +2,8 @@ import type { Address, Hex } from "viem";
 import type {
   OakContractsClient,
 } from "../types/index.js";
+import type { ContractErrorBase } from "../errors/contract-error.js";
+import { parseContractError } from "../errors/parse-contract-error.js";
 import type {
   PreflightOptions,
   SafeResult,
@@ -14,6 +16,23 @@ import { createStateReader } from "./state-reader.js";
 import { MissingSignerError } from "./errors.js";
 
 // ─── Internal helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Attempts to extract revert data from a viem error and parse it into a typed contract error.
+ * Viem errors nest revert data in cause chains; this walks up to 3 levels deep.
+ */
+function tryExtractContractError(error: unknown): ContractErrorBase | undefined {
+  let current: unknown = error;
+  for (let depth = 0; depth < 4 && current != null; depth++) {
+    const err = current as Record<string, unknown>;
+    if (typeof err.data === "string" && err.data.startsWith("0x")) {
+      const parsed = parseContractError(err.data);
+      if (parsed) return parsed;
+    }
+    current = err.cause ?? err.error;
+  }
+  return undefined;
+}
 
 function resolveOptions(
   defaults: PreflightOptions | undefined,
@@ -111,24 +130,32 @@ export function createSafeFn<TInput>(
       request = (simulationResult as { request: unknown }).request;
     } catch (error: unknown) {
       const reason = error instanceof Error ? error.message : String(error);
-      return { ok: false, stage: "simulation", reason, cause: error };
+      const contractError = tryExtractContractError(error);
+      return { ok: false, stage: "simulation", reason, cause: error, contractError };
     }
 
     // 4. Send transaction
-    const txHash = await client.walletClient.writeContract(
-      request as {
-        address: Address;
-        abi: readonly unknown[];
-        functionName: string;
-        args: readonly unknown[];
-        account: typeof account;
-        chain: typeof client.config.chain;
-      },
-    );
+    let txHash: Hex;
+    try {
+      txHash = await client.walletClient.writeContract(
+        request as {
+          address: Address;
+          abi: readonly unknown[];
+          functionName: string;
+          args: readonly unknown[];
+          account: typeof account;
+          chain: typeof client.config.chain;
+        },
+      ) as Hex;
+    } catch (error: unknown) {
+      const reason = error instanceof Error ? error.message : String(error);
+      const contractError = tryExtractContractError(error);
+      return { ok: false, stage: "send", reason, cause: error, contractError };
+    }
 
     return {
       ok: true,
-      txHash: txHash as Hex,
+      txHash,
       warnings: preflightResult.warnings,
     };
   };

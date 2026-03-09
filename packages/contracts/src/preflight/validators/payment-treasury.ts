@@ -8,6 +8,8 @@ import {
   checkZeroAddress,
   checkZeroBytes32,
   checkArrayLengthParity,
+  checkDuplicates,
+  checkAddressChecksum,
   checkTokenAccepted,
   checkErc20BalanceAndAllowance,
   checkLineItemTypes,
@@ -205,7 +207,12 @@ async function checkCreatePaymentStateful(
  * Preflight validator for PaymentTreasury.createPayment.
  */
 export const createPaymentValidator: MethodValidator<CreatePaymentInput> = {
-  structural: [(input) => checkCreatePaymentStructural(input)],
+  structural: [
+    (input, ctx) => [
+      ...checkCreatePaymentStructural(input),
+      ...checkAddressChecksum(input, ["paymentToken"], ctx.options.mode === "normalize"),
+    ],
+  ],
   semantic: [],
   stateful: [(input, ctx) => checkCreatePaymentStateful(input, ctx)],
   normalize: (input) => normalizeAddresses({ ...input }, ["paymentToken"]),
@@ -259,17 +266,23 @@ export const createPaymentBatchValidator: MethodValidator<CreatePaymentBatchInpu
 
   semantic: [
     (input) => {
+      const issues: PreflightIssue[] = [];
+
+      issues.push(
+        ...checkDuplicates(input.paymentIds, "paymentIds", codes.PAYMENT_BATCH_DUPLICATE_PAYMENT_ID, "error"),
+      );
+
       if (input.paymentIds.length > BATCH_WARN_THRESHOLD) {
-        return [
+        issues.push(
           createIssue(
             codes.PAYMENT_BATCH_TOO_LARGE,
             "warn",
             `Batch size (${input.paymentIds.length}) exceeds recommended limit of ${BATCH_WARN_THRESHOLD}.`,
             { suggestion: "Consider splitting into smaller batches to avoid gas limits." },
           ),
-        ];
+        );
       }
-      return [];
+      return issues;
     },
   ],
 
@@ -313,9 +326,10 @@ export const createPaymentBatchValidator: MethodValidator<CreatePaymentBatchInpu
  */
 export const confirmPaymentValidator: MethodValidator<ConfirmPaymentInput> = {
   structural: [
-    (input) => [
+    (input, ctx) => [
       ...checkZeroBytes32(input.paymentId, "paymentId", codes.PAYMENT_ZERO_PAYMENT_ID),
       ...checkZeroAddress(input.buyerAddress, "buyerAddress", codes.PAYMENT_ZERO_BUYER_ADDRESS),
+      ...checkAddressChecksum(input, ["buyerAddress"], ctx.options.mode === "normalize"),
     ],
   ],
 
@@ -343,6 +357,17 @@ export const confirmPaymentValidator: MethodValidator<ConfirmPaymentInput> = {
           }),
         );
         return issues;
+      }
+
+      if (paymentData.buyerAddress.toLowerCase() !== input.buyerAddress.toLowerCase()) {
+        issues.push(
+          createIssue(
+            codes.PAYMENT_BUYER_MISMATCH,
+            "error",
+            `Supplied buyerAddress ${input.buyerAddress} does not match on-chain buyer ${paymentData.buyerAddress}.`,
+            { fieldPath: "buyerAddress", suggestion: "Use the buyer address that was set when the payment was created." },
+          ),
+        );
       }
 
       if (paymentData.isConfirmed) {
@@ -443,12 +468,13 @@ export const confirmPaymentBatchValidator: MethodValidator<ConfirmPaymentBatchIn
  */
 export const processCryptoPaymentValidator: MethodValidator<ProcessCryptoPaymentInput> = {
   structural: [
-    (input) => {
+    (input, ctx) => {
       const issues: PreflightIssue[] = [];
       issues.push(...checkZeroBytes32(input.paymentId, "paymentId", codes.PAYMENT_ZERO_PAYMENT_ID));
       issues.push(...checkZeroBytes32(input.itemId, "itemId", codes.PAYMENT_ZERO_ITEM_ID));
       issues.push(...checkZeroAddress(input.buyerAddress, "buyerAddress", codes.PAYMENT_ZERO_BUYER_ADDRESS));
       issues.push(...checkZeroAddress(input.paymentToken, "paymentToken", codes.PAYMENT_ZERO_TOKEN));
+      issues.push(...checkAddressChecksum(input, ["buyerAddress", "paymentToken"], ctx.options.mode === "normalize"));
 
       if (input.amount === 0n) {
         issues.push(
@@ -660,9 +686,10 @@ export const ptWithdrawValidator: MethodValidator<PtWithdrawInput> = {
  */
 export const ptClaimRefundValidator: MethodValidator<PtClaimRefundInput> = {
   structural: [
-    (input) => [
+    (input, ctx) => [
       ...checkZeroBytes32(input.paymentId, "paymentId", codes.PAYMENT_ZERO_PAYMENT_ID),
       ...checkZeroAddress(input.refundAddress, "refundAddress", codes.COMMON_ZERO_ADDRESS),
+      ...checkAddressChecksum(input, ["refundAddress"], ctx.options.mode === "normalize"),
     ],
   ],
   semantic: [],
@@ -684,7 +711,27 @@ export const ptClaimRefundValidator: MethodValidator<PtClaimRefundInput> = {
             fieldPath: "paymentId",
           }),
         );
+        return issues;
       }
+      if (!paymentData.isConfirmed) {
+        issues.push(
+          createIssue(codes.PAYMENT_NOT_CONFIRMED, "error", `Payment ${input.paymentId} has not been confirmed yet.`, {
+            fieldPath: "paymentId",
+            suggestion: "Only confirmed payments are eligible for refund.",
+          }),
+        );
+      }
+
+      const now = await ctx.stateReader.getBlockTimestamp();
+      if (now !== null && paymentData.expiration > 0n && paymentData.expiration > now) {
+        issues.push(
+          createIssue(codes.PAYMENT_NOT_CLAIMABLE, "error", `Payment ${input.paymentId} has not reached its claim window yet.`, {
+            fieldPath: "paymentId",
+            suggestion: "Wait until the payment expiration has passed before claiming a refund.",
+          }),
+        );
+      }
+
       return issues;
     },
   ],
@@ -717,7 +764,27 @@ export const ptClaimRefundSelfValidator: MethodValidator<PtClaimRefundSelfInput>
             fieldPath: "paymentId",
           }),
         );
+        return issues;
       }
+      if (!paymentData.isConfirmed) {
+        issues.push(
+          createIssue(codes.PAYMENT_NOT_CONFIRMED, "error", `Payment ${input.paymentId} has not been confirmed yet.`, {
+            fieldPath: "paymentId",
+            suggestion: "Only confirmed payments are eligible for refund.",
+          }),
+        );
+      }
+
+      const now = await ctx.stateReader.getBlockTimestamp();
+      if (now !== null && paymentData.expiration > 0n && paymentData.expiration > now) {
+        issues.push(
+          createIssue(codes.PAYMENT_NOT_CLAIMABLE, "error", `Payment ${input.paymentId} has not reached its claim window yet.`, {
+            fieldPath: "paymentId",
+            suggestion: "Wait until the payment expiration has passed before claiming a refund.",
+          }),
+        );
+      }
+
       return issues;
     },
   ],
@@ -748,7 +815,10 @@ export const ptDisburseFeesValidator: MethodValidator<PtDisburseFeesInput> = {
  */
 export const ptClaimNonGoalLineItemsValidator: MethodValidator<PtClaimNonGoalLineItemsInput> = {
   structural: [
-    (input) => checkZeroAddress(input.token, "token", codes.COMMON_ZERO_ADDRESS),
+    (input, ctx) => [
+      ...checkZeroAddress(input.token, "token", codes.COMMON_ZERO_ADDRESS),
+      ...checkAddressChecksum(input, ["token"], ctx.options.mode === "normalize"),
+    ],
   ],
   semantic: [],
   stateful: [],

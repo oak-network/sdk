@@ -1,4 +1,5 @@
 import type { Address, Hex, PublicClient } from "viem";
+import type { ContractErrorBase } from "../errors/contract-error.js";
 
 // ─── Public types ──────────────────────────────────────────────────────────────
 
@@ -56,7 +57,7 @@ export type PreflightResult<T> =
 // ─── Safe types ───────────────────────────────────────────────────────────────
 
 /** Stage at which a safe() call failed. */
-export type SafeFailureStage = "preflight" | "simulation";
+export type SafeFailureStage = "preflight" | "simulation" | "send";
 
 /**
  * Result of a safe() call.
@@ -70,7 +71,8 @@ export type SafeFailureStage = "preflight" | "simulation";
 export type SafeResult =
   | { ok: true; txHash: Hex; warnings: PreflightIssue[] }
   | { ok: false; stage: "preflight"; issues: PreflightIssue[] }
-  | { ok: false; stage: "simulation"; reason: string; cause?: unknown };
+  | { ok: false; stage: "simulation"; reason: string; cause?: unknown; contractError?: ContractErrorBase }
+  | { ok: false; stage: "send"; reason: string; cause?: unknown; contractError?: ContractErrorBase };
 
 /**
  * Descriptor bundling everything needed for a safe() call on a single method.

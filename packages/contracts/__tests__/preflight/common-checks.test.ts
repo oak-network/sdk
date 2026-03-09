@@ -186,7 +186,7 @@ describe("checkRewardItemArrayParity", () => {
 });
 
 describe("checkCampaignEnded", () => {
-  it("should warn when campaign has not ended", async () => {
+  it("should error when campaign has not ended", async () => {
     const stateReader = {
       getDeadline: jest.fn().mockResolvedValue(200n),
       getBlockTimestamp: jest.fn().mockResolvedValue(150n),
@@ -194,7 +194,7 @@ describe("checkCampaignEnded", () => {
     const issues = await checkCampaignEnded(stateReader, INFO_ADDR, "STILL_ACTIVE");
     expect(issues).toHaveLength(1);
     expect(issues[0].code).toBe("STILL_ACTIVE");
-    expect(issues[0].severity).toBe("warn");
+    expect(issues[0].severity).toBe("error");
   });
 
   it("should warn at exact deadline (now === deadline)", async () => {
@@ -228,14 +228,14 @@ describe("checkCampaignEnded", () => {
 });
 
 describe("checkTreasuryPaused", () => {
-  it("should warn when treasury is paused", async () => {
+  it("should error when treasury is paused", async () => {
     const stateReader = {
       getPaused: jest.fn().mockResolvedValue(true),
     } as unknown as StateReader;
     const issues = await checkTreasuryPaused(stateReader, TREASURY_ADDR, "PAUSED");
     expect(issues).toHaveLength(1);
     expect(issues[0].code).toBe("PAUSED");
-    expect(issues[0].severity).toBe("warn");
+    expect(issues[0].severity).toBe("error");
   });
 
   it("should return empty when treasury is not paused", async () => {

@@ -66,12 +66,13 @@ export async function runPreflight<T>(
         if (!collect && hasBlockingIssue(allIssues, mode)) {
           return buildResult(input, allIssues, mode);
         }
-      } catch {
+      } catch (error: unknown) {
+        const detail = error instanceof Error ? error.message : String(error);
         allIssues.push(
           createIssue(
             COMMON_STATE_UNAVAILABLE,
-            "warn",
-            "On-chain state read failed during stateful validation. Skipping remaining stateful checks.",
+            "error",
+            `Stateful validation failed unexpectedly: ${detail}. Aborting remaining stateful checks.`,
           ),
         );
         break;

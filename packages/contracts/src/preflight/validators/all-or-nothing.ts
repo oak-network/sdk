@@ -6,6 +6,7 @@ import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
 import {
   checkZeroAddress,
+  checkAddressChecksum,
   checkTokenAccepted,
   checkCampaignWindowStateful,
   checkCampaignEnded,
@@ -42,7 +43,10 @@ export interface AonPledgeWithoutARewardInput {
  */
 export const aonPledgeForARewardValidator: MethodValidator<AonPledgeForARewardInput> = {
   structural: [
-    (input) => checkZeroAddress(input.backer, "backer", codes.AON_ZERO_BACKER),
+    (input, ctx) => [
+      ...checkZeroAddress(input.backer, "backer", codes.AON_ZERO_BACKER),
+      ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
+    ],
 
     (input) => {
       if (input.rewardNames.length === 0) {
@@ -104,7 +108,10 @@ export const aonPledgeForARewardValidator: MethodValidator<AonPledgeForARewardIn
  */
 export const aonPledgeWithoutARewardValidator: MethodValidator<AonPledgeWithoutARewardInput> = {
   structural: [
-    (input) => checkZeroAddress(input.backer, "backer", codes.AON_ZERO_BACKER),
+    (input, ctx) => [
+      ...checkZeroAddress(input.backer, "backer", codes.AON_ZERO_BACKER),
+      ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
+    ],
 
     (input) => {
       if (input.pledgeAmount === 0n) {

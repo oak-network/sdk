@@ -282,12 +282,12 @@ describe("kwrPledgeWithoutARewardValidator - structural", () => {
 // ─── KWR Settlement validators ──────────────────────────────────────────────
 
 describe("kwrClaimRefundValidator - stateful", () => {
-  it("should warn when treasury is paused", async () => {
+  it("should error when treasury is paused", async () => {
     const ctx = createStatefulCtx({ getPaused: jest.fn().mockResolvedValue(true) });
     const result = await runPreflight({ tokenId: 1n }, kwrClaimRefundValidator, ctx);
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.warnings.some((w) => w.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((w) => w.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
     }
   });
 
@@ -302,36 +302,36 @@ describe("kwrClaimRefundValidator - stateful", () => {
 });
 
 describe("kwrClaimTipValidator - stateful", () => {
-  it("should warn when treasury is paused", async () => {
+  it("should error when treasury is paused", async () => {
     const ctx = createStatefulCtx({ getPaused: jest.fn().mockResolvedValue(true) });
     const result = await runPreflight({} as Record<string, never>, kwrClaimTipValidator, ctx);
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.warnings.some((w) => w.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((w) => w.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
     }
   });
 
-  it("should warn when campaign has not ended", async () => {
+  it("should error when campaign has not ended", async () => {
     const ctx = createStatefulCtx({
       getPaused: jest.fn().mockResolvedValue(false),
       getDeadline: jest.fn().mockResolvedValue(200n),
       getBlockTimestamp: jest.fn().mockResolvedValue(150n),
     });
     const result = await runPreflight({} as Record<string, never>, kwrClaimTipValidator, ctx);
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.warnings.some((w) => w.code === codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE)).toBe(true);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((w) => w.code === codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE)).toBe(true);
     }
   });
 });
 
 describe("kwrClaimFundValidator - stateful", () => {
-  it("should warn when treasury is paused", async () => {
+  it("should error when treasury is paused", async () => {
     const ctx = createStatefulCtx({ getPaused: jest.fn().mockResolvedValue(true) });
     const result = await runPreflight({} as Record<string, never>, kwrClaimFundValidator, ctx);
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.warnings.some((w) => w.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((w) => w.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
     }
   });
 
@@ -380,12 +380,12 @@ describe("kwrClaimFundValidator - stateful", () => {
 });
 
 describe("kwrDisburseFeesValidator - stateful", () => {
-  it("should warn when treasury is paused", async () => {
+  it("should error when treasury is paused", async () => {
     const ctx = createStatefulCtx({ getPaused: jest.fn().mockResolvedValue(true) });
     const result = await runPreflight({} as Record<string, never>, kwrDisburseFeesValidator, ctx);
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.warnings.some((w) => w.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((w) => w.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
     }
   });
 });

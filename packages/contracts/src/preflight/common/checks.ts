@@ -1,4 +1,5 @@
 import type { Address, Hex } from "viem";
+import { getAddress, isAddress } from "viem";
 import { BYTES32_ZERO } from "../../constants/index.js";
 import type { TieredReward } from "../../types/index.js";
 import { createIssue } from "../issue.js";
@@ -29,6 +30,44 @@ export function checkZeroAddress(
     ];
   }
   return [];
+}
+
+/**
+ * Checks if address fields have valid EIP-55 checksums.
+ * Emits a warning for each field that is a valid address but has incorrect casing.
+ *
+ * @param input - The input object to check
+ * @param addressFields - Array of field names to validate
+ * @param isNormalizeMode - When true, marks issues with `normalized: true`
+ * @returns Array of issues (empty if all valid)
+ */
+export function checkAddressChecksum(
+  input: object,
+  addressFields: readonly string[],
+  isNormalizeMode: boolean = false,
+): PreflightIssue[] {
+  const issues: PreflightIssue[] = [];
+  for (const field of addressFields) {
+    const value = (input as Record<string, unknown>)[field];
+    if (typeof value === "string" && isAddress(value)) {
+      const checksummed = getAddress(value);
+      if (value !== checksummed) {
+        issues.push(
+          createIssue(
+            codes.COMMON_ADDRESS_NOT_CHECKSUMMED,
+            "warn",
+            `${field} is not EIP-55 checksummed. Expected: ${checksummed}`,
+            {
+              fieldPath: field,
+              suggestion: `Use the checksummed form: ${checksummed}`,
+              ...(isNormalizeMode && { normalized: true }),
+            },
+          ),
+        );
+      }
+    }
+  }
+  return issues;
 }
 
 /**
@@ -435,7 +474,7 @@ export async function checkCampaignEnded(
 
   if (now <= deadline) {
     return [
-      createIssue(code, "warn", `Campaign deadline has not passed yet. Deadline: ${deadline}, current time: ${now}.`, {
+      createIssue(code, "error", `Campaign deadline has not passed yet. Deadline: ${deadline}, current time: ${now}.`, {
         suggestion: "Wait until the campaign deadline has passed before performing this operation.",
       }),
     ];
@@ -465,7 +504,7 @@ export async function checkTreasuryPaused(
   }
   if (paused) {
     return [
-      createIssue(code, "warn", "Treasury is currently paused.", {
+      createIssue(code, "error", "Treasury is currently paused.", {
         suggestion: "Unpause the treasury before performing this operation.",
       }),
     ];

@@ -174,7 +174,7 @@ describe("runPreflight", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("should emit STATE_UNAVAILABLE warning when stateful rule throws", async () => {
+  it("should emit STATE_UNAVAILABLE error when stateful rule throws", async () => {
     const validator: MethodValidator<{ value: string }> = {
       structural: [],
       semantic: [],
@@ -186,10 +186,12 @@ describe("runPreflight", () => {
     };
 
     const result = await runPreflight({ value: "test" }, validator, createMockContext());
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.warnings).toHaveLength(1);
-      expect(result.warnings[0].code).toBe("OAK-PF-COMMON-STATE_UNAVAILABLE");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues).toHaveLength(1);
+      expect(result.issues[0].code).toBe("OAK-PF-COMMON-STATE_UNAVAILABLE");
+      expect(result.issues[0].severity).toBe("error");
+      expect(result.issues[0].message).toContain("RPC failed");
     }
   });
 

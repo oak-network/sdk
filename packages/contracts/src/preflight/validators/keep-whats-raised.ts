@@ -6,6 +6,7 @@ import * as codes from "../issue-codes.js";
 import {
   checkZeroAddress,
   checkZeroBytes32,
+  checkAddressChecksum,
   checkDuplicates,
   checkTokenAccepted,
   checkCampaignWindowStateful,
@@ -128,7 +129,10 @@ export const configureTreasuryValidator: MethodValidator<ConfigureTreasuryInput>
 export const kwrPledgeForARewardValidator: MethodValidator<KwrPledgeForARewardInput> = {
   structural: [
     (input) => checkZeroBytes32(input.pledgeId, "pledgeId", codes.KWR_ZERO_PLEDGE_ID),
-    (input) => checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+    (input, ctx) => [
+      ...checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+      ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
+    ],
     (input) => {
       if (input.rewardNames.length === 0) {
         return [
@@ -190,7 +194,10 @@ export const kwrPledgeForARewardValidator: MethodValidator<KwrPledgeForARewardIn
 export const kwrPledgeWithoutARewardValidator: MethodValidator<KwrPledgeWithoutARewardInput> = {
   structural: [
     (input) => checkZeroBytes32(input.pledgeId, "pledgeId", codes.KWR_ZERO_PLEDGE_ID),
-    (input) => checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+    (input, ctx) => [
+      ...checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+      ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
+    ],
     (input) => {
       if (input.pledgeAmount === 0n) {
         return [
@@ -268,7 +275,10 @@ export interface SetFeeAndPledgeInput {
 export const setFeeAndPledgeValidator: MethodValidator<SetFeeAndPledgeInput> = {
   structural: [
     (input) => checkZeroBytes32(input.pledgeId, "pledgeId", codes.KWR_ZERO_PLEDGE_ID),
-    (input) => checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+    (input, ctx) => [
+      ...checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+      ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
+    ],
     (input) => {
       if (input.isPledgeForAReward && input.reward.length === 0) {
         return [

@@ -124,9 +124,13 @@ describe("createPaymentBatchValidator - structural", () => {
 
   it("should warn on large batch", async () => {
     const n = 51;
+    // Generate unique paymentIds to avoid triggering duplicate detection
+    const uniqueIds = Array.from({ length: n }, (_, i) =>
+      ("0x" + (i + 1).toString(16).padStart(64, "0")) as Hex,
+    );
     const result = await runPreflight(
       {
-        paymentIds: Array(n).fill(VALID_HASH),
+        paymentIds: uniqueIds,
         buyerIds: Array(n).fill(VALID_HASH),
         itemIds: Array(n).fill(VALID_HASH),
         paymentTokens: Array(n).fill(VALID_ADDR),
@@ -308,15 +312,15 @@ describe("cancelPaymentValidator - stateful", () => {
 // ─── PT Settlement validators ────────────────────────────────────────────────
 
 describe("ptWithdrawValidator - stateful", () => {
-  it("should warn when campaign has not ended", async () => {
+  it("should error when campaign has not ended", async () => {
     const ctx = createStatefulCtx({
       getDeadline: jest.fn().mockResolvedValue(200n),
       getBlockTimestamp: jest.fn().mockResolvedValue(150n),
     });
     const result = await runPreflight({} as Record<string, never>, ptWithdrawValidator, ctx);
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.warnings.some((w) => w.code === codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE)).toBe(true);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((w) => w.code === codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE)).toBe(true);
     }
   });
 
