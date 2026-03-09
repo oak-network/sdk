@@ -723,6 +723,13 @@ export const ptClaimRefundValidator: MethodValidator<PtClaimRefundInput> = {
       }
 
       const now = await ctx.stateReader.getBlockTimestamp();
+      if (paymentData.expiration > 0n && now === null) {
+        issues.push(
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read block timestamp to verify refund claimability window.", {
+            fieldPath: "paymentId",
+          }),
+        );
+      }
       if (now !== null && paymentData.expiration > 0n && paymentData.expiration > now) {
         issues.push(
           createIssue(codes.PAYMENT_NOT_CLAIMABLE, "error", `Payment ${input.paymentId} has not reached its claim window yet.`, {
@@ -776,6 +783,13 @@ export const ptClaimRefundSelfValidator: MethodValidator<PtClaimRefundSelfInput>
       }
 
       const now = await ctx.stateReader.getBlockTimestamp();
+      if (paymentData.expiration > 0n && now === null) {
+        issues.push(
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read block timestamp to verify refund claimability window.", {
+            fieldPath: "paymentId",
+          }),
+        );
+      }
       if (now !== null && paymentData.expiration > 0n && paymentData.expiration > now) {
         issues.push(
           createIssue(codes.PAYMENT_NOT_CLAIMABLE, "error", `Payment ${input.paymentId} has not reached its claim window yet.`, {

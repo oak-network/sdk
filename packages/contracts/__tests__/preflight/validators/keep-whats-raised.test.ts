@@ -6,6 +6,7 @@ import {
   kwrClaimTipValidator,
   kwrClaimFundValidator,
   kwrDisburseFeesValidator,
+  kwrWithdrawValidator,
 } from "../../../src/preflight/validators/keep-whats-raised";
 import { runPreflight } from "../../../src/preflight/pipeline";
 import type { PreflightContext, StateReader } from "../../../src/preflight/types";
@@ -16,9 +17,11 @@ import type {
   SetFeeAndPledgeInput,
   KwrPledgeForARewardInput,
   KwrPledgeWithoutARewardInput,
+  KwrWithdrawInput,
 } from "../../../src/preflight/validators/keep-whats-raised";
 
 const VALID_ADDR = "0x1234567890abcdef1234567890abcdef12345678" as Address;
+const ADMIN_ADDR = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd" as Address;
 const ZERO_ADDR = "0x0000000000000000000000000000000000000000" as Address;
 const VALID_HASH = "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" as Hex;
 const CONTRACT_ADDR = "0x0000000000000000000000000000000000000001" as Address;
@@ -37,13 +40,17 @@ function createCtx(overrides?: Partial<PreflightContext>): PreflightContext {
 
 function createStatefulCtx(stateReaderOverrides: Partial<StateReader> = {}): PreflightContext {
   return createCtx({
-    options: { mode: "warn", stateful: "enabled", collect: true, blockTag: "latest" },
+    options: { mode: "warn", stateful: "enabled", collect: true, blockTag: "latest", effectiveSender: VALID_ADDR },
     addresses: { infoAddress: INFO_ADDR },
     stateReader: {
       getBlockTimestamp: jest.fn().mockResolvedValue(150n),
       getLaunchTime: jest.fn().mockResolvedValue(100n),
       getDeadline: jest.fn().mockResolvedValue(200n),
+      owner: jest.fn().mockResolvedValue(VALID_ADDR),
+      getPlatformHash: jest.fn().mockResolvedValue(VALID_HASH),
+      getCampaignPlatformAdminAddress: jest.fn().mockResolvedValue(ADMIN_ADDR),
       isTokenAccepted: jest.fn().mockResolvedValue(true),
+      getCancelled: jest.fn().mockResolvedValue(false),
       getReward: jest.fn().mockResolvedValue({ rewardValue: 100n, isRewardTier: true }),
       erc20BalanceOf: jest.fn().mockResolvedValue(10000n),
       erc20Allowance: jest.fn().mockResolvedValue(10000n),
@@ -386,6 +393,203 @@ describe("kwrDisburseFeesValidator - stateful", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.issues.some((w) => w.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
+    }
+  });
+});
+
+// ─── kwrWithdrawValidator ────────────────────────────────────────────────────
+
+const CHECKSUMMED_ADDR = "0x1234567890AbcdEF1234567890aBcdef12345678" as Address;
+
+function validWithdraw(): KwrWithdrawInput {
+  return { token: CHECKSUMMED_ADDR, amount: 1000n };
+}
+
+describe("kwrWithdrawValidator - structural", () => {
+  it("should pass with valid input", async () => {
+    const ctx = createCtx();
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(true);
+  });
+
+  it("should error on zero token address", async () => {
+    const ctx = createCtx();
+    const result = await runPreflight({ ...validWithdraw(), token: ZERO_ADDR }, kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.COMMON_ZERO_ADDRESS)).toBe(true);
+    }
+  });
+
+  it("should error on zero amount", async () => {
+    const ctx = createCtx();
+    const result = await runPreflight({ ...validWithdraw(), amount: 0n }, kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.KWR_ZERO_WITHDRAW_AMOUNT)).toBe(true);
+    }
+  });
+});
+
+describe("kwrWithdrawValidator - stateful", () => {
+  it("should warn when sender is unavailable for auth check", async () => {
+    const ctx = createStatefulCtx({
+      getDeadline: jest.fn().mockResolvedValue(100n),
+      getBlockTimestamp: jest.fn().mockResolvedValue(200n),
+    });
+    ctx.options.effectiveSender = undefined;
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.warnings.some((w) => w.code === codes.COMMON_SENDER_UNAVAILABLE)).toBe(true);
+    }
+  });
+
+  it("should error when sender is neither campaign owner nor platform admin", async () => {
+    const ctx = createStatefulCtx({
+      owner: jest.fn().mockResolvedValue(VALID_ADDR),
+      getCampaignPlatformAdminAddress: jest.fn().mockResolvedValue(ADMIN_ADDR),
+    });
+    ctx.options.effectiveSender = "0x9999999999999999999999999999999999999999" as Address;
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.SETTLEMENT_SENDER_NOT_AUTHORIZED)).toBe(true);
+    }
+  });
+
+  it("should pass when sender is the platform admin", async () => {
+    const ctx = createStatefulCtx({
+      owner: jest.fn().mockResolvedValue(VALID_ADDR),
+      getCampaignPlatformAdminAddress: jest.fn().mockResolvedValue(ADMIN_ADDR),
+      getDeadline: jest.fn().mockResolvedValue(100n),
+      getBlockTimestamp: jest.fn().mockResolvedValue(200n),
+    });
+    ctx.options.effectiveSender = ADMIN_ADDR;
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.warnings).toHaveLength(0);
+    }
+  });
+
+  it("should error when token is not accepted", async () => {
+    const ctx = createStatefulCtx({
+      isTokenAccepted: jest.fn().mockResolvedValue(false),
+    });
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.KWR_UNACCEPTED_TOKEN)).toBe(true);
+    }
+  });
+
+  it("should pass when all conditions are met", async () => {
+    const ctx = createStatefulCtx({
+      getPaused: jest.fn().mockResolvedValue(false),
+      getCancelled: jest.fn().mockResolvedValue(false),
+      getDeadline: jest.fn().mockResolvedValue(100n),
+      getBlockTimestamp: jest.fn().mockResolvedValue(200n),
+      getWithdrawalApprovalStatus: jest.fn().mockResolvedValue(true),
+      erc20BalanceOf: jest.fn().mockResolvedValue(5000n),
+    });
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.warnings).toHaveLength(0);
+    }
+  });
+
+  it("should error when treasury is paused", async () => {
+    const ctx = createStatefulCtx({ getPaused: jest.fn().mockResolvedValue(true) });
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.SETTLEMENT_TREASURY_PAUSED)).toBe(true);
+    }
+  });
+
+  it("should error when treasury is cancelled", async () => {
+    const ctx = createStatefulCtx({
+      getPaused: jest.fn().mockResolvedValue(false),
+      getCancelled: jest.fn().mockResolvedValue(true),
+    });
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.SETTLEMENT_TREASURY_CANCELLED)).toBe(true);
+    }
+  });
+
+  it("should error when campaign has not ended", async () => {
+    const ctx = createStatefulCtx({
+      getPaused: jest.fn().mockResolvedValue(false),
+      getDeadline: jest.fn().mockResolvedValue(300n),
+      getBlockTimestamp: jest.fn().mockResolvedValue(200n),
+    });
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE)).toBe(true);
+    }
+  });
+
+  it("should error when withdrawal is not approved", async () => {
+    const ctx = createStatefulCtx({
+      getPaused: jest.fn().mockResolvedValue(false),
+      getDeadline: jest.fn().mockResolvedValue(100n),
+      getBlockTimestamp: jest.fn().mockResolvedValue(200n),
+      getWithdrawalApprovalStatus: jest.fn().mockResolvedValue(false),
+    });
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.SETTLEMENT_WITHDRAWAL_NOT_APPROVED)).toBe(true);
+      expect(result.issues.find((i) => i.code === codes.SETTLEMENT_WITHDRAWAL_NOT_APPROVED)!.severity).toBe("error");
+    }
+  });
+
+  it("should error when treasury balance is insufficient", async () => {
+    const ctx = createStatefulCtx({
+      getPaused: jest.fn().mockResolvedValue(false),
+      getDeadline: jest.fn().mockResolvedValue(100n),
+      getBlockTimestamp: jest.fn().mockResolvedValue(200n),
+      getWithdrawalApprovalStatus: jest.fn().mockResolvedValue(true),
+      erc20BalanceOf: jest.fn().mockResolvedValue(500n),
+    });
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.KWR_INSUFFICIENT_TREASURY_BALANCE)).toBe(true);
+    }
+  });
+
+  it("should warn when withdrawal approval status is unavailable", async () => {
+    const ctx = createStatefulCtx({
+      getPaused: jest.fn().mockResolvedValue(false),
+      getDeadline: jest.fn().mockResolvedValue(100n),
+      getBlockTimestamp: jest.fn().mockResolvedValue(200n),
+      getWithdrawalApprovalStatus: jest.fn().mockResolvedValue(null),
+    });
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.warnings.some((w) => w.code === codes.COMMON_STATE_UNAVAILABLE)).toBe(true);
+    }
+  });
+
+  it("should warn when treasury balance is unavailable", async () => {
+    const ctx = createStatefulCtx({
+      getPaused: jest.fn().mockResolvedValue(false),
+      getDeadline: jest.fn().mockResolvedValue(100n),
+      getBlockTimestamp: jest.fn().mockResolvedValue(200n),
+      getWithdrawalApprovalStatus: jest.fn().mockResolvedValue(true),
+      erc20BalanceOf: jest.fn().mockResolvedValue(null),
+    });
+    const result = await runPreflight(validWithdraw(), kwrWithdrawValidator, ctx);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.warnings.some((w) => w.code === codes.COMMON_STATE_UNAVAILABLE)).toBe(true);
     }
   });
 });

@@ -448,6 +448,158 @@ export const kwrDisburseFeesValidator: MethodValidator<KwrDisburseFeesInput> = {
   ],
 };
 
+// ─── withdraw ─────────────────────────────────────────────────────────────────
+
+/** Input shape for KeepWhatsRaised.withdraw preflight. */
+export interface KwrWithdrawInput {
+  token: Address;
+  amount: bigint;
+}
+
+/**
+ * Preflight validator for KeepWhatsRaised.withdraw.
+ * Checks token/amount validity, accepted token state, treasury status,
+ * campaign end, withdrawal approval, and treasury balance.
+ */
+export const kwrWithdrawValidator: MethodValidator<KwrWithdrawInput> = {
+  structural: [
+    (input) => checkZeroAddress(input.token, "token"),
+    (input, ctx) => checkAddressChecksum(input, ["token"], ctx.options.mode === "normalize"),
+    (input) => {
+      if (input.amount === 0n) {
+        return [
+          createIssue(codes.KWR_ZERO_WITHDRAW_AMOUNT, "error", "amount must not be zero.", {
+            fieldPath: "amount",
+            suggestion: "Provide a non-zero withdrawal amount.",
+          }),
+        ];
+      }
+      return [];
+    },
+  ],
+
+  semantic: [],
+
+  stateful: [
+    async (input, ctx) => {
+      const infoAddress = ctx.addresses.infoAddress;
+      if (!infoAddress) return [];
+      return checkTokenAccepted(ctx.stateReader, infoAddress, input.token, "token", codes.KWR_UNACCEPTED_TOKEN);
+    },
+    async (_input, ctx) => {
+      const infoAddress = ctx.addresses.infoAddress;
+      if (!infoAddress) return [];
+
+      const sender = ctx.options.effectiveSender;
+      if (!sender) {
+        return [
+          createIssue(
+            codes.COMMON_SENDER_UNAVAILABLE,
+            "warn",
+            "No sender available for authorization check. Provide effectiveSender or a signer.",
+          ),
+        ];
+      }
+
+      const [campaignOwner, platformHash] = await Promise.all([
+        ctx.stateReader.owner(infoAddress),
+        ctx.stateReader.getPlatformHash(ctx.contractAddress),
+      ]);
+
+      if (campaignOwner === null) {
+        return [createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read campaign owner from on-chain state.")];
+      }
+      if (platformHash === null) {
+        return [createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read treasury platform hash from on-chain state.")];
+      }
+
+      const platformAdmin = await ctx.stateReader.getCampaignPlatformAdminAddress(infoAddress, platformHash);
+
+      const normalizedSender = sender.toLowerCase();
+      const normalizedOwner = campaignOwner.toLowerCase();
+      if (normalizedSender === normalizedOwner) {
+        return [];
+      }
+      if (platformAdmin === null) {
+        return [createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read platform admin from on-chain state.")];
+      }
+      const normalizedAdmin = platformAdmin.toLowerCase();
+
+      if (normalizedSender !== normalizedAdmin) {
+        return [
+          createIssue(
+            codes.SETTLEMENT_SENDER_NOT_AUTHORIZED,
+            "error",
+            `Sender ${sender} is neither the campaign owner (${campaignOwner}) nor the platform admin (${platformAdmin}).`,
+            { suggestion: "Use the campaign owner or platform admin account to withdraw funds." },
+          ),
+        ];
+      }
+
+      return [];
+    },
+    async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
+    async (_input, ctx) => {
+      const cancelled = await ctx.stateReader.getCancelled(ctx.contractAddress);
+      if (cancelled === null) {
+        return [createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read treasury cancelled state.")];
+      }
+      if (cancelled) {
+        return [
+          createIssue(
+            codes.SETTLEMENT_TREASURY_CANCELLED,
+            "error",
+            "Treasury has been cancelled, so withdrawals are disabled.",
+            { suggestion: "Do not submit this withdrawal while the treasury is cancelled." },
+          ),
+        ];
+      }
+      return [];
+    },
+    async (_input, ctx) => {
+      const infoAddress = ctx.addresses.infoAddress;
+      if (!infoAddress) return [];
+      return checkCampaignEnded(ctx.stateReader, infoAddress, codes.SETTLEMENT_CAMPAIGN_STILL_ACTIVE);
+    },
+    async (_input, ctx) => {
+      const approved = await ctx.stateReader.getWithdrawalApprovalStatus(ctx.contractAddress);
+      if (approved === null) {
+        return [createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read withdrawal approval status.")];
+      }
+      if (!approved) {
+        return [
+          createIssue(
+            codes.SETTLEMENT_WITHDRAWAL_NOT_APPROVED,
+            "error",
+            "Withdrawal has not been approved. Call approveWithdrawal() first.",
+            { suggestion: "The campaign creator must approve withdrawal before funds can be withdrawn." },
+          ),
+        ];
+      }
+      return [];
+    },
+    async (input, ctx) => {
+      const balance = await ctx.stateReader.erc20BalanceOf(input.token, ctx.contractAddress);
+      if (balance === null) {
+        return [createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read treasury token balance.")];
+      }
+      if (balance < input.amount) {
+        return [
+          createIssue(
+            codes.KWR_INSUFFICIENT_TREASURY_BALANCE,
+            "error",
+            `Treasury balance (${balance}) is less than the requested withdrawal amount (${input.amount}).`,
+            { fieldPath: "amount", suggestion: "Reduce the withdrawal amount to at most the available treasury balance." },
+          ),
+        ];
+      }
+      return [];
+    },
+  ],
+
+  normalize: (input) => normalizeAddresses({ ...input }, ["token"]),
+};
+
 // ─── Safe descriptors ─────────────────────────────────────────────────────────
 
 /** Safe method descriptor for KeepWhatsRaised.configureTreasury. */
@@ -524,6 +676,14 @@ export const setFeeAndPledgeDescriptor: SafeMethodDescriptor<SetFeeAndPledgeInpu
     input.pledgeId, input.backer, input.pledgeToken, input.pledgeAmount,
     input.tip, input.fee, [...input.reward], input.isPledgeForAReward,
   ],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.withdraw. */
+export const kwrWithdrawDescriptor: SafeMethodDescriptor<KwrWithdrawInput> = {
+  validator: kwrWithdrawValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "withdraw",
+  toArgs: (input) => [input.token, input.amount],
 };
 
 /** Safe method descriptor for KeepWhatsRaised.claimRefund. */

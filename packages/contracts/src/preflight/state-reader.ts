@@ -168,6 +168,18 @@ export function createStateReader(
       );
     },
 
+    async getCampaignPlatformAdminAddress(infoAddress: Address, platformHash: Hex): Promise<Address | null> {
+      return cachedRead(`info:admin:${infoAddress}:${platformHash}`, () =>
+        publicClient.readContract({
+          address: infoAddress,
+          abi: CAMPAIGN_INFO_ABI,
+          functionName: "getPlatformAdminAddress",
+          args: [platformHash],
+          ...(blockNumber !== undefined && { blockNumber }),
+        }),
+      );
+    },
+
     async isTokenAccepted(infoAddress: Address, token: Address): Promise<boolean | null> {
       return cachedRead(`info:token:${infoAddress}:${token}`, () =>
         publicClient.readContract({
@@ -175,6 +187,17 @@ export function createStateReader(
           abi: CAMPAIGN_INFO_ABI,
           functionName: "isTokenAccepted",
           args: [token],
+          ...(blockNumber !== undefined && { blockNumber }),
+        }),
+      );
+    },
+
+    async owner(infoAddress: Address): Promise<Address | null> {
+      return cachedRead(`info:owner:${infoAddress}`, () =>
+        publicClient.readContract({
+          address: infoAddress,
+          abi: CAMPAIGN_INFO_ABI,
+          functionName: "owner",
           ...(blockNumber !== undefined && { blockNumber }),
         }),
       );
@@ -223,14 +246,23 @@ export function createStateReader(
     // ── Treasury common reads ─────────────────────────────────────────────
 
     async getPlatformHash(treasuryAddress: Address): Promise<Hex | null> {
-      return cachedRead(`treasury:platformHash:${treasuryAddress}`, () =>
-        publicClient.readContract({
-          address: treasuryAddress,
-          abi: PAYMENT_TREASURY_ABI,
-          functionName: "getplatformHash",
-          ...(blockNumber !== undefined && { blockNumber }),
-        }),
-      );
+      return cachedRead(`treasury:platformHash:${treasuryAddress}`, async () => {
+        try {
+          return await publicClient.readContract({
+            address: treasuryAddress,
+            abi: PAYMENT_TREASURY_ABI,
+            functionName: "getplatformHash",
+            ...(blockNumber !== undefined && { blockNumber }),
+          });
+        } catch {
+          return publicClient.readContract({
+            address: treasuryAddress,
+            abi: KEEP_WHATS_RAISED_ABI,
+            functionName: "getPlatformHash",
+            ...(blockNumber !== undefined && { blockNumber }),
+          });
+        }
+      });
     },
 
     async getCancelled(treasuryAddress: Address): Promise<boolean | null> {

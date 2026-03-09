@@ -1,5 +1,6 @@
 import type { Address, Hex } from "viem";
 import { TREASURY_FACTORY_ABI } from "../../abis/treasury-factory.js";
+import { checkAddressChecksum, checkZeroAddress, checkZeroBytes32 } from "../common/checks.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
 import { normalizeAddresses } from "../normalizers.js";
@@ -16,7 +17,13 @@ export interface DeployInput {
  * Preflight validator for TreasuryFactory.deploy.
  */
 export const deployValidator: MethodValidator<DeployInput> = {
-  structural: [],
+  structural: [
+    (input) => [
+      ...checkZeroBytes32(input.platformHash, "platformHash"),
+      ...checkZeroAddress(input.infoAddress, "infoAddress"),
+    ],
+    (input, ctx) => checkAddressChecksum(input, ["infoAddress"], ctx.options.mode === "normalize"),
+  ],
 
   semantic: [],
 

@@ -145,7 +145,9 @@ export interface StateReader {
   // ── CampaignInfo reads ───────────────────────────────────────────────
   checkIfPlatformSelected(infoAddress: Address, platformHash: Hex): Promise<boolean | null>;
   checkIfPlatformApproved(infoAddress: Address, platformHash: Hex): Promise<boolean | null>;
+  getCampaignPlatformAdminAddress(infoAddress: Address, platformHash: Hex): Promise<Address | null>;
   isTokenAccepted(infoAddress: Address, token: Address): Promise<boolean | null>;
+  owner(infoAddress: Address): Promise<Address | null>;
   getLaunchTime(infoAddress: Address): Promise<bigint | null>;
   getDeadline(infoAddress: Address): Promise<bigint | null>;
   /** Check if a line item type exists for a given platform on a CampaignInfo contract. */

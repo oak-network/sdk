@@ -380,6 +380,24 @@ describe("ptClaimRefundValidator - stateful", () => {
       expect(result.issues.some((i) => i.code === codes.PAYMENT_NOT_FOUND)).toBe(true);
     }
   });
+
+  it("should warn when timestamp is unavailable and claimability cannot be verified", async () => {
+    const ctx = createStatefulCtx({
+      getPaymentData: jest.fn().mockResolvedValue({
+        buyerAddress: VALID_ADDR,
+        isConfirmed: true,
+        expiration: 200n,
+        amount: 100n,
+      }),
+      getBlockTimestamp: jest.fn().mockResolvedValue(null),
+    });
+    const input: PtClaimRefundInput = { paymentId: VALID_HASH, refundAddress: VALID_ADDR };
+    const result = await runPreflight(input, ptClaimRefundValidator, ctx);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.warnings.some((w) => w.code === codes.COMMON_STATE_UNAVAILABLE)).toBe(true);
+    }
+  });
 });
 
 describe("ptClaimRefundSelfValidator - structural", () => {
@@ -396,6 +414,26 @@ describe("ptClaimRefundSelfValidator - structural", () => {
     const input: PtClaimRefundSelfInput = { paymentId: VALID_HASH };
     const result = await runPreflight(input, ptClaimRefundSelfValidator, createCtx());
     expect(result.ok).toBe(true);
+  });
+});
+
+describe("ptClaimRefundSelfValidator - stateful", () => {
+  it("should warn when timestamp is unavailable and claimability cannot be verified", async () => {
+    const ctx = createStatefulCtx({
+      getPaymentData: jest.fn().mockResolvedValue({
+        buyerAddress: VALID_ADDR,
+        isConfirmed: true,
+        expiration: 200n,
+        amount: 100n,
+      }),
+      getBlockTimestamp: jest.fn().mockResolvedValue(null),
+    });
+    const input: PtClaimRefundSelfInput = { paymentId: VALID_HASH };
+    const result = await runPreflight(input, ptClaimRefundSelfValidator, ctx);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.warnings.some((w) => w.code === codes.COMMON_STATE_UNAVAILABLE)).toBe(true);
+    }
   });
 });
 
