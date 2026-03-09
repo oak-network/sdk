@@ -36,7 +36,16 @@ import { createItemRegistryEntity } from "../contracts/item-registry";
 function isSimpleConfig(
   config: OakContractsClientConfig,
 ): config is SimpleOakContractsClientConfig {
-  return "chainId" in config && "rpcUrl" in config && "privateKey" in config;
+  return (
+    "chainId" in config &&
+    "rpcUrl" in config &&
+    "privateKey" in config &&
+    typeof (config as SimpleOakContractsClientConfig).chainId === "number" &&
+    typeof (config as SimpleOakContractsClientConfig).rpcUrl === "string" &&
+    (config as SimpleOakContractsClientConfig).rpcUrl.length > 0 &&
+    typeof (config as SimpleOakContractsClientConfig).privateKey === "string" &&
+    (config as SimpleOakContractsClientConfig).privateKey.startsWith("0x")
+  );
 }
 
 /**
