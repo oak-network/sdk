@@ -202,13 +202,6 @@ export type OakContractsClientConfig =
   | FullOakContractsClientConfig;
 
 /**
- * Resolved client configuration with resolved chain
- */
-export interface ResolvedOakContractsClientConfig extends Omit<FullOakContractsClientConfig, "chain"> {
-  chain: Chain;
-}
-
-/**
  * Public client configuration (without sensitive data)
  */
 export interface PublicOakContractsClientConfig {
