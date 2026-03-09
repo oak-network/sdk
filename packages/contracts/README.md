@@ -58,10 +58,11 @@ const oak = createOakContractsClient({ chain, provider, signer });
 ```typescript
 import { CHAIN_IDS } from "@oaknetwork/contracts";
 
-CHAIN_IDS.ETHEREUM_MAINNET       // 1
-CHAIN_IDS.ETHEREUM_TESTNET_SEPOLIA        // 11155111
-CHAIN_IDS.CELO_TESTNET_SEPOLIA   // 11142220
-CHAIN_IDS.CELO_TESTNET_ALFAJORES      // 44787
+CHAIN_IDS.ETHEREUM_MAINNET         // 1
+CHAIN_IDS.CELO_MAINNET             // 42220
+CHAIN_IDS.ETHEREUM_TESTNET_SEPOLIA // 11155111
+CHAIN_IDS.ETHEREUM_TESTNET_GOERLI  // 5
+CHAIN_IDS.CELO_TESTNET_SEPOLIA     // 11142220
 ```
 
 ## Contracts
@@ -195,8 +196,9 @@ const tokens        = await ci.getAcceptedTokens();
 // Writes
 await ci.updateDeadline(newDeadline);
 await ci.updateGoalAmount(newGoal);
-await ci.cancelCampaign();
-await ci.lockCampaign();
+await ci.pauseCampaign(message);
+await ci.unpauseCampaign(message);
+await ci.cancelCampaign(message);
 ```
 
 ---
@@ -214,15 +216,15 @@ const refunded  = await pt.getRefundedAmount();
 const payment   = await pt.getPaymentData(paymentId);
 
 // Writes
-const txHash = await pt.createPayment(paymentId, backer, token, amount, tip, lineItemIds, lineItemAmounts);
-await pt.confirmPayment(paymentId);
+const txHash = await pt.createPayment(paymentId, buyerId, itemId, paymentToken, amount, expiration, lineItems, externalFees);
+await pt.confirmPayment(paymentId, buyerAddress);
 await pt.claimRefund(paymentId, refundAddress);
 await pt.claimRefundSelf(paymentId);
 await pt.disburseFees();
 await pt.withdraw();
 await pt.pauseTreasury(message);
 await pt.unpauseTreasury(message);
-await pt.cancelTreasury();
+await pt.cancelTreasury(message);
 ```
 
 ---
@@ -240,13 +242,14 @@ const reward   = await aon.getReward(rewardName);
 
 // Writes
 await aon.addRewards(rewardNames, rewards);
-await aon.pledgeForAReward(pledgeId, backer, token, tip, rewardNames);
-await aon.pledgeWithoutAReward(pledgeId, backer, token, amount, tip);
+await aon.pledgeForAReward(backer, pledgeToken, shippingFee, rewardNames);
+await aon.pledgeWithoutAReward(backer, pledgeToken, pledgeAmount);
 await aon.claimRefund(tokenId);
 await aon.disburseFees();
 await aon.withdraw();
 await aon.pauseTreasury(message);
 await aon.unpauseTreasury(message);
+await aon.cancelTreasury(message);
 
 // ERC-721
 const owner = await aon.ownerOf(tokenId);
@@ -278,8 +281,10 @@ await kwr.claimFund();
 await kwr.claimTip();
 await kwr.claimRefund(tokenId);
 await kwr.disburseFees();
+await kwr.withdraw(token, amount);
 await kwr.pauseTreasury(message);
 await kwr.unpauseTreasury(message);
+await kwr.cancelTreasury(message);
 ```
 
 ---
@@ -292,11 +297,11 @@ Manages items available for purchase in campaigns.
 const ir = oak.itemRegistry("0x...");
 
 // Read
-const item = await ir.getItem(itemId);
+const item = await ir.getItem(ownerAddress, itemId);
 
 // Writes
-await ir.addItem(itemId, name, price, quantity);
-await ir.addItemsBatch(itemIds, names, prices, quantities);
+await ir.addItem(itemId, item);
+await ir.addItemsBatch(itemIds, items);
 ```
 
 ---
@@ -389,12 +394,13 @@ const signer   = await getSigner(window.ethereum, chain);
 
 ## Exported Entry Points
 
-| Entry point                   | Contents                                   |
-|-------------------------------|--------------------------------------------|
-| `@oaknetwork/contracts`       | Everything — client, types, utils, errors  |
-| `@oaknetwork/contracts/utils` | Utility functions only (no client)         |
-| `@oaknetwork/contracts/contracts` | Contract entity factories only         |
-| `@oaknetwork/contracts/client`    | `createOakContractsClient` only        |
+| Entry point                       | Contents                                   |
+|-----------------------------------|--------------------------------------------|
+| `@oaknetwork/contracts`           | Everything — client, types, utils, errors  |
+| `@oaknetwork/contracts/utils`     | Utility functions only (no client)         |
+| `@oaknetwork/contracts/contracts` | Contract entity factories only             |
+| `@oaknetwork/contracts/client`    | `createOakContractsClient` only            |
+| `@oaknetwork/contracts/errors`    | Error classes and `parseContractError` only |
 
 ---
 
