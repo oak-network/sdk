@@ -85,7 +85,7 @@ function buildClients(config: OakContractsClientConfig, options: OakContractsCli
  * @example
  * ```typescript
  * const oak = createOakContractsClient({
- *   chainId: CHAIN_IDS.CELO_SEPOLIA,
+ *   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
  *   rpcUrl: "https://forno.celo-sepolia.org",
  *   privateKey: "0x...",
  * });

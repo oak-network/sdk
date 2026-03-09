@@ -169,7 +169,7 @@ export interface Wallet extends WalletClient {
  * Use this for backend scripts or when you have a single signer.
  */
 export interface SimpleOakContractsClientConfig {
-  /** Chain ID (e.g. CHAIN_IDS.CELO_SEPOLIA) */
+  /** Chain ID (e.g. CHAIN_IDS.CELO_TESTNET_SEPOLIA) */
   chainId: number;
   /** RPC URL for the chain */
   rpcUrl: string;
