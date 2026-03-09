@@ -2,6 +2,16 @@ import { defineChain } from "viem";
 import { mainnet, sepolia, goerli } from "viem/chains";
 import type { Chain } from "viem/chains";
 
+/** Celo Mainnet */
+const celoMainnet = defineChain({
+  id: 42220,
+  name: "Celo",
+  nativeCurrency: { decimals: 18, name: "CELO", symbol: "CELO" },
+  rpcUrls: {
+    default: { http: ["https://forno.celo.org"] },
+  },
+});
+
 /** Celo Sepolia testnet */
 const celoSepolia = defineChain({
   id: 11142220,
@@ -18,6 +28,7 @@ const celoSepolia = defineChain({
  */
 const CHAIN_REGISTRY: Record<number, Chain> = {
   1: mainnet,
+  42220: celoMainnet,
   11155111: sepolia,
   5: goerli,
   11142220: celoSepolia,

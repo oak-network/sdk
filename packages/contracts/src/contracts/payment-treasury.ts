@@ -36,10 +36,10 @@ export function createPaymentTreasuryEntity(
   return {
     // ── Reads ────────────────────────────────────────────────────────────────
 
-    async getplatformHash() {
+    async getPlatformHash() {
       return publicClient.readContract({ ...contract, functionName: "getplatformHash" });
     },
-    async getplatformFeePercent() {
+    async getPlatformFeePercent() {
       return publicClient.readContract({ ...contract, functionName: "getplatformFeePercent" });
     },
     async getRaisedAmount() {

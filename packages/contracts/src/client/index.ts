@@ -36,7 +36,16 @@ import { createItemRegistryEntity } from "../contracts/item-registry";
 function isSimpleConfig(
   config: OakContractsClientConfig,
 ): config is SimpleOakContractsClientConfig {
-  return "chainId" in config && "rpcUrl" in config && "privateKey" in config;
+  return (
+    "chainId" in config &&
+    "rpcUrl" in config &&
+    "privateKey" in config &&
+    typeof (config as SimpleOakContractsClientConfig).chainId === "number" &&
+    typeof (config as SimpleOakContractsClientConfig).rpcUrl === "string" &&
+    (config as SimpleOakContractsClientConfig).rpcUrl.length > 0 &&
+    typeof (config as SimpleOakContractsClientConfig).privateKey === "string" &&
+    (config as SimpleOakContractsClientConfig).privateKey.startsWith("0x")
+  );
 }
 
 /**
@@ -52,14 +61,14 @@ function resolveChain(chain: ChainIdentifier): Chain {
 /**
  * Builds viem publicClient and walletClient from the given config.
  */
-function buildClients(config: OakContractsClientConfig): {
+function buildClients(config: OakContractsClientConfig, options: OakContractsClientOptions): {
   chain: Chain;
   publicClient: PublicClient;
   walletClient: WalletClient;
 } {
   if (isSimpleConfig(config)) {
     const chain = getChainFromId(config.chainId);
-    const transport = http(config.rpcUrl);
+    const transport = http(config.rpcUrl, { timeout: options.timeout });
     const publicClient = createPublicClient({ chain, transport });
     const account = privateKeyToAccount(config.privateKey);
     const walletClient = createWalletClient({ account, chain, transport });
@@ -85,7 +94,7 @@ function buildClients(config: OakContractsClientConfig): {
  * @example
  * ```typescript
  * const oak = createOakContractsClient({
- *   chainId: CHAIN_IDS.CELO_SEPOLIA,
+ *   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
  *   rpcUrl: "https://forno.celo-sepolia.org",
  *   privateKey: "0x...",
  * });
@@ -105,11 +114,11 @@ export function createOakContractsClient(
     ...config?.options,
   };
 
-  const { chain, publicClient, walletClient } = buildClients(config);
+  const { chain, publicClient, walletClient } = buildClients(config, options);
   const publicConfig: PublicOakContractsClientConfig = { chain };
 
   async function waitForReceipt(txHash: Hex): Promise<TransactionReceipt> {
-    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: options.timeout });
     return {
       blockNumber: receipt.blockNumber,
       gasUsed: receipt.gasUsed,
