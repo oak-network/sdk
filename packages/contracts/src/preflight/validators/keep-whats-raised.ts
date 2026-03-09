@@ -131,6 +131,7 @@ export const kwrPledgeForARewardValidator: MethodValidator<KwrPledgeForARewardIn
     (input) => checkZeroBytes32(input.pledgeId, "pledgeId", codes.KWR_ZERO_PLEDGE_ID),
     (input, ctx) => [
       ...checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+      ...checkZeroAddress(input.pledgeToken, "pledgeToken", codes.COMMON_ZERO_ADDRESS),
       ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
     ],
     (input) => {
@@ -196,6 +197,7 @@ export const kwrPledgeWithoutARewardValidator: MethodValidator<KwrPledgeWithoutA
     (input) => checkZeroBytes32(input.pledgeId, "pledgeId", codes.KWR_ZERO_PLEDGE_ID),
     (input, ctx) => [
       ...checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+      ...checkZeroAddress(input.pledgeToken, "pledgeToken", codes.COMMON_ZERO_ADDRESS),
       ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
     ],
     (input) => {
@@ -277,6 +279,7 @@ export const setFeeAndPledgeValidator: MethodValidator<SetFeeAndPledgeInput> = {
     (input) => checkZeroBytes32(input.pledgeId, "pledgeId", codes.KWR_ZERO_PLEDGE_ID),
     (input, ctx) => [
       ...checkZeroAddress(input.backer, "backer", codes.KWR_ZERO_BACKER),
+      ...checkZeroAddress(input.pledgeToken, "pledgeToken", codes.COMMON_ZERO_ADDRESS),
       ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
     ],
     (input) => {

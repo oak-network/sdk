@@ -45,6 +45,7 @@ export const aonPledgeForARewardValidator: MethodValidator<AonPledgeForARewardIn
   structural: [
     (input, ctx) => [
       ...checkZeroAddress(input.backer, "backer", codes.AON_ZERO_BACKER),
+      ...checkZeroAddress(input.pledgeToken, "pledgeToken", codes.COMMON_ZERO_ADDRESS),
       ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
     ],
 
@@ -110,6 +111,7 @@ export const aonPledgeWithoutARewardValidator: MethodValidator<AonPledgeWithoutA
   structural: [
     (input, ctx) => [
       ...checkZeroAddress(input.backer, "backer", codes.AON_ZERO_BACKER),
+      ...checkZeroAddress(input.pledgeToken, "pledgeToken", codes.COMMON_ZERO_ADDRESS),
       ...checkAddressChecksum(input, ["backer", "pledgeToken"], ctx.options.mode === "normalize"),
     ],
 

@@ -102,6 +102,16 @@ describe("setFeeAndPledgeValidator - structural", () => {
     }
   });
 
+  it("should fail on zero pledgeToken", async () => {
+    const input = validSetFeeAndPledge();
+    input.pledgeToken = ZERO_ADDR;
+    const result = await runPreflight(input, setFeeAndPledgeValidator, createCtx());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.COMMON_ZERO_ADDRESS)).toBe(true);
+    }
+  });
+
   it("should fail when isPledgeForAReward is true but reward is empty", async () => {
     const input = validSetFeeAndPledge();
     input.reward = [];
@@ -255,6 +265,16 @@ describe("kwrPledgeForARewardValidator - structural", () => {
       expect(result.issues.some((i) => i.code === codes.KWR_EMPTY_REWARD_NAMES)).toBe(true);
     }
   });
+
+  it("should fail on zero pledgeToken", async () => {
+    const input = validInput();
+    input.pledgeToken = ZERO_ADDR;
+    const result = await runPreflight(input, kwrPledgeForARewardValidator, createCtx());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.COMMON_ZERO_ADDRESS)).toBe(true);
+    }
+  });
 });
 
 // ─── kwrPledgeWithoutARewardValidator ────────────────────────────────────────
@@ -282,6 +302,16 @@ describe("kwrPledgeWithoutARewardValidator - structural", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.issues.some((i) => i.code === codes.KWR_ZERO_PLEDGE_AMOUNT)).toBe(true);
+    }
+  });
+
+  it("should fail on zero pledgeToken", async () => {
+    const input = validInput();
+    input.pledgeToken = ZERO_ADDR;
+    const result = await runPreflight(input, kwrPledgeWithoutARewardValidator, createCtx());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.COMMON_ZERO_ADDRESS)).toBe(true);
     }
   });
 });

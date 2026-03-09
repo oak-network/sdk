@@ -203,6 +203,16 @@ describe("aonPledgeForARewardValidator - structural", () => {
     }
   });
 
+  it("should fail on zero pledgeToken", async () => {
+    const input = validInput();
+    input.pledgeToken = ZERO_ADDR;
+    const result = await runPreflight(input, aonPledgeForARewardValidator, createCtx());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.COMMON_ZERO_ADDRESS)).toBe(true);
+    }
+  });
+
   it("should fail on empty rewardNames", async () => {
     const input = validInput();
     input.rewardNames = [];
@@ -237,6 +247,16 @@ describe("aonPledgeWithoutARewardValidator - structural", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.issues.some((i) => i.code === codes.AON_ZERO_BACKER)).toBe(true);
+    }
+  });
+
+  it("should fail on zero pledgeToken", async () => {
+    const input = validInput();
+    input.pledgeToken = ZERO_ADDR;
+    const result = await runPreflight(input, aonPledgeWithoutARewardValidator, createCtx());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.COMMON_ZERO_ADDRESS)).toBe(true);
     }
   });
 
