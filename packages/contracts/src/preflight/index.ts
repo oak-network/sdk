@@ -57,6 +57,7 @@ export type {
   KwrPledgeForARewardInput,
   KwrPledgeWithoutARewardInput,
   SetFeeAndPledgeInput,
+  KwrWithdrawInput,
   KwrClaimRefundInput,
   KwrClaimTipInput,
   KwrClaimFundInput,

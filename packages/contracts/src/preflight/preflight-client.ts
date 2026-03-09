@@ -94,12 +94,14 @@ import {
   kwrClaimTipValidator,
   kwrClaimFundValidator,
   kwrDisburseFeesValidator,
+  kwrWithdrawValidator,
   approveWithdrawalValidator,
   configureTreasuryDescriptor,
   kwrPledgeForARewardDescriptor,
   kwrPledgeWithoutARewardDescriptor,
   kwrAddRewardsDescriptor,
   setFeeAndPledgeDescriptor,
+  kwrWithdrawDescriptor,
   kwrClaimRefundDescriptor,
   kwrClaimTipDescriptor,
   kwrClaimFundDescriptor,
@@ -110,6 +112,7 @@ import {
   type KwrPledgeForARewardInput,
   type KwrPledgeWithoutARewardInput,
   type SetFeeAndPledgeInput,
+  type KwrWithdrawInput,
   type KwrClaimRefundInput,
   type KwrClaimTipInput,
   type KwrClaimFundInput,
@@ -305,6 +308,11 @@ export interface PreflightKeepWhatsRaisedTreasuryEntity {
     (pledgeId: Hex, backer: Address, pledgeToken: Address, pledgeAmount: bigint, tip: bigint, fee: bigint, reward: readonly Hex[], isPledgeForAReward: boolean): Promise<Hex>;
     preflight(input: SetFeeAndPledgeInput, options?: PreflightOptions): Promise<PreflightResult<SetFeeAndPledgeInput>>;
     safe(input: SetFeeAndPledgeInput, options?: PreflightOptions): Promise<SafeResult>;
+  };
+  withdraw: {
+    (token: Address, amount: bigint): Promise<Hex>;
+    preflight(input: KwrWithdrawInput, options?: PreflightOptions): Promise<PreflightResult<KwrWithdrawInput>>;
+    safe(input: KwrWithdrawInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   claimRefund: {
     (tokenId: bigint): Promise<Hex>;
@@ -749,6 +757,14 @@ export function createPreflightClient(
         },
       );
 
+      const kwrWithdraw = Object.assign(
+        (token: Address, amount: bigint) => entity.withdraw(token, amount),
+        {
+          preflight: createPreflightFn(client, address, kwrWithdrawValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, kwrWithdrawDescriptor, defaultOptions, addresses),
+        },
+      );
+
       const claimRefund = Object.assign(
         (tokenId: bigint) => entity.claimRefund(tokenId),
         {
@@ -803,6 +819,7 @@ export function createPreflightClient(
         pledgeWithoutAReward,
         addRewards,
         setFeeAndPledge,
+        withdraw: kwrWithdraw,
         claimRefund,
         claimTip,
         claimFund,
