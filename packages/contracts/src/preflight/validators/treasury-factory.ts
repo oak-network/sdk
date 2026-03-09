@@ -3,7 +3,7 @@ import { TREASURY_FACTORY_ABI } from "../../abis/treasury-factory.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
 import { normalizeAddresses } from "../normalizers.js";
-import type { MethodValidator, SafeMethodDescriptor, PreflightIssue } from "../types.js";
+import type { MethodValidator, SafeMethodDescriptor } from "../types.js";
 
 /** Input shape for TreasuryFactory.deploy preflight. */
 export interface DeployInput {

@@ -1,6 +1,6 @@
 import type { Address, Hex } from "viem";
 import { PAYMENT_TREASURY_ABI } from "../../abis/payment-treasury.js";
-import { BYTES32_ZERO, DATA_REGISTRY_KEYS } from "../../constants/index.js";
+import { DATA_REGISTRY_KEYS } from "../../constants/index.js";
 import type { LineItem, ExternalFees } from "../../types/index.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";

@@ -223,8 +223,8 @@ export interface PreflightPaymentTreasuryEntity {
     safe(input: PtClaimNonGoalLineItemsInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   // Passthrough reads
-  getplatformHash(): Promise<Hex>;
-  getplatformFeePercent(): Promise<bigint>;
+  getPlatformHash(): Promise<Hex>;
+  getPlatformFeePercent(): Promise<bigint>;
   getRaisedAmount(): Promise<bigint>;
   getAvailableRaisedAmount(): Promise<bigint>;
   getLifetimeRaisedAmount(): Promise<bigint>;
@@ -609,8 +609,8 @@ export function createPreflightClient(
         claimExpiredFunds,
         disburseFees,
         claimNonGoalLineItems,
-        getplatformHash: () => entity.getplatformHash(),
-        getplatformFeePercent: () => entity.getplatformFeePercent(),
+        getPlatformHash: () => entity.getPlatformHash(),
+        getPlatformFeePercent: () => entity.getPlatformFeePercent(),
         getRaisedAmount: () => entity.getRaisedAmount(),
         getAvailableRaisedAmount: () => entity.getAvailableRaisedAmount(),
         getLifetimeRaisedAmount: () => entity.getLifetimeRaisedAmount(),

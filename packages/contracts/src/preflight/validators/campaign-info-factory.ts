@@ -3,9 +3,9 @@ import { CAMPAIGN_INFO_FACTORY_ABI } from "../../abis/campaign-info-factory.js";
 import { BYTES32_ZERO, DATA_REGISTRY_KEYS } from "../../constants/index.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
-import { checkZeroAddress, checkAddressChecksum, checkArrayLengthParity, checkDuplicates, checkZeroBytes32 } from "../common/checks.js";
+import { checkZeroAddress, checkAddressChecksum, checkArrayLengthParity, checkDuplicates } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
-import type { MethodValidator, SafeMethodDescriptor, PreflightContext, PreflightIssue } from "../types.js";
+import type { MethodValidator, SafeMethodDescriptor, PreflightIssue } from "../types.js";
 
 /**
  * Preflight validator for CampaignInfoFactory.createCampaign.

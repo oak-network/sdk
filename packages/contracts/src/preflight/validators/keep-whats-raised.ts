@@ -16,7 +16,7 @@ import {
   checkTreasuryPaused,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
-import type { MethodValidator, SafeMethodDescriptor, PreflightIssue } from "../types.js";
+import type { MethodValidator, SafeMethodDescriptor } from "../types.js";
 import { addRewardsValidator, removeRewardValidator } from "./all-or-nothing.js";
 import type { AddRewardsInput, RemoveRewardInput } from "./all-or-nothing.js";
 
