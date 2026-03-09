@@ -366,8 +366,8 @@ export interface CampaignInfoEntity {
  */
 export interface PaymentTreasuryEntity {
   // Reads
-  getplatformHash(): Promise<Hex>;
-  getplatformFeePercent(): Promise<bigint>;
+  getPlatformHash(): Promise<Hex>;
+  getPlatformFeePercent(): Promise<bigint>;
   getRaisedAmount(): Promise<bigint>;
   getAvailableRaisedAmount(): Promise<bigint>;
   getLifetimeRaisedAmount(): Promise<bigint>;
