@@ -1,4 +1,5 @@
 import type { Address, Hex } from "viem";
+import { PAYMENT_TREASURY_ABI } from "../../abis/payment-treasury.js";
 import { BYTES32_ZERO, DATA_REGISTRY_KEYS } from "../../constants/index.js";
 import type { LineItem, ExternalFees } from "../../types/index.js";
 import { createIssue } from "../issue.js";
@@ -13,7 +14,7 @@ import {
   checkCampaignEnded,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
-import type { MethodValidator, PreflightContext, PreflightIssue } from "../types.js";
+import type { MethodValidator, SafeMethodDescriptor, PreflightContext, PreflightIssue } from "../types.js";
 
 const BATCH_WARN_THRESHOLD = 50;
 
@@ -752,4 +753,116 @@ export const ptClaimNonGoalLineItemsValidator: MethodValidator<PtClaimNonGoalLin
   semantic: [],
   stateful: [],
   normalize: (input) => normalizeAddresses({ ...input }, ["token"]),
+};
+
+// ─── Safe descriptors ─────────────────────────────────────────────────────────
+
+/** Safe method descriptor for PaymentTreasury.createPayment. */
+export const createPaymentDescriptor: SafeMethodDescriptor<CreatePaymentInput> = {
+  validator: createPaymentValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "createPayment",
+  toArgs: (input) => [
+    input.paymentId, input.buyerId, input.itemId, input.paymentToken,
+    input.amount, input.expiration,
+    [...input.lineItems] as { typeId: Hex; amount: bigint }[],
+    [...input.externalFees] as { feeType: Hex; feeAmount: bigint }[],
+  ],
+};
+
+/** Safe method descriptor for PaymentTreasury.createPaymentBatch. */
+export const createPaymentBatchDescriptor: SafeMethodDescriptor<CreatePaymentBatchInput> = {
+  validator: createPaymentBatchValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "createPaymentBatch",
+  toArgs: (input) => [
+    [...input.paymentIds], [...input.buyerIds], [...input.itemIds],
+    [...input.paymentTokens], [...input.amounts], [...input.expirations],
+    input.lineItemsArray.map((li) => [...li]) as { typeId: Hex; amount: bigint }[][],
+    input.externalFeesArray.map((ef) => [...ef]) as { feeType: Hex; feeAmount: bigint }[][],
+  ],
+};
+
+/** Safe method descriptor for PaymentTreasury.confirmPayment. */
+export const confirmPaymentDescriptor: SafeMethodDescriptor<ConfirmPaymentInput> = {
+  validator: confirmPaymentValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "confirmPayment",
+  toArgs: (input) => [input.paymentId, input.buyerAddress],
+};
+
+/** Safe method descriptor for PaymentTreasury.confirmPaymentBatch. */
+export const confirmPaymentBatchDescriptor: SafeMethodDescriptor<ConfirmPaymentBatchInput> = {
+  validator: confirmPaymentBatchValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "confirmPaymentBatch",
+  toArgs: (input) => [[...input.paymentIds], [...input.buyerAddresses]],
+};
+
+/** Safe method descriptor for PaymentTreasury.processCryptoPayment. */
+export const processCryptoPaymentDescriptor: SafeMethodDescriptor<ProcessCryptoPaymentInput> = {
+  validator: processCryptoPaymentValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "processCryptoPayment",
+  toArgs: (input) => [
+    input.paymentId, input.itemId, input.buyerAddress, input.paymentToken, input.amount,
+    [...input.lineItems] as { typeId: Hex; amount: bigint }[],
+    [...input.externalFees] as { feeType: Hex; feeAmount: bigint }[],
+  ],
+};
+
+/** Safe method descriptor for PaymentTreasury.cancelPayment. */
+export const cancelPaymentDescriptor: SafeMethodDescriptor<CancelPaymentInput> = {
+  validator: cancelPaymentValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "cancelPayment",
+  toArgs: (input) => [input.paymentId],
+};
+
+/** Safe method descriptor for PaymentTreasury.withdraw. */
+export const ptWithdrawDescriptor: SafeMethodDescriptor<PtWithdrawInput> = {
+  validator: ptWithdrawValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "withdraw",
+  toArgs: () => [],
+};
+
+/** Safe method descriptor for PaymentTreasury.claimRefund. */
+export const ptClaimRefundDescriptor: SafeMethodDescriptor<PtClaimRefundInput> = {
+  validator: ptClaimRefundValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "claimRefund",
+  toArgs: (input) => [input.paymentId, input.refundAddress],
+};
+
+/** Safe method descriptor for PaymentTreasury.claimRefundSelf. */
+export const ptClaimRefundSelfDescriptor: SafeMethodDescriptor<PtClaimRefundSelfInput> = {
+  validator: ptClaimRefundSelfValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "claimRefund",
+  toArgs: (input) => [input.paymentId],
+};
+
+/** Safe method descriptor for PaymentTreasury.claimExpiredFunds. */
+export const ptClaimExpiredFundsDescriptor: SafeMethodDescriptor<PtClaimExpiredFundsInput> = {
+  validator: ptClaimExpiredFundsValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "claimExpiredFunds",
+  toArgs: () => [],
+};
+
+/** Safe method descriptor for PaymentTreasury.disburseFees. */
+export const ptDisburseFeesDescriptor: SafeMethodDescriptor<PtDisburseFeesInput> = {
+  validator: ptDisburseFeesValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "disburseFees",
+  toArgs: () => [],
+};
+
+/** Safe method descriptor for PaymentTreasury.claimNonGoalLineItems. */
+export const ptClaimNonGoalLineItemsDescriptor: SafeMethodDescriptor<PtClaimNonGoalLineItemsInput> = {
+  validator: ptClaimNonGoalLineItemsValidator,
+  abi: PAYMENT_TREASURY_ABI,
+  functionName: "claimNonGoalLineItems",
+  toArgs: (input) => [input.token],
 };

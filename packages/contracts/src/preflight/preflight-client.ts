@@ -14,14 +14,16 @@ import type {
 import type {
   PreflightOptions,
   PreflightResult,
+  SafeResult,
   ResolvedPreflightOptions,
   PreflightContext,
   MethodValidator,
 } from "./types.js";
 import { runPreflight } from "./pipeline.js";
 import { createStateReader } from "./state-reader.js";
-import { createCampaignValidator } from "./validators/campaign-info-factory.js";
-import { deployValidator, type DeployInput } from "./validators/treasury-factory.js";
+import { createSafeFn } from "./safe.js";
+import { createCampaignValidator, createCampaignDescriptor } from "./validators/campaign-info-factory.js";
+import { deployValidator, deployDescriptor, type DeployInput } from "./validators/treasury-factory.js";
 import {
   createPaymentValidator,
   createPaymentBatchValidator,
@@ -35,6 +37,18 @@ import {
   ptClaimExpiredFundsValidator,
   ptDisburseFeesValidator,
   ptClaimNonGoalLineItemsValidator,
+  createPaymentDescriptor,
+  createPaymentBatchDescriptor,
+  confirmPaymentDescriptor,
+  confirmPaymentBatchDescriptor,
+  processCryptoPaymentDescriptor,
+  cancelPaymentDescriptor,
+  ptWithdrawDescriptor,
+  ptClaimRefundDescriptor,
+  ptClaimRefundSelfDescriptor,
+  ptClaimExpiredFundsDescriptor,
+  ptDisburseFeesDescriptor,
+  ptClaimNonGoalLineItemsDescriptor,
   type CreatePaymentInput,
   type CreatePaymentBatchInput,
   type ConfirmPaymentInput,
@@ -55,12 +69,21 @@ import {
   aonWithdrawValidator,
   aonClaimRefundValidator,
   aonDisburseFeesValidator,
+  removeRewardValidator,
+  aonPledgeForARewardDescriptor,
+  aonPledgeWithoutARewardDescriptor,
+  addRewardsDescriptor,
+  aonWithdrawDescriptor,
+  aonClaimRefundDescriptor,
+  aonDisburseFeesDescriptor,
+  aonRemoveRewardDescriptor,
   type AonPledgeForARewardInput,
   type AonPledgeWithoutARewardInput,
   type AddRewardsInput,
   type AonWithdrawInput,
   type AonClaimRefundInput,
   type AonDisburseFeesInput,
+  type RemoveRewardInput,
 } from "./validators/all-or-nothing.js";
 import {
   configureTreasuryValidator,
@@ -71,6 +94,18 @@ import {
   kwrClaimTipValidator,
   kwrClaimFundValidator,
   kwrDisburseFeesValidator,
+  approveWithdrawalValidator,
+  configureTreasuryDescriptor,
+  kwrPledgeForARewardDescriptor,
+  kwrPledgeWithoutARewardDescriptor,
+  kwrAddRewardsDescriptor,
+  setFeeAndPledgeDescriptor,
+  kwrClaimRefundDescriptor,
+  kwrClaimTipDescriptor,
+  kwrClaimFundDescriptor,
+  kwrDisburseFeesDescriptor,
+  kwrRemoveRewardDescriptor,
+  approveWithdrawalDescriptor,
   type ConfigureTreasuryInput,
   type KwrPledgeForARewardInput,
   type KwrPledgeWithoutARewardInput,
@@ -79,6 +114,7 @@ import {
   type KwrClaimTipInput,
   type KwrClaimFundInput,
   type KwrDisburseFeesInput,
+  type ApproveWithdrawalInput,
 } from "./validators/keep-whats-raised.js";
 
 // ─── Config ────────────────────────────────────────────────────────────────────
@@ -101,6 +137,7 @@ export interface PreflightCampaignInfoFactoryEntity {
   createCampaign: {
     (params: CreateCampaignParams): Promise<Hex>;
     preflight(params: CreateCampaignParams, options?: PreflightOptions): Promise<PreflightResult<CreateCampaignParams>>;
+    safe(params: CreateCampaignParams, options?: PreflightOptions): Promise<SafeResult>;
   };
   identifierToCampaignInfo(identifierHash: Hex): Promise<Address>;
   isValidCampaignInfo(campaignInfo: Address): Promise<boolean>;
@@ -115,6 +152,7 @@ export interface PreflightTreasuryFactoryEntity {
   deploy: {
     (platformHash: Hex, infoAddress: Address, implementationId: bigint): Promise<Hex>;
     preflight(input: DeployInput, options?: PreflightOptions): Promise<PreflightResult<DeployInput>>;
+    safe(input: DeployInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   registerTreasuryImplementation(platformHash: Hex, implementationId: bigint, implementation: Address): Promise<Hex>;
   approveTreasuryImplementation(platformHash: Hex, implementationId: bigint): Promise<Hex>;
@@ -127,50 +165,62 @@ export interface PreflightPaymentTreasuryEntity {
   createPayment: {
     (paymentId: Hex, buyerId: Hex, itemId: Hex, paymentToken: Address, amount: bigint, expiration: bigint, lineItems: readonly LineItem[], externalFees: readonly ExternalFees[]): Promise<Hex>;
     preflight(input: CreatePaymentInput, options?: PreflightOptions): Promise<PreflightResult<CreatePaymentInput>>;
+    safe(input: CreatePaymentInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   createPaymentBatch: {
     (paymentIds: readonly Hex[], buyerIds: readonly Hex[], itemIds: readonly Hex[], paymentTokens: readonly Address[], amounts: readonly bigint[], expirations: readonly bigint[], lineItemsArray: readonly (readonly LineItem[])[], externalFeesArray: readonly (readonly ExternalFees[])[]): Promise<Hex>;
     preflight(input: CreatePaymentBatchInput, options?: PreflightOptions): Promise<PreflightResult<CreatePaymentBatchInput>>;
+    safe(input: CreatePaymentBatchInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   confirmPayment: {
     (paymentId: Hex, buyerAddress: Address): Promise<Hex>;
     preflight(input: ConfirmPaymentInput, options?: PreflightOptions): Promise<PreflightResult<ConfirmPaymentInput>>;
+    safe(input: ConfirmPaymentInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   confirmPaymentBatch: {
     (paymentIds: readonly Hex[], buyerAddresses: readonly Address[]): Promise<Hex>;
     preflight(input: ConfirmPaymentBatchInput, options?: PreflightOptions): Promise<PreflightResult<ConfirmPaymentBatchInput>>;
+    safe(input: ConfirmPaymentBatchInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   processCryptoPayment: {
     (paymentId: Hex, itemId: Hex, buyerAddress: Address, paymentToken: Address, amount: bigint, lineItems: readonly LineItem[], externalFees: readonly ExternalFees[]): Promise<Hex>;
     preflight(input: ProcessCryptoPaymentInput, options?: PreflightOptions): Promise<PreflightResult<ProcessCryptoPaymentInput>>;
+    safe(input: ProcessCryptoPaymentInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   cancelPayment: {
     (paymentId: Hex): Promise<Hex>;
     preflight(input: CancelPaymentInput, options?: PreflightOptions): Promise<PreflightResult<CancelPaymentInput>>;
+    safe(input: CancelPaymentInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   withdraw: {
     (): Promise<Hex>;
     preflight(input: PtWithdrawInput, options?: PreflightOptions): Promise<PreflightResult<PtWithdrawInput>>;
+    safe(input: PtWithdrawInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   claimRefund: {
     (paymentId: Hex, refundAddress: Address): Promise<Hex>;
     preflight(input: PtClaimRefundInput, options?: PreflightOptions): Promise<PreflightResult<PtClaimRefundInput>>;
+    safe(input: PtClaimRefundInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   claimRefundSelf: {
     (paymentId: Hex): Promise<Hex>;
     preflight(input: PtClaimRefundSelfInput, options?: PreflightOptions): Promise<PreflightResult<PtClaimRefundSelfInput>>;
+    safe(input: PtClaimRefundSelfInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   claimExpiredFunds: {
     (): Promise<Hex>;
     preflight(input: PtClaimExpiredFundsInput, options?: PreflightOptions): Promise<PreflightResult<PtClaimExpiredFundsInput>>;
+    safe(input: PtClaimExpiredFundsInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   disburseFees: {
     (): Promise<Hex>;
     preflight(input: PtDisburseFeesInput, options?: PreflightOptions): Promise<PreflightResult<PtDisburseFeesInput>>;
+    safe(input: PtDisburseFeesInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   claimNonGoalLineItems: {
     (token: Address): Promise<Hex>;
     preflight(input: PtClaimNonGoalLineItemsInput, options?: PreflightOptions): Promise<PreflightResult<PtClaimNonGoalLineItemsInput>>;
+    safe(input: PtClaimNonGoalLineItemsInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   // Passthrough reads
   getplatformHash(): Promise<Hex>;
@@ -188,26 +238,37 @@ export interface PreflightAllOrNothingTreasuryEntity {
   pledgeForAReward: {
     (backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[]): Promise<Hex>;
     preflight(input: AonPledgeForARewardInput, options?: PreflightOptions): Promise<PreflightResult<AonPledgeForARewardInput>>;
+    safe(input: AonPledgeForARewardInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   pledgeWithoutAReward: {
     (backer: Address, pledgeToken: Address, pledgeAmount: bigint): Promise<Hex>;
     preflight(input: AonPledgeWithoutARewardInput, options?: PreflightOptions): Promise<PreflightResult<AonPledgeWithoutARewardInput>>;
+    safe(input: AonPledgeWithoutARewardInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   addRewards: {
     (rewardNames: readonly Hex[], rewards: readonly TieredReward[]): Promise<Hex>;
     preflight(input: AddRewardsInput, options?: PreflightOptions): Promise<PreflightResult<AddRewardsInput>>;
+    safe(input: AddRewardsInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   withdraw: {
     (): Promise<Hex>;
     preflight(input: AonWithdrawInput, options?: PreflightOptions): Promise<PreflightResult<AonWithdrawInput>>;
+    safe(input: AonWithdrawInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   claimRefund: {
     (tokenId: bigint): Promise<Hex>;
     preflight(input: AonClaimRefundInput, options?: PreflightOptions): Promise<PreflightResult<AonClaimRefundInput>>;
+    safe(input: AonClaimRefundInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   disburseFees: {
     (): Promise<Hex>;
     preflight(input: AonDisburseFeesInput, options?: PreflightOptions): Promise<PreflightResult<AonDisburseFeesInput>>;
+    safe(input: AonDisburseFeesInput, options?: PreflightOptions): Promise<SafeResult>;
+  };
+  removeReward: {
+    (rewardName: Hex): Promise<Hex>;
+    preflight(input: RemoveRewardInput, options?: PreflightOptions): Promise<PreflightResult<RemoveRewardInput>>;
+    safe(input: RemoveRewardInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   // Passthrough reads
   getRaisedAmount(): Promise<bigint>;
@@ -223,38 +284,57 @@ export interface PreflightKeepWhatsRaisedTreasuryEntity {
   configureTreasury: {
     (config: KeepWhatsRaisedConfig, campaignData: CampaignData, feeKeys: KeepWhatsRaisedFeeKeys, feeValues: KeepWhatsRaisedFeeValues): Promise<Hex>;
     preflight(input: ConfigureTreasuryInput, options?: PreflightOptions): Promise<PreflightResult<ConfigureTreasuryInput>>;
+    safe(input: ConfigureTreasuryInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   pledgeForAReward: {
     (pledgeId: Hex, backer: Address, pledgeToken: Address, tip: bigint, rewardNames: readonly Hex[]): Promise<Hex>;
     preflight(input: KwrPledgeForARewardInput, options?: PreflightOptions): Promise<PreflightResult<KwrPledgeForARewardInput>>;
+    safe(input: KwrPledgeForARewardInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   pledgeWithoutAReward: {
     (pledgeId: Hex, backer: Address, pledgeToken: Address, pledgeAmount: bigint, tip: bigint): Promise<Hex>;
     preflight(input: KwrPledgeWithoutARewardInput, options?: PreflightOptions): Promise<PreflightResult<KwrPledgeWithoutARewardInput>>;
+    safe(input: KwrPledgeWithoutARewardInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   addRewards: {
     (rewardNames: readonly Hex[], rewards: readonly TieredReward[]): Promise<Hex>;
     preflight(input: AddRewardsInput, options?: PreflightOptions): Promise<PreflightResult<AddRewardsInput>>;
+    safe(input: AddRewardsInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   setFeeAndPledge: {
     (pledgeId: Hex, backer: Address, pledgeToken: Address, pledgeAmount: bigint, tip: bigint, fee: bigint, reward: readonly Hex[], isPledgeForAReward: boolean): Promise<Hex>;
     preflight(input: SetFeeAndPledgeInput, options?: PreflightOptions): Promise<PreflightResult<SetFeeAndPledgeInput>>;
+    safe(input: SetFeeAndPledgeInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   claimRefund: {
     (tokenId: bigint): Promise<Hex>;
     preflight(input: KwrClaimRefundInput, options?: PreflightOptions): Promise<PreflightResult<KwrClaimRefundInput>>;
+    safe(input: KwrClaimRefundInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   claimTip: {
     (): Promise<Hex>;
     preflight(input: KwrClaimTipInput, options?: PreflightOptions): Promise<PreflightResult<KwrClaimTipInput>>;
+    safe(input: KwrClaimTipInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   claimFund: {
     (): Promise<Hex>;
     preflight(input: KwrClaimFundInput, options?: PreflightOptions): Promise<PreflightResult<KwrClaimFundInput>>;
+    safe(input: KwrClaimFundInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   disburseFees: {
     (): Promise<Hex>;
     preflight(input: KwrDisburseFeesInput, options?: PreflightOptions): Promise<PreflightResult<KwrDisburseFeesInput>>;
+    safe(input: KwrDisburseFeesInput, options?: PreflightOptions): Promise<SafeResult>;
+  };
+  removeReward: {
+    (rewardName: Hex): Promise<Hex>;
+    preflight(input: RemoveRewardInput, options?: PreflightOptions): Promise<PreflightResult<RemoveRewardInput>>;
+    safe(input: RemoveRewardInput, options?: PreflightOptions): Promise<SafeResult>;
+  };
+  approveWithdrawal: {
+    (): Promise<Hex>;
+    preflight(input: ApproveWithdrawalInput, options?: PreflightOptions): Promise<PreflightResult<ApproveWithdrawalInput>>;
+    safe(input: ApproveWithdrawalInput, options?: PreflightOptions): Promise<SafeResult>;
   };
   // Passthrough reads
   getRaisedAmount(): Promise<bigint>;
@@ -334,7 +414,8 @@ function createPreflightFn<TInput>(
 
 /**
  * Creates a preflight-enabled Oak contracts client that wraps an existing client.
- * Write methods gain `.preflight()` for input validation before submission.
+ * Write methods gain `.preflight()` for input validation and `.safe()` for the
+ * full preflight → simulation → send pipeline.
  *
  * @param client - The base OakContractsClient to wrap
  * @param config - Preflight configuration (globalParamsAddress, default options)
@@ -346,9 +427,14 @@ function createPreflightFn<TInput>(
  * const preflight = createPreflightClient(oak, { globalParamsAddress: GP_ADDR });
  *
  * const factory = preflight.campaignInfoFactory(FACTORY_ADDR);
+ *
+ * // Validate only
  * const result = await factory.createCampaign.preflight(params);
- * if (result.ok) {
- *   const txHash = await factory.createCampaign(params);
+ *
+ * // Validate, simulate, and send in one call
+ * const safeResult = await factory.createCampaign.safe(params);
+ * if (safeResult.ok) {
+ *   console.log("Transaction sent:", safeResult.txHash);
  * }
  * ```
  */
@@ -369,6 +455,7 @@ export function createPreflightClient(
         (params: CreateCampaignParams) => entity.createCampaign(params),
         {
           preflight: createPreflightFn(client, address, createCampaignValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, createCampaignDescriptor, defaultOptions, addresses),
         },
       );
 
@@ -392,6 +479,7 @@ export function createPreflightClient(
           entity.deploy(platformHash, infoAddress, implementationId),
         {
           preflight: createPreflightFn(client, address, deployValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, deployDescriptor, defaultOptions, addresses),
         },
       );
 
@@ -413,6 +501,7 @@ export function createPreflightClient(
           entity.createPayment(paymentId, buyerId, itemId, paymentToken, amount, expiration, lineItems, externalFees),
         {
           preflight: createPreflightFn(client, address, createPaymentValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, createPaymentDescriptor, defaultOptions, addresses),
         },
       );
 
@@ -421,6 +510,7 @@ export function createPreflightClient(
           entity.createPaymentBatch(paymentIds, buyerIds, itemIds, paymentTokens, amounts, expirations, lineItemsArray, externalFeesArray),
         {
           preflight: createPreflightFn(client, address, createPaymentBatchValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, createPaymentBatchDescriptor, defaultOptions, addresses),
         },
       );
 
@@ -428,6 +518,7 @@ export function createPreflightClient(
         (paymentId: Hex, buyerAddress: Address) => entity.confirmPayment(paymentId, buyerAddress),
         {
           preflight: createPreflightFn(client, address, confirmPaymentValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, confirmPaymentDescriptor, defaultOptions, addresses),
         },
       );
 
@@ -436,6 +527,7 @@ export function createPreflightClient(
           entity.confirmPaymentBatch(paymentIds, buyerAddresses),
         {
           preflight: createPreflightFn(client, address, confirmPaymentBatchValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, confirmPaymentBatchDescriptor, defaultOptions, addresses),
         },
       );
 
@@ -444,42 +536,64 @@ export function createPreflightClient(
           entity.processCryptoPayment(paymentId, itemId, buyerAddress, paymentToken, amount, lineItems, externalFees),
         {
           preflight: createPreflightFn(client, address, processCryptoPaymentValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, processCryptoPaymentDescriptor, defaultOptions, addresses),
         },
       );
 
       const cancelPayment = Object.assign(
         (paymentId: Hex) => entity.cancelPayment(paymentId),
-        { preflight: createPreflightFn(client, address, cancelPaymentValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, cancelPaymentValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, cancelPaymentDescriptor, defaultOptions, addresses),
+        },
       );
 
       const withdraw = Object.assign(
         () => entity.withdraw(),
-        { preflight: createPreflightFn(client, address, ptWithdrawValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, ptWithdrawValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, ptWithdrawDescriptor, defaultOptions, addresses),
+        },
       );
 
       const claimRefund = Object.assign(
         (paymentId: Hex, refundAddress: Address) => entity.claimRefund(paymentId, refundAddress),
-        { preflight: createPreflightFn(client, address, ptClaimRefundValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, ptClaimRefundValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, ptClaimRefundDescriptor, defaultOptions, addresses),
+        },
       );
 
       const claimRefundSelf = Object.assign(
         (paymentId: Hex) => entity.claimRefundSelf(paymentId),
-        { preflight: createPreflightFn(client, address, ptClaimRefundSelfValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, ptClaimRefundSelfValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, ptClaimRefundSelfDescriptor, defaultOptions, addresses),
+        },
       );
 
       const claimExpiredFunds = Object.assign(
         () => entity.claimExpiredFunds(),
-        { preflight: createPreflightFn(client, address, ptClaimExpiredFundsValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, ptClaimExpiredFundsValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, ptClaimExpiredFundsDescriptor, defaultOptions, addresses),
+        },
       );
 
       const disburseFees = Object.assign(
         () => entity.disburseFees(),
-        { preflight: createPreflightFn(client, address, ptDisburseFeesValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, ptDisburseFeesValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, ptDisburseFeesDescriptor, defaultOptions, addresses),
+        },
       );
 
       const claimNonGoalLineItems = Object.assign(
         (token: Address) => entity.claimNonGoalLineItems(token),
-        { preflight: createPreflightFn(client, address, ptClaimNonGoalLineItemsValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, ptClaimNonGoalLineItemsValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, ptClaimNonGoalLineItemsDescriptor, defaultOptions, addresses),
+        },
       );
 
       return {
@@ -515,6 +629,7 @@ export function createPreflightClient(
           entity.pledgeForAReward(backer, pledgeToken, shippingFee, rewardNames),
         {
           preflight: createPreflightFn(client, address, aonPledgeForARewardValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, aonPledgeForARewardDescriptor, defaultOptions, addresses),
         },
       );
 
@@ -523,28 +638,49 @@ export function createPreflightClient(
           entity.pledgeWithoutAReward(backer, pledgeToken, pledgeAmount),
         {
           preflight: createPreflightFn(client, address, aonPledgeWithoutARewardValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, aonPledgeWithoutARewardDescriptor, defaultOptions, addresses),
         },
       );
 
       const addRewards = Object.assign(
         (rewardNames: readonly Hex[], rewards: readonly TieredReward[]) =>
           entity.addRewards(rewardNames, rewards),
-        { preflight: createPreflightFn(client, address, addRewardsValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, addRewardsValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, addRewardsDescriptor, defaultOptions, addresses),
+        },
       );
 
       const aonWithdraw = Object.assign(
         () => entity.withdraw(),
-        { preflight: createPreflightFn(client, address, aonWithdrawValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, aonWithdrawValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, aonWithdrawDescriptor, defaultOptions, addresses),
+        },
       );
 
       const claimRefund = Object.assign(
         (tokenId: bigint) => entity.claimRefund(tokenId),
-        { preflight: createPreflightFn(client, address, aonClaimRefundValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, aonClaimRefundValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, aonClaimRefundDescriptor, defaultOptions, addresses),
+        },
       );
 
       const disburseFees = Object.assign(
         () => entity.disburseFees(),
-        { preflight: createPreflightFn(client, address, aonDisburseFeesValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, aonDisburseFeesValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, aonDisburseFeesDescriptor, defaultOptions, addresses),
+        },
+      );
+
+      const aonRemoveReward = Object.assign(
+        (rewardName: Hex) => entity.removeReward(rewardName),
+        {
+          preflight: createPreflightFn(client, address, removeRewardValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, aonRemoveRewardDescriptor, defaultOptions, addresses),
+        },
       );
 
       return {
@@ -554,6 +690,7 @@ export function createPreflightClient(
         withdraw: aonWithdraw,
         claimRefund,
         disburseFees,
+        removeReward: aonRemoveReward,
         getRaisedAmount: () => entity.getRaisedAmount(),
         getLifetimeRaisedAmount: () => entity.getLifetimeRaisedAmount(),
         getRefundedAmount: () => entity.getRefundedAmount(),
@@ -572,6 +709,7 @@ export function createPreflightClient(
           entity.configureTreasury(config, campaignData, feeKeys, feeValues),
         {
           preflight: createPreflightFn(client, address, configureTreasuryValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, configureTreasuryDescriptor, defaultOptions, addresses),
         },
       );
 
@@ -580,6 +718,7 @@ export function createPreflightClient(
           entity.pledgeForAReward(pledgeId, backer, pledgeToken, tip, rewardNames),
         {
           preflight: createPreflightFn(client, address, kwrPledgeForARewardValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, kwrPledgeForARewardDescriptor, defaultOptions, addresses),
         },
       );
 
@@ -588,39 +727,74 @@ export function createPreflightClient(
           entity.pledgeWithoutAReward(pledgeId, backer, pledgeToken, pledgeAmount, tip),
         {
           preflight: createPreflightFn(client, address, kwrPledgeWithoutARewardValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, kwrPledgeWithoutARewardDescriptor, defaultOptions, addresses),
         },
       );
 
       const addRewards = Object.assign(
         (rewardNames: readonly Hex[], rewards: readonly TieredReward[]) =>
           entity.addRewards(rewardNames, rewards),
-        { preflight: createPreflightFn(client, address, addRewardsValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, addRewardsValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, kwrAddRewardsDescriptor, defaultOptions, addresses),
+        },
       );
 
       const setFeeAndPledge = Object.assign(
         (pledgeId: Hex, backer: Address, pledgeToken: Address, pledgeAmount: bigint, tip: bigint, fee: bigint, reward: readonly Hex[], isPledgeForAReward: boolean) =>
           entity.setFeeAndPledge(pledgeId, backer, pledgeToken, pledgeAmount, tip, fee, reward, isPledgeForAReward),
-        { preflight: createPreflightFn(client, address, setFeeAndPledgeValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, setFeeAndPledgeValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, setFeeAndPledgeDescriptor, defaultOptions, addresses),
+        },
       );
 
       const claimRefund = Object.assign(
         (tokenId: bigint) => entity.claimRefund(tokenId),
-        { preflight: createPreflightFn(client, address, kwrClaimRefundValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, kwrClaimRefundValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, kwrClaimRefundDescriptor, defaultOptions, addresses),
+        },
       );
 
       const claimTip = Object.assign(
         () => entity.claimTip(),
-        { preflight: createPreflightFn(client, address, kwrClaimTipValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, kwrClaimTipValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, kwrClaimTipDescriptor, defaultOptions, addresses),
+        },
       );
 
       const claimFund = Object.assign(
         () => entity.claimFund(),
-        { preflight: createPreflightFn(client, address, kwrClaimFundValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, kwrClaimFundValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, kwrClaimFundDescriptor, defaultOptions, addresses),
+        },
       );
 
       const disburseFees = Object.assign(
         () => entity.disburseFees(),
-        { preflight: createPreflightFn(client, address, kwrDisburseFeesValidator, defaultOptions, addresses) },
+        {
+          preflight: createPreflightFn(client, address, kwrDisburseFeesValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, kwrDisburseFeesDescriptor, defaultOptions, addresses),
+        },
+      );
+
+      const kwrRemoveReward = Object.assign(
+        (rewardName: Hex) => entity.removeReward(rewardName),
+        {
+          preflight: createPreflightFn(client, address, removeRewardValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, kwrRemoveRewardDescriptor, defaultOptions, addresses),
+        },
+      );
+
+      const approveWithdrawal = Object.assign(
+        () => entity.approveWithdrawal(),
+        {
+          preflight: createPreflightFn(client, address, approveWithdrawalValidator, defaultOptions, addresses),
+          safe: createSafeFn(client, address, approveWithdrawalDescriptor, defaultOptions, addresses),
+        },
       );
 
       return {
@@ -633,6 +807,8 @@ export function createPreflightClient(
         claimTip,
         claimFund,
         disburseFees,
+        removeReward: kwrRemoveReward,
+        approveWithdrawal,
         getRaisedAmount: () => entity.getRaisedAmount(),
         getLifetimeRaisedAmount: () => entity.getLifetimeRaisedAmount(),
         getRefundedAmount: () => entity.getRefundedAmount(),

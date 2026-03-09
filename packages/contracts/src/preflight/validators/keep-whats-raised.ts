@@ -1,4 +1,5 @@
 import type { Address, Hex } from "viem";
+import { KEEP_WHATS_RAISED_ABI } from "../../abis/keep-whats-raised.js";
 import type { CampaignData, KeepWhatsRaisedConfig, KeepWhatsRaisedFeeKeys, KeepWhatsRaisedFeeValues } from "../../types/index.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
@@ -14,9 +15,9 @@ import {
   checkTreasuryPaused,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
-import type { MethodValidator, PreflightIssue } from "../types.js";
-import { addRewardsValidator } from "./all-or-nothing.js";
-import type { AddRewardsInput } from "./all-or-nothing.js";
+import type { MethodValidator, SafeMethodDescriptor, PreflightIssue } from "../types.js";
+import { addRewardsValidator, removeRewardValidator } from "./all-or-nothing.js";
+import type { AddRewardsInput, RemoveRewardInput } from "./all-or-nothing.js";
 
 // ─── Input shapes ──────────────────────────────────────────────────────────────
 
@@ -435,4 +436,171 @@ export const kwrDisburseFeesValidator: MethodValidator<KwrDisburseFeesInput> = {
   stateful: [
     async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
   ],
+};
+
+// ─── Safe descriptors ─────────────────────────────────────────────────────────
+
+/** Safe method descriptor for KeepWhatsRaised.configureTreasury. */
+export const configureTreasuryDescriptor: SafeMethodDescriptor<ConfigureTreasuryInput> = {
+  validator: configureTreasuryValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "configureTreasury",
+  toArgs: (input) => [
+    {
+      minimumWithdrawalForFeeExemption: input.config.minimumWithdrawalForFeeExemption,
+      withdrawalDelay: input.config.withdrawalDelay,
+      refundDelay: input.config.refundDelay,
+      configLockPeriod: input.config.configLockPeriod,
+      isColombianCreator: input.config.isColombianCreator,
+    },
+    {
+      launchTime: input.campaignData.launchTime,
+      deadline: input.campaignData.deadline,
+      goalAmount: input.campaignData.goalAmount,
+      currency: input.campaignData.currency,
+    },
+    {
+      flatFeeKey: input.feeKeys.flatFeeKey,
+      cumulativeFlatFeeKey: input.feeKeys.cumulativeFlatFeeKey,
+      grossPercentageFeeKeys: [...input.feeKeys.grossPercentageFeeKeys],
+    },
+    {
+      flatFeeValue: input.feeValues.flatFeeValue,
+      cumulativeFlatFeeValue: input.feeValues.cumulativeFlatFeeValue,
+      grossPercentageFeeValues: [...input.feeValues.grossPercentageFeeValues],
+    },
+  ],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.pledgeForAReward. */
+export const kwrPledgeForARewardDescriptor: SafeMethodDescriptor<KwrPledgeForARewardInput> = {
+  validator: kwrPledgeForARewardValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "pledgeForAReward",
+  toArgs: (input) => [input.pledgeId, input.backer, input.pledgeToken, input.tip, [...input.rewardNames]],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.pledgeWithoutAReward. */
+export const kwrPledgeWithoutARewardDescriptor: SafeMethodDescriptor<KwrPledgeWithoutARewardInput> = {
+  validator: kwrPledgeWithoutARewardValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "pledgeWithoutAReward",
+  toArgs: (input) => [input.pledgeId, input.backer, input.pledgeToken, input.pledgeAmount, input.tip],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.addRewards (uses KWR ABI). */
+export const kwrAddRewardsDescriptor: SafeMethodDescriptor<AddRewardsInput> = {
+  validator: addRewardsValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "addRewards",
+  toArgs: (input) => [
+    [...input.rewardNames],
+    input.rewards.map((r) => ({
+      rewardValue: r.rewardValue,
+      isRewardTier: r.isRewardTier,
+      itemId: [...r.itemId],
+      itemValue: [...r.itemValue],
+      itemQuantity: [...r.itemQuantity],
+    })),
+  ],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.setFeeAndPledge. */
+export const setFeeAndPledgeDescriptor: SafeMethodDescriptor<SetFeeAndPledgeInput> = {
+  validator: setFeeAndPledgeValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "setFeeAndPledge",
+  toArgs: (input) => [
+    input.pledgeId, input.backer, input.pledgeToken, input.pledgeAmount,
+    input.tip, input.fee, [...input.reward], input.isPledgeForAReward,
+  ],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.claimRefund. */
+export const kwrClaimRefundDescriptor: SafeMethodDescriptor<KwrClaimRefundInput> = {
+  validator: kwrClaimRefundValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "claimRefund",
+  toArgs: (input) => [input.tokenId],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.claimTip. */
+export const kwrClaimTipDescriptor: SafeMethodDescriptor<KwrClaimTipInput> = {
+  validator: kwrClaimTipValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "claimTip",
+  toArgs: () => [],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.claimFund. */
+export const kwrClaimFundDescriptor: SafeMethodDescriptor<KwrClaimFundInput> = {
+  validator: kwrClaimFundValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "claimFund",
+  toArgs: () => [],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.disburseFees. */
+export const kwrDisburseFeesDescriptor: SafeMethodDescriptor<KwrDisburseFeesInput> = {
+  validator: kwrDisburseFeesValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "disburseFees",
+  toArgs: () => [],
+};
+
+// ─── removeReward (re-export shared validator, KWR-specific descriptor) ────────
+
+export { removeRewardValidator } from "./all-or-nothing.js";
+export type { RemoveRewardInput } from "./all-or-nothing.js";
+
+/** Safe method descriptor for KeepWhatsRaised.removeReward (uses KWR ABI). */
+export const kwrRemoveRewardDescriptor: SafeMethodDescriptor<RemoveRewardInput> = {
+  validator: removeRewardValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "removeReward",
+  toArgs: (input) => [input.rewardName],
+};
+
+// ─── approveWithdrawal ────────────────────────────────────────────────────────
+
+/** Input shape for KeepWhatsRaised.approveWithdrawal preflight. */
+export type ApproveWithdrawalInput = Record<string, never>;
+
+/**
+ * Preflight validator for KeepWhatsRaised.approveWithdrawal.
+ * Warns if already approved (idempotent but may be unintentional) or paused.
+ */
+export const approveWithdrawalValidator: MethodValidator<ApproveWithdrawalInput> = {
+  structural: [],
+  semantic: [],
+  stateful: [
+    async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
+    async (_input, ctx) => {
+      const approved = await ctx.stateReader.getWithdrawalApprovalStatus(ctx.contractAddress);
+      if (approved === null) {
+        return [
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not read withdrawal approval status."),
+        ];
+      }
+      if (approved) {
+        return [
+          createIssue(
+            codes.KWR_WITHDRAWAL_ALREADY_APPROVED,
+            "warn",
+            "Withdrawal has already been approved. Calling approveWithdrawal again is a no-op.",
+            { suggestion: "Verify this call is intentional." },
+          ),
+        ];
+      }
+      return [];
+    },
+  ],
+};
+
+/** Safe method descriptor for KeepWhatsRaised.approveWithdrawal. */
+export const approveWithdrawalDescriptor: SafeMethodDescriptor<ApproveWithdrawalInput> = {
+  validator: approveWithdrawalValidator,
+  abi: KEEP_WHATS_RAISED_ABI,
+  functionName: "approveWithdrawal",
+  toArgs: () => [],
 };

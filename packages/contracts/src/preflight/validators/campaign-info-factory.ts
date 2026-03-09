@@ -1,10 +1,11 @@
 import type { CreateCampaignParams } from "../../types/index.js";
+import { CAMPAIGN_INFO_FACTORY_ABI } from "../../abis/campaign-info-factory.js";
 import { BYTES32_ZERO, DATA_REGISTRY_KEYS } from "../../constants/index.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
 import { checkZeroAddress, checkArrayLengthParity, checkDuplicates, checkZeroBytes32 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
-import type { MethodValidator, PreflightContext, PreflightIssue } from "../types.js";
+import type { MethodValidator, SafeMethodDescriptor, PreflightContext, PreflightIssue } from "../types.js";
 
 /**
  * Preflight validator for CampaignInfoFactory.createCampaign.
@@ -266,4 +267,32 @@ export const createCampaignValidator: MethodValidator<CreateCampaignParams> = {
   ],
 
   normalize: (input) => normalizeAddresses({ ...input }, ["creator"]),
+};
+
+// ─── Safe descriptor ──────────────────────────────────────────────────────────
+
+/**
+ * Safe method descriptor for CampaignInfoFactory.createCampaign.
+ */
+export const createCampaignDescriptor: SafeMethodDescriptor<CreateCampaignParams> = {
+  validator: createCampaignValidator,
+  abi: CAMPAIGN_INFO_FACTORY_ABI,
+  functionName: "createCampaign",
+  toArgs: (input) => [
+    input.creator,
+    input.identifierHash,
+    [...input.selectedPlatformHash],
+    [...(input.platformDataKey ?? [])],
+    [...(input.platformDataValue ?? [])],
+    {
+      launchTime: input.campaignData.launchTime,
+      deadline: input.campaignData.deadline,
+      goalAmount: input.campaignData.goalAmount,
+      currency: input.campaignData.currency,
+    },
+    input.nftName,
+    input.nftSymbol,
+    input.nftImageURI,
+    input.contractURI,
+  ],
 };

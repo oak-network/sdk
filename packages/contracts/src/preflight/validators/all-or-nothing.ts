@@ -1,4 +1,5 @@
 import type { Address, Hex } from "viem";
+import { ALL_OR_NOTHING_ABI } from "../../abis/all-or-nothing.js";
 import { BYTES32_ZERO } from "../../constants/index.js";
 import type { TieredReward } from "../../types/index.js";
 import { createIssue } from "../issue.js";
@@ -15,7 +16,7 @@ import {
   checkTreasuryPaused,
 } from "../common/checks.js";
 import { normalizeAddresses } from "../normalizers.js";
-import type { MethodValidator, PreflightIssue } from "../types.js";
+import type { MethodValidator, SafeMethodDescriptor, PreflightIssue } from "../types.js";
 
 // ─── Input shapes ──────────────────────────────────────────────────────────────
 
@@ -306,4 +307,121 @@ export const aonDisburseFeesValidator: MethodValidator<AonDisburseFeesInput> = {
   stateful: [
     async (_input, ctx) => checkTreasuryPaused(ctx.stateReader, ctx.contractAddress, codes.SETTLEMENT_TREASURY_PAUSED),
   ],
+};
+
+// ─── Safe descriptors ─────────────────────────────────────────────────────────
+
+/** Safe method descriptor for AllOrNothing.pledgeForAReward. */
+export const aonPledgeForARewardDescriptor: SafeMethodDescriptor<AonPledgeForARewardInput> = {
+  validator: aonPledgeForARewardValidator,
+  abi: ALL_OR_NOTHING_ABI,
+  functionName: "pledgeForAReward",
+  toArgs: (input) => [input.backer, input.pledgeToken, input.shippingFee, [...input.rewardNames]],
+};
+
+/** Safe method descriptor for AllOrNothing.pledgeWithoutAReward. */
+export const aonPledgeWithoutARewardDescriptor: SafeMethodDescriptor<AonPledgeWithoutARewardInput> = {
+  validator: aonPledgeWithoutARewardValidator,
+  abi: ALL_OR_NOTHING_ABI,
+  functionName: "pledgeWithoutAReward",
+  toArgs: (input) => [input.backer, input.pledgeToken, input.pledgeAmount],
+};
+
+/** Safe method descriptor for addRewards (shared between AON and KWR). */
+export const addRewardsDescriptor: SafeMethodDescriptor<AddRewardsInput> = {
+  validator: addRewardsValidator,
+  abi: ALL_OR_NOTHING_ABI,
+  functionName: "addRewards",
+  toArgs: (input) => [
+    [...input.rewardNames],
+    input.rewards.map((r) => ({
+      rewardValue: r.rewardValue,
+      isRewardTier: r.isRewardTier,
+      itemId: [...r.itemId],
+      itemValue: [...r.itemValue],
+      itemQuantity: [...r.itemQuantity],
+    })),
+  ],
+};
+
+/** Safe method descriptor for AllOrNothing.withdraw. */
+export const aonWithdrawDescriptor: SafeMethodDescriptor<AonWithdrawInput> = {
+  validator: aonWithdrawValidator,
+  abi: ALL_OR_NOTHING_ABI,
+  functionName: "withdraw",
+  toArgs: () => [],
+};
+
+/** Safe method descriptor for AllOrNothing.claimRefund. */
+export const aonClaimRefundDescriptor: SafeMethodDescriptor<AonClaimRefundInput> = {
+  validator: aonClaimRefundValidator,
+  abi: ALL_OR_NOTHING_ABI,
+  functionName: "claimRefund",
+  toArgs: (input) => [input.tokenId],
+};
+
+/** Safe method descriptor for AllOrNothing.disburseFees. */
+export const aonDisburseFeesDescriptor: SafeMethodDescriptor<AonDisburseFeesInput> = {
+  validator: aonDisburseFeesValidator,
+  abi: ALL_OR_NOTHING_ABI,
+  functionName: "disburseFees",
+  toArgs: () => [],
+};
+
+// ─── removeReward (shared between AON and KWR) ────────────────────────────────
+
+/** Input shape for removeReward preflight (shared between AON and KWR). */
+export interface RemoveRewardInput {
+  rewardName: Hex;
+}
+
+/**
+ * Preflight validator for removeReward (shared between AON and KWR).
+ */
+export const removeRewardValidator: MethodValidator<RemoveRewardInput> = {
+  structural: [
+    (input) => {
+      if (input.rewardName === BYTES32_ZERO) {
+        return [
+          createIssue(codes.REWARD_ZERO_NAME, "error", "rewardName must not be zero bytes32.", {
+            fieldPath: "rewardName",
+            suggestion: "Provide a valid non-zero reward name.",
+          }),
+        ];
+      }
+      return [];
+    },
+  ],
+
+  semantic: [],
+
+  stateful: [
+    async (input, ctx) => {
+      const reward = await ctx.stateReader.getReward(ctx.contractAddress, input.rewardName);
+      if (reward === null) {
+        return [
+          createIssue(codes.COMMON_STATE_UNAVAILABLE, "warn", "Could not verify reward existence on-chain.", {
+            fieldPath: "rewardName",
+          }),
+        ];
+      }
+      if (reward.rewardValue === 0n) {
+        return [
+          createIssue(codes.REWARD_NOT_FOUND, "error", `Reward ${input.rewardName} does not exist.`, {
+            fieldPath: "rewardName",
+            suggestion: "Provide a reward name that has been added via addRewards.",
+          }),
+        ];
+      }
+      return [];
+    },
+  ],
+};
+
+/** Safe method descriptor for AllOrNothing.removeReward. */
+export const aonRemoveRewardDescriptor: SafeMethodDescriptor<RemoveRewardInput> = {
+  validator: removeRewardValidator,
+  abi: ALL_OR_NOTHING_ABI,
+  functionName: "removeReward",
+  toArgs: (input) => [input.rewardName],
 };

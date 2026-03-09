@@ -53,6 +53,40 @@ export type PreflightResult<T> =
   | { ok: true; normalized: T; warnings: PreflightIssue[] }
   | { ok: false; issues: PreflightIssue[]; normalized?: T };
 
+// ─── Safe types ───────────────────────────────────────────────────────────────
+
+/** Stage at which a safe() call failed. */
+export type SafeFailureStage = "preflight" | "simulation";
+
+/**
+ * Result of a safe() call.
+ *
+ * On success: preflight passed (possibly with warnings), simulation passed, transaction sent.
+ * On failure: identifies the stage and provides details.
+ *
+ * `MissingSignerError` is thrown (not returned) because it is a configuration error,
+ * not a runtime validation outcome.
+ */
+export type SafeResult =
+  | { ok: true; txHash: Hex; warnings: PreflightIssue[] }
+  | { ok: false; stage: "preflight"; issues: PreflightIssue[] }
+  | { ok: false; stage: "simulation"; reason: string; cause?: unknown };
+
+/**
+ * Descriptor bundling everything needed for a safe() call on a single method.
+ *
+ * @param validator - The existing preflight validator for the method.
+ * @param abi - The contract ABI (used for simulateContract).
+ * @param functionName - The Solidity function name.
+ * @param toArgs - Maps the structured preflight input to positional contract args.
+ */
+export interface SafeMethodDescriptor<TInput> {
+  validator: MethodValidator<TInput>;
+  abi: readonly unknown[];
+  functionName: string;
+  toArgs: (input: TInput) => readonly unknown[];
+}
+
 // ─── Internal types ────────────────────────────────────────────────────────────
 
 /** Resolved preflight options with all defaults applied. */

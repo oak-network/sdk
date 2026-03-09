@@ -1,8 +1,9 @@
 import type { Address, Hex } from "viem";
+import { TREASURY_FACTORY_ABI } from "../../abis/treasury-factory.js";
 import { createIssue } from "../issue.js";
 import * as codes from "../issue-codes.js";
 import { normalizeAddresses } from "../normalizers.js";
-import type { MethodValidator, PreflightIssue } from "../types.js";
+import type { MethodValidator, SafeMethodDescriptor, PreflightIssue } from "../types.js";
 
 /** Input shape for TreasuryFactory.deploy preflight. */
 export interface DeployInput {
@@ -114,4 +115,16 @@ export const deployValidator: MethodValidator<DeployInput> = {
   ],
 
   normalize: (input) => normalizeAddresses({ ...input }, ["infoAddress"]),
+};
+
+// ─── Safe descriptor ──────────────────────────────────────────────────────────
+
+/**
+ * Safe method descriptor for TreasuryFactory.deploy.
+ */
+export const deployDescriptor: SafeMethodDescriptor<DeployInput> = {
+  validator: deployValidator,
+  abi: TREASURY_FACTORY_ABI,
+  functionName: "deploy",
+  toArgs: (input) => [input.platformHash, input.infoAddress, input.implementationId],
 };

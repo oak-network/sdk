@@ -5,7 +5,12 @@ export type {
   PreflightOptions,
   PreflightIssue,
   PreflightResult,
+  SafeResult,
+  SafeFailureStage,
 } from "./types.js";
+
+// ─── Errors ───────────────────────────────────────────────────────────────────
+export { MissingSignerError } from "./errors.js";
 
 // ─── Issue codes ───────────────────────────────────────────────────────────────
 export * as IssueCodes from "./issue-codes.js";
@@ -45,6 +50,7 @@ export type {
   AonWithdrawInput,
   AonClaimRefundInput,
   AonDisburseFeesInput,
+  RemoveRewardInput,
 } from "./validators/all-or-nothing.js";
 export type {
   ConfigureTreasuryInput,
@@ -55,4 +61,5 @@ export type {
   KwrClaimTipInput,
   KwrClaimFundInput,
   KwrDisburseFeesInput,
+  ApproveWithdrawalInput,
 } from "./validators/keep-whats-raised.js";
