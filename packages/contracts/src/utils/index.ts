@@ -120,7 +120,7 @@ export function createWallet(
   provider: PublicClient,
   rpcUrl?: string,
 ): Wallet {
-  const transport = http(rpcUrl ?? (provider.transport as { url?: string }).url);
+  const transport = rpcUrl ? http(rpcUrl) : custom(provider as unknown as EIP1193Provider);
 
   const account = privateKeyToAccount(privateKey);
 
