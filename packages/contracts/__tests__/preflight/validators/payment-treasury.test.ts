@@ -84,9 +84,29 @@ describe("createPaymentValidator - structural", () => {
     }
   });
 
+  it("should fail on negative amount", async () => {
+    const input = validCreatePaymentInput();
+    input.amount = -1n;
+    const result = await runPreflight(input, createPaymentValidator, createCtx());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.PAYMENT_ZERO_AMOUNT)).toBe(true);
+    }
+  });
+
   it("should fail on zero line item amount", async () => {
     const input = validCreatePaymentInput();
     input.lineItems = [{ typeId: VALID_HASH, amount: 0n }];
+    const result = await runPreflight(input, createPaymentValidator, createCtx());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.PAYMENT_ZERO_LINE_ITEM_AMOUNT)).toBe(true);
+    }
+  });
+
+  it("should fail on negative line item amount", async () => {
+    const input = validCreatePaymentInput();
+    input.lineItems = [{ typeId: VALID_HASH, amount: -1n }];
     const result = await runPreflight(input, createPaymentValidator, createCtx());
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -119,6 +139,27 @@ describe("createPaymentBatchValidator - structural", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.issues.some((i) => i.code === codes.COMMON_ARRAY_LENGTH_MISMATCH)).toBe(true);
+    }
+  });
+
+  it("should fail on negative amount in batch item", async () => {
+    const result = await runPreflight(
+      {
+        paymentIds: [VALID_HASH],
+        buyerIds: [VALID_HASH],
+        itemIds: [VALID_HASH],
+        paymentTokens: [VALID_ADDR],
+        amounts: [-1n],
+        expirations: [9999999999n],
+        lineItemsArray: [[{ typeId: VALID_HASH, amount: 100n }]],
+        externalFeesArray: [[]],
+      },
+      createPaymentBatchValidator,
+      createCtx(),
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.PAYMENT_ZERO_AMOUNT)).toBe(true);
     }
   });
 
@@ -176,20 +217,35 @@ describe("confirmPaymentValidator - structural", () => {
 });
 
 describe("processCryptoPaymentValidator - structural", () => {
-  it("should fail on zero buyerAddress", async () => {
-    const input: ProcessCryptoPaymentInput = {
+  function validProcessCryptoInput(): ProcessCryptoPaymentInput {
+    return {
       paymentId: VALID_HASH,
       itemId: VALID_HASH,
-      buyerAddress: ZERO_ADDR,
+      buyerAddress: VALID_ADDR,
       paymentToken: VALID_ADDR,
       amount: 1000n,
       lineItems: [],
       externalFees: [],
     };
+  }
+
+  it("should fail on zero buyerAddress", async () => {
+    const input = validProcessCryptoInput();
+    input.buyerAddress = ZERO_ADDR;
     const result = await runPreflight(input, processCryptoPaymentValidator, createCtx());
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.issues.some((i) => i.code === codes.PAYMENT_ZERO_BUYER_ADDRESS)).toBe(true);
+    }
+  });
+
+  it("should fail on negative amount", async () => {
+    const input = validProcessCryptoInput();
+    input.amount = -1n;
+    const result = await runPreflight(input, processCryptoPaymentValidator, createCtx());
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((i) => i.code === codes.PAYMENT_ZERO_AMOUNT)).toBe(true);
     }
   });
 });

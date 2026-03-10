@@ -80,23 +80,23 @@ function checkCreatePaymentStructural(input: CreatePaymentInput, prefix: string 
   issues.push(...checkZeroBytes32(input.itemId, `${p}itemId`, codes.PAYMENT_ZERO_ITEM_ID));
   issues.push(...checkZeroAddress(input.paymentToken, `${p}paymentToken`, codes.PAYMENT_ZERO_TOKEN));
 
-  if (input.amount === 0n) {
+  if (input.amount <= 0n) {
     issues.push(
-      createIssue(codes.PAYMENT_ZERO_AMOUNT, "error", `${p}amount must not be zero.`, {
+      createIssue(codes.PAYMENT_ZERO_AMOUNT, "error", `${p}amount must be a positive uint256 value.`, {
         fieldPath: `${p}amount`,
-        suggestion: "Provide a non-zero payment amount.",
+        suggestion: "Provide a positive payment amount.",
       }),
     );
   }
 
   for (let i = 0; i < input.lineItems.length; i++) {
-    if (input.lineItems[i].amount === 0n) {
+    if (input.lineItems[i].amount <= 0n) {
       issues.push(
         createIssue(
           codes.PAYMENT_ZERO_LINE_ITEM_AMOUNT,
           "error",
-          `${p}lineItems[${i}].amount must not be zero.`,
-          { fieldPath: `${p}lineItems[${i}].amount`, suggestion: "Set a non-zero amount for each line item." },
+          `${p}lineItems[${i}].amount must be a positive uint256 value.`,
+          { fieldPath: `${p}lineItems[${i}].amount`, suggestion: "Set a positive amount for each line item." },
         ),
       );
     }
@@ -476,22 +476,22 @@ export const processCryptoPaymentValidator: MethodValidator<ProcessCryptoPayment
       issues.push(...checkZeroAddress(input.paymentToken, "paymentToken", codes.PAYMENT_ZERO_TOKEN));
       issues.push(...checkAddressChecksum(input, ["buyerAddress", "paymentToken"], ctx.options.mode === "normalize"));
 
-      if (input.amount === 0n) {
+      if (input.amount <= 0n) {
         issues.push(
-          createIssue(codes.PAYMENT_ZERO_AMOUNT, "error", "amount must not be zero.", {
+          createIssue(codes.PAYMENT_ZERO_AMOUNT, "error", "amount must be a positive uint256 value.", {
             fieldPath: "amount",
-            suggestion: "Provide a non-zero payment amount.",
+            suggestion: "Provide a positive payment amount.",
           }),
         );
       }
 
       for (let i = 0; i < input.lineItems.length; i++) {
-        if (input.lineItems[i].amount === 0n) {
+        if (input.lineItems[i].amount <= 0n) {
           issues.push(
             createIssue(
               codes.PAYMENT_ZERO_LINE_ITEM_AMOUNT,
               "error",
-              `lineItems[${i}].amount must not be zero.`,
+              `lineItems[${i}].amount must be a positive uint256 value.`,
               { fieldPath: `lineItems[${i}].amount` },
             ),
           );
