@@ -5,9 +5,9 @@ import type { TieredReward } from "../../types/structs";
 
 /**
  * Builds read methods for an AllOrNothing treasury contract instance.
- * @param address - Contract address
- * @param publicClient - Viem PublicClient for reads
- * @returns AllOrNothingReads
+ * @param address - Deployed AllOrNothing contract address
+ * @param publicClient - Viem PublicClient used to call readContract
+ * @returns Read methods bound to the given contract address
  */
 export function createAllOrNothingReads(
   address: Address,

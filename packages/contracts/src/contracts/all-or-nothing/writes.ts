@@ -6,10 +6,10 @@ import type { TieredReward } from "../../types/structs";
 
 /**
  * Builds write methods for an AllOrNothing treasury contract instance.
- * @param address - Contract address
- * @param walletClient - Viem WalletClient for writes
- * @param chain - Chain for writeContract
- * @returns AllOrNothingWrites
+ * @param address - Deployed AllOrNothing contract address
+ * @param walletClient - Viem WalletClient used to call writeContract; must have an account attached
+ * @param chain - Chain passed to writeContract for EIP-1559 and replay protection
+ * @returns Write methods bound to the given contract address
  */
 export function createAllOrNothingWrites(
   address: Address,

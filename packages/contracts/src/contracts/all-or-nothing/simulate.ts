@@ -7,11 +7,13 @@ import type { AllOrNothingSimulate } from "./types";
 
 /**
  * Builds simulate methods for AllOrNothing write calls.
- * @param address - Contract address
- * @param publicClient - Viem PublicClient for simulateContract
- * @param walletClient - WalletClient (for account)
- * @param chain - Chain for simulateContract
- * @returns AllOrNothingSimulate
+ * Each method calls simulateContract against the current chain state and throws a typed
+ * SDK error on revert, decoded via parseContractError.
+ * @param address - Deployed AllOrNothing contract address
+ * @param publicClient - Viem PublicClient used to call simulateContract
+ * @param walletClient - Viem WalletClient used to resolve the account for simulation
+ * @param chain - Chain passed to simulateContract
+ * @returns Simulation methods bound to the given contract address
  */
 export function createAllOrNothingSimulate(
   address: Address,

@@ -6,12 +6,12 @@ import { createAllOrNothingEvents } from "./events";
 import type { AllOrNothingTreasuryEntity } from "./types";
 
 /**
- * Creates an AllOrNothing treasury entity (reads, writes, simulate, events).
+ * Creates a fully composed AllOrNothing treasury entity combining reads, writes, simulate, and events.
  * @param address - Deployed AllOrNothing contract address
- * @param publicClient - Viem PublicClient for reads/simulate
- * @param walletClient - Viem WalletClient for writes
- * @param chain - Chain for writeContract/simulateContract
- * @returns AllOrNothingTreasuryEntity
+ * @param publicClient - Viem PublicClient used for reads and simulation
+ * @param walletClient - Viem WalletClient used for writes; must have an account attached
+ * @param chain - Chain passed to writeContract and simulateContract
+ * @returns Composed entity exposing all AllOrNothing methods under a single object
  */
 export function createAllOrNothingEntity(
   address: Address,
