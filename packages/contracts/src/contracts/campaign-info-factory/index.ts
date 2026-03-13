@@ -6,12 +6,12 @@ import { createCampaignInfoFactoryEvents } from "./events";
 import type { CampaignInfoFactoryEntity } from "./types";
 
 /**
- * Creates a CampaignInfoFactory entity (reads, writes, simulate, events).
+ * Creates a fully composed CampaignInfoFactory entity combining reads, writes, simulate, and events.
  * @param address - Deployed CampaignInfoFactory contract address
- * @param publicClient - Viem PublicClient for reads/simulate
- * @param walletClient - Viem WalletClient for writes
- * @param chain - Chain for writeContract/simulateContract
- * @returns CampaignInfoFactoryEntity
+ * @param publicClient - Viem PublicClient used for reads and simulation
+ * @param walletClient - Viem WalletClient used for writes; must have an account attached
+ * @param chain - Chain passed to writeContract and simulateContract
+ * @returns Composed entity exposing all CampaignInfoFactory methods under a single object
  */
 export function createCampaignInfoFactoryEntity(
   address: Address,

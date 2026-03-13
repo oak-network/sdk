@@ -4,9 +4,9 @@ import type { CampaignInfoFactoryReads } from "./types";
 
 /**
  * Builds read methods for a CampaignInfoFactory contract instance.
- * @param address - Contract address
- * @param publicClient - Viem PublicClient for reads
- * @returns CampaignInfoFactoryReads
+ * @param address - Deployed CampaignInfoFactory contract address
+ * @param publicClient - Viem PublicClient used to call readContract
+ * @returns Read methods bound to the given contract address
  */
 export function createCampaignInfoFactoryReads(
   address: Address,

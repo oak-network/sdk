@@ -6,10 +6,10 @@ import type { CreateCampaignParams } from "../../types/params";
 
 /**
  * Builds write methods for a CampaignInfoFactory contract instance.
- * @param address - Contract address
- * @param walletClient - Viem WalletClient for writes
- * @param chain - Chain for writeContract
- * @returns CampaignInfoFactoryWrites
+ * @param address - Deployed CampaignInfoFactory contract address
+ * @param walletClient - Viem WalletClient used to call writeContract; must have an account attached
+ * @param chain - Chain passed to writeContract for EIP-1559 and replay protection
+ * @returns Write methods bound to the given contract address
  */
 export function createCampaignInfoFactoryWrites(
   address: Address,
