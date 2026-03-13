@@ -5,12 +5,14 @@ import { parseContractError, getRevertData, simulateWithErrorDecode } from "../.
 import type { CampaignInfoSimulate } from "./types";
 
 /**
- * Builds simulate methods for a CampaignInfo contract instance.
- * @param address - Contract address
- * @param publicClient - Viem PublicClient for simulation
- * @param walletClient - Viem WalletClient (account source)
- * @param chain - Chain for simulateContract
- * @returns CampaignInfoSimulate
+ * Builds simulate methods for CampaignInfo write calls.
+ * Each method calls simulateContract against the current chain state and throws a typed
+ * SDK error on revert, decoded via parseContractError.
+ * @param address - Deployed CampaignInfo contract address
+ * @param publicClient - Viem PublicClient used to call simulateContract
+ * @param walletClient - Viem WalletClient used to resolve the account for simulation
+ * @param chain - Chain passed to simulateContract
+ * @returns Simulation methods bound to the given contract address
  */
 export function createCampaignInfoSimulate(
   address: Address,

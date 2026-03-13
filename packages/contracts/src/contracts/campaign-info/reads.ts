@@ -5,9 +5,9 @@ import type { LineItemTypeInfo, CampaignConfig } from "../../types/structs";
 
 /**
  * Builds read methods for a CampaignInfo contract instance.
- * @param address - Contract address
- * @param publicClient - Viem PublicClient for reads
- * @returns CampaignInfoReads
+ * @param address - Deployed CampaignInfo contract address
+ * @param publicClient - Viem PublicClient used to call readContract
+ * @returns Read methods bound to the given contract address
  */
 export function createCampaignInfoReads(
   address: Address,
