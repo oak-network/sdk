@@ -1,8 +1,9 @@
 import type { OakContractsClientConfig, SimpleOakContractsClientConfig } from "./types";
 
 /**
- * Type guard for simple client config (chainId + rpcUrl + privateKey).
- * Returns true iff config has that shape. Testable in isolation per SDK_ARCHITECTURE_V2.md.
+ * Type guard that narrows an {@link OakContractsClientConfig} to {@link SimpleOakContractsClientConfig}.
+ * @param config - Client config to test
+ * @returns True if config contains chainId, rpcUrl, and a 0x-prefixed privateKey; false otherwise
  */
 export function isSimpleConfig(
   config: OakContractsClientConfig,
