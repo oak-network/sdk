@@ -6,12 +6,12 @@ import { createGlobalParamsEvents } from "./events";
 import type { GlobalParamsEntity } from "./types";
 
 /**
- * Creates a GlobalParams entity (reads, writes, simulate, events).
+ * Creates a fully composed GlobalParams entity combining reads, writes, simulate, and events.
  * @param address - Deployed GlobalParams contract address
- * @param publicClient - Viem PublicClient for reads/simulate
- * @param walletClient - Viem WalletClient for writes
- * @param chain - Chain for writeContract/simulateContract
- * @returns GlobalParamsEntity
+ * @param publicClient - Viem PublicClient used for reads and simulation
+ * @param walletClient - Viem WalletClient used for writes; must have an account attached
+ * @param chain - Chain passed to writeContract and simulateContract
+ * @returns Composed entity exposing all GlobalParams methods under a single object
  */
 export function createGlobalParamsEntity(
   address: Address,

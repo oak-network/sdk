@@ -5,9 +5,9 @@ import type { LineItemTypeInfo } from "../../types/structs";
 
 /**
  * Builds read methods for a GlobalParams contract instance.
- * @param address - Contract address
- * @param publicClient - Viem PublicClient for reads
- * @returns GlobalParamsReads
+ * @param address - Deployed GlobalParams contract address
+ * @param publicClient - Viem PublicClient used to call readContract
+ * @returns Read methods bound to the given contract address
  */
 export function createGlobalParamsReads(
   address: Address,

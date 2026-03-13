@@ -1,3 +1,4 @@
+/** GlobalParams ABI — typed const, co-located with the contract that uses it. */
 export const GLOBAL_PARAMS_ABI = [
   { inputs: [], name: "GlobalParamsInvalidInput", type: "error" },
   {
@@ -439,4 +440,5 @@ export const GLOBAL_PARAMS_ABI = [
   },
 ] as const;
 
+/** Inferred TypeScript type of the GlobalParams ABI array. */
 export type GlobalParamsAbi = typeof GLOBAL_PARAMS_ABI;
