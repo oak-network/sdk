@@ -43,6 +43,7 @@ typings/
 dist/
 build/
 lib/
+!packages/contracts/src/lib/
 lib-cov/
 esm/
 cjs/
