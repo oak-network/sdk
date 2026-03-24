@@ -1,7 +1,6 @@
 /**
- * All protocol types are defined in client.ts and re-exported here.
- * Struct types (CampaignData, TieredReward, LineItem, etc.) live alongside
- * the entity interfaces so they can reference each other without circular imports.
+ * Cross-contract type definitions only — no logic, no client dependencies.
+ * structs.ts holds on-chain struct mirrors; params.ts holds SDK-level input types.
  */
-export * from "./client";
-export * from "./config-options";
+export * from "./structs";
+export * from "./params";

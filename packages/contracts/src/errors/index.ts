@@ -1,5 +1,5 @@
-export type { ContractErrorBase } from "./contract-error.js";
-export { parseContractError } from "./parse-contract-error.js";
+export type { ContractErrorBase } from "./base";
+export { parseContractError, getRevertData, simulateWithErrorDecode } from "./parse-contract-error";
 
 export {
   GlobalParamsCurrencyHasNoTokensError,
@@ -15,8 +15,8 @@ export {
   GlobalParamsPlatformNotListedError,
   GlobalParamsTokenNotInCurrencyError,
   GlobalParamsUnauthorizedError,
-} from "./global-params.js";
-export type { GlobalParamsError } from "./global-params.js";
+} from "./contracts/global-params";
+export type { GlobalParamsError } from "./contracts/global-params";
 
 export {
   CampaignInfoFactoryCampaignInitializationFailedError,
@@ -24,8 +24,8 @@ export {
   CampaignInfoFactoryInvalidInputError,
   CampaignInfoFactoryPlatformNotListedError,
   CampaignInfoInvalidTokenListError,
-} from "./campaign-info-factory.js";
-export type { CampaignInfoFactoryError } from "./campaign-info-factory.js";
+} from "./contracts/campaign-info-factory";
+export type { CampaignInfoFactoryError } from "./contracts/campaign-info-factory";
 
 export {
   CampaignInfoInvalidInputError,
@@ -34,8 +34,8 @@ export {
   CampaignInfoPlatformAlreadyApprovedError,
   CampaignInfoPlatformNotSelectedError,
   CampaignInfoUnauthorizedError,
-} from "./campaign-info.js";
-export type { CampaignInfoError } from "./campaign-info.js";
+} from "./contracts/campaign-info";
+export type { CampaignInfoError } from "./contracts/campaign-info";
 
 export {
   AllOrNothingFeeAlreadyDisbursedError,
@@ -48,8 +48,8 @@ export {
   AllOrNothingTransferFailedError,
   AllOrNothingUnAuthorizedError,
   TreasurySuccessConditionNotFulfilledError,
-} from "./all-or-nothing.js";
-export type { AllOrNothingError } from "./all-or-nothing.js";
+} from "./contracts/all-or-nothing";
+export type { AllOrNothingError } from "./contracts/all-or-nothing";
 
 export {
   KeepWhatsRaisedAlreadyClaimedError,
@@ -67,11 +67,11 @@ export {
   KeepWhatsRaisedRewardExistsError,
   KeepWhatsRaisedTokenNotAcceptedError,
   KeepWhatsRaisedUnAuthorizedError,
-} from "./keep-whats-raised.js";
-export type { KeepWhatsRaisedError } from "./keep-whats-raised.js";
+} from "./contracts/keep-whats-raised";
+export type { KeepWhatsRaisedError } from "./contracts/keep-whats-raised";
 
-export { ItemRegistryMismatchedArraysLengthError } from "./item-registry.js";
-export type { ItemRegistryError } from "./item-registry.js";
+export { ItemRegistryMismatchedArraysLengthError } from "./contracts/item-registry";
+export type { ItemRegistryError } from "./contracts/item-registry";
 
 export {
   PaymentTreasuryAlreadyWithdrawnError,
@@ -93,8 +93,8 @@ export {
   PaymentTreasurySuccessConditionNotFulfilledError,
   PaymentTreasuryTokenNotAcceptedError,
   PaymentTreasuryUnAuthorizedError,
-} from "./payment-treasury.js";
-export type { PaymentTreasuryError } from "./payment-treasury.js";
+} from "./contracts/payment-treasury";
+export type { PaymentTreasuryError } from "./contracts/payment-treasury";
 
 export {
   TreasuryFactoryImplementationNotSetError,
@@ -105,8 +105,8 @@ export {
   TreasuryFactoryTreasuryCreationFailedError,
   TreasuryFactoryTreasuryInitializationFailedError,
   TreasuryFactoryUnauthorizedError,
-} from "./treasury-factory.js";
-export type { TreasuryFactoryError } from "./treasury-factory.js";
+} from "./contracts/treasury-factory";
+export type { TreasuryFactoryError } from "./contracts/treasury-factory";
 
 export {
   AccessCheckerUnauthorizedError,
@@ -117,10 +117,10 @@ export {
   TreasuryCampaignInfoIsPausedError,
   TreasuryFeeNotDisbursedError,
   TreasuryTransferFailedError,
-} from "./shared.js";
-export type { SharedError } from "./shared.js";
+} from "./contracts/shared";
+export type { SharedError } from "./contracts/shared";
 
-import type { ContractErrorBase } from "./contract-error.js";
+import type { ContractErrorBase } from "./base";
 
 /**
  * Returns a human-readable recovery suggestion for a typed contract error, if available.

@@ -6,11 +6,12 @@ export * from "./types";
 export type {
   Account,
   Address,
+  Chain,
   Hex,
   PublicClient,
   WalletClient,
-} from "viem";
-export type { Chain } from "viem/chains";
+} from "./lib";
+export type { Wallet } from "./lib";
 
 export {
   createPublicClient,
@@ -24,8 +25,14 @@ export {
   parseUnits,
   isAddress,
   getAddress,
-} from "viem";
-export { mainnet, sepolia, goerli } from "viem/chains";
+  mainnet,
+  sepolia,
+  goerli,
+  createJsonRpcProvider,
+  createBrowserProvider,
+  getSigner,
+  createWallet,
+} from "./lib";
 
 export * from "./constants";
 export * from "./errors";
