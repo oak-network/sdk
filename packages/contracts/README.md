@@ -187,7 +187,7 @@ const deadline      = await ci.getDeadline();
 const goalAmount    = await ci.getGoalAmount();
 const currency      = await ci.getCampaignCurrency();
 const totalRaised   = await ci.getTotalRaisedAmount();
-const available     = await ci.getAvailableRaisedAmount();
+const available     = await ci.getTotalAvailableRaisedAmount();
 const isLocked      = await ci.isLocked();
 const isCancelled   = await ci.cancelled();
 const config        = await ci.getCampaignConfig();
@@ -311,22 +311,24 @@ await ir.addItemsBatch(itemIds, items);
 Contract revert errors can be decoded into typed SDK errors:
 
 ```typescript
-import { parseContractError } from "@oaknetwork/contracts";
+import { parseContractError, getRevertData } from "@oaknetwork/contracts";
 
 function handleError(err) {
-  // Walk the cause chain to find raw revert data
-  let current = err;
-  while (current) {
-    if (typeof current.data === "string" && current.data.startsWith("0x")) {
-      const parsed = parseContractError(current.data);
-      if (parsed) {
-        console.error("Reverted:", parsed.name);
-        console.error("Args:", parsed.args);
-        if (parsed.recoveryHint) console.error("Hint:", parsed.recoveryHint);
-        return;
-      }
-    }
-    current = current.cause;
+  // If the error is already a typed SDK error (thrown by simulate methods)
+  if (typeof err?.recoveryHint === "string") {
+    console.error("Reverted:", err.name);
+    console.error("Args:", err.args);
+    console.error("Hint:", err.recoveryHint);
+    return;
+  }
+  // Otherwise extract raw revert hex from the viem error chain and decode it
+  const revertData = getRevertData(err);
+  const parsed = parseContractError(revertData ?? "");
+  if (parsed) {
+    console.error("Reverted:", parsed.name);
+    console.error("Args:", parsed.args);
+    if (parsed.recoveryHint) console.error("Hint:", parsed.recoveryHint);
+    return;
   }
   console.error("Unknown error:", err.message);
 }
@@ -413,11 +415,6 @@ pnpm install
 # Build
 pnpm build
 
-# Run smoke test (edit addresses in test-example.mjs first)
-node test-example.mjs
-
 # Run unit tests
 pnpm test
 ```
-
-The `test-example.mjs` file at the package root contains runnable examples for all three contract groups (GlobalParams reads, CampaignInfoFactory, TreasuryFactory). Each section can be toggled by uncommenting the relevant block.
