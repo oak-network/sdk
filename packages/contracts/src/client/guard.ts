@@ -1,4 +1,4 @@
-import type { OakContractsClientConfig, SimpleOakContractsClientConfig } from "./types";
+import type { OakContractsClientConfig, SimpleOakContractsClientConfig, SimpleReadOnlyOakContractsClientConfig } from "./types";
 
 /**
  * Type guard that narrows an {@link OakContractsClientConfig} to {@link SimpleOakContractsClientConfig}.
@@ -41,4 +41,23 @@ export function isSimpleConfig(
   }
 
   return true;
+}
+
+/**
+ * Type guard that narrows an {@link OakContractsClientConfig} to {@link SimpleReadOnlyOakContractsClientConfig}.
+ * Matches configs that have chainId + rpcUrl but no privateKey, chain, provider, or signer.
+ * @param config - Client config to test
+ * @returns True if config is a read-only simple config (no signer)
+ */
+export function isReadOnlySimpleConfig(
+  config: OakContractsClientConfig,
+): config is SimpleReadOnlyOakContractsClientConfig {
+  return (
+    "chainId" in config &&
+    "rpcUrl" in config &&
+    !("privateKey" in config) &&
+    !("chain" in config) &&
+    !("provider" in config) &&
+    !("signer" in config)
+  );
 }
