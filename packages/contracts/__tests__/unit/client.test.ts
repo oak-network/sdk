@@ -1,19 +1,28 @@
 import { createOakContractsClient } from "../../src/client/create";
 import { buildClients } from "../../src/client/resolve";
 import { getChainFromId } from "../../src/utils/chain";
-import { createJsonRpcProvider, createWallet } from "../../src/lib/viem/provider";
+import {
+  createJsonRpcProvider,
+  createWallet,
+} from "../../src/lib/viem/provider";
 import { CHAIN_IDS } from "../../src/constants/chains";
-import type { PublicClient, WalletClient, Chain } from "../../src/lib";
 import type { OakContractsClientConfig } from "../../src/client/types";
+import { getTestConfig } from "../setup/test-client";
 
-const PK = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-const RPC = "https://rpc.example.com";
-const ADDR = "0x0000000000000000000000000000000000000001" as const;
+const cfg = getTestConfig();
+
+const PK = cfg.privateKey;
+const RPC = cfg.rpcUrl;
+const ADDR = cfg.addresses.globalParams;
 const chain = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
 
 describe("buildClients", () => {
   it("builds from simple config", () => {
-    const { chain: c, publicClient, walletClient } = buildClients(
+    const {
+      chain: c,
+      publicClient,
+      walletClient,
+    } = buildClients(
       { chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA, rpcUrl: RPC, privateKey: PK },
       { timeout: 30000 },
     );
@@ -23,8 +32,15 @@ describe("buildClients", () => {
   });
 
   it("builds read-only client (no privateKey)", () => {
-    const { chain: c, publicClient, walletClient } = buildClients(
-      { chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA, rpcUrl: RPC } as OakContractsClientConfig,
+    const {
+      chain: c,
+      publicClient,
+      walletClient,
+    } = buildClients(
+      {
+        chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+        rpcUrl: RPC,
+      } as OakContractsClientConfig,
       { timeout: 30000 },
     );
     expect(c.id).toBe(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
@@ -35,10 +51,11 @@ describe("buildClients", () => {
   it("builds from full config with Chain object", () => {
     const provider = createJsonRpcProvider(RPC, chain);
     const signer = createWallet(PK, RPC, chain);
-    const { chain: c, publicClient, walletClient } = buildClients(
-      { chain, provider, signer },
-      { timeout: 30000 },
-    );
+    const {
+      chain: c,
+      publicClient,
+      walletClient,
+    } = buildClients({ chain, provider, signer }, { timeout: 30000 });
     expect(c).toBe(chain);
     expect(publicClient).toBe(provider);
     expect(walletClient).toBe(signer);
@@ -114,8 +131,9 @@ describe("createOakContractsClient", () => {
       gasUsed: 21000n,
       logs: [{ topics: ["0xabc"], data: "0xdef" }],
     };
-    (client.publicClient as unknown as { waitForTransactionReceipt: jest.Mock }).waitForTransactionReceipt =
-      jest.fn().mockResolvedValue(mockReceipt);
+    (
+      client.publicClient as unknown as { waitForTransactionReceipt: jest.Mock }
+    ).waitForTransactionReceipt = jest.fn().mockResolvedValue(mockReceipt);
 
     const receipt = await client.waitForReceipt("0xdeadbeef");
     expect(receipt.blockNumber).toBe(123n);

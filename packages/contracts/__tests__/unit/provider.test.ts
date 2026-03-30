@@ -1,9 +1,17 @@
-import { createJsonRpcProvider, createWallet, createBrowserProvider, getSigner } from "../../src/lib/viem/provider";
+import {
+  createJsonRpcProvider,
+  createWallet,
+  createBrowserProvider,
+  getSigner,
+} from "../../src/lib/viem/provider";
 import { sepolia } from "../../src/lib/viem/index";
 import type { EIP1193Provider } from "viem";
+import { getTestConfig } from "../setup/test-client";
 
-const TEST_PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-const TEST_RPC_URL = "https://rpc.example.com";
+const cfg = getTestConfig();
+
+const TEST_PRIVATE_KEY = cfg.privateKey;
+const TEST_RPC_URL = cfg.rpcUrl;
 
 describe("createJsonRpcProvider", () => {
   it("returns a PublicClient with readContract method", () => {
@@ -48,7 +56,9 @@ describe("createBrowserProvider", () => {
 describe("getSigner", () => {
   it("returns a Wallet when accounts are available", async () => {
     const mockEthereum = {
-      request: jest.fn().mockResolvedValue(["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]),
+      request: jest
+        .fn()
+        .mockResolvedValue(["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]),
       on: jest.fn(),
       removeListener: jest.fn(),
     } as unknown as EIP1193Provider;
