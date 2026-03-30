@@ -1,6 +1,6 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { CAMPAIGN_INFO_ABI } from "./abi";
-import { requireAccount } from "../../utils/account";
+import { requireSigner, requireAccount } from "../../utils/account";
 import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
 import type { CampaignInfoSimulate } from "./types";
 
@@ -17,14 +17,14 @@ import type { CampaignInfoSimulate } from "./types";
 export function createCampaignInfoSimulate(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): CampaignInfoSimulate {
   const contract = { address, abi: CAMPAIGN_INFO_ABI } as const;
 
   return {
     async updateDeadline(deadline: bigint): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -36,7 +36,7 @@ export function createCampaignInfoSimulate(
       );
     },
     async updateGoalAmount(goalAmount: bigint): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -48,7 +48,7 @@ export function createCampaignInfoSimulate(
       );
     },
     async updateLaunchTime(launchTime: bigint): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -60,7 +60,7 @@ export function createCampaignInfoSimulate(
       );
     },
     async updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[]): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -72,7 +72,7 @@ export function createCampaignInfoSimulate(
       );
     },
     async mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -84,7 +84,7 @@ export function createCampaignInfoSimulate(
       );
     },
     async pauseCampaign(message: Hex): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -96,7 +96,7 @@ export function createCampaignInfoSimulate(
       );
     },
     async cancelCampaign(message: Hex): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,

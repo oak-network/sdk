@@ -17,7 +17,7 @@ import type { PaymentTreasuryEntity } from "./types";
 export function createPaymentTreasuryEntity(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): PaymentTreasuryEntity {
   return {

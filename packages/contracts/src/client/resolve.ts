@@ -1,7 +1,7 @@
 import type { PublicClient, WalletClient } from "../lib";
 import type { Chain } from "../lib";
 import { createJsonRpcProvider, createWallet } from "../lib";
-import { isSimpleConfig } from "./guard";
+import { isSimpleConfig, isReadOnlySimpleConfig } from "./guard";
 import { getChainFromId } from "../utils";
 import type {
   OakContractsClientConfig,
@@ -33,7 +33,13 @@ function resolveChain(chainIdOrChain: number | Chain): Chain {
 export function buildClients(
   config: OakContractsClientConfig,
   options: OakContractsClientOptions,
-): { chain: Chain; publicClient: PublicClient; walletClient: WalletClient } {
+): { chain: Chain; publicClient: PublicClient; walletClient: WalletClient | null } {
+  if (isReadOnlySimpleConfig(config)) {
+    const chain = getChainFromId(config.chainId);
+    const publicClient = createJsonRpcProvider(config.rpcUrl, chain, options.timeout);
+    return { chain, publicClient, walletClient: null };
+  }
+
   if (isSimpleConfig(config)) {
     const chain = getChainFromId(config.chainId);
     const publicClient = createJsonRpcProvider(config.rpcUrl, chain, options.timeout);

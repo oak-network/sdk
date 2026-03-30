@@ -16,7 +16,7 @@ import type { AllOrNothingTreasuryEntity } from "./types";
 export function createAllOrNothingEntity(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): AllOrNothingTreasuryEntity {
   return {

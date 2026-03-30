@@ -111,7 +111,11 @@ export interface PaymentData {
   externalFees: readonly ExternalFees[];
 }
 
-/** EIP-2612 permit parameters for off-chain token approvals. */
+/**
+ * EIP-2612 permit parameters for off-chain token approvals.
+ * Reserved for future use when permit-based flows are implemented.
+ * @internal
+ */
 export interface PermitParams {
   /** Token owner granting the permit. */
   owner: Address;
