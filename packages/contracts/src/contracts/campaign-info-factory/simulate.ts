@@ -4,6 +4,7 @@ import { requireSigner, requireAccount } from "../../utils/account";
 import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
 import type { CampaignInfoFactorySimulate } from "./types";
 import type { CreateCampaignParams } from "../../types/params";
+import type { CallSignerOptions } from "../../client/types";
 
 /**
  * Builds simulate methods for CampaignInfoFactory write calls.
@@ -24,8 +25,8 @@ export function createCampaignInfoFactorySimulate(
   const contract = { address, abi: CAMPAIGN_INFO_FACTORY_ABI } as const;
 
   return {
-    async createCampaign(params: CreateCampaignParams): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async createCampaign(params: CreateCampaignParams, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -52,8 +53,8 @@ export function createCampaignInfoFactorySimulate(
         }),
       );
     },
-    async updateImplementation(newImplementation: Address): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async updateImplementation(newImplementation: Address, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,

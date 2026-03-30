@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { PaymentData, LineItem, ExternalFees } from "../../types/structs";
+import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for PaymentTreasury. */
 export interface PaymentTreasuryReads {
@@ -35,6 +36,7 @@ export interface PaymentTreasuryWrites {
     expiration: bigint,
     lineItems: readonly LineItem[],
     externalFees: readonly ExternalFees[],
+    options?: CallSignerOptions,
   ): Promise<Hex>;
   /** Creates multiple payment records in a single transaction. */
   createPaymentBatch(
@@ -46,6 +48,7 @@ export interface PaymentTreasuryWrites {
     expirations: readonly bigint[],
     lineItemsArray: readonly (readonly LineItem[])[],
     externalFeesArray: readonly (readonly ExternalFees[])[],
+    options?: CallSignerOptions,
   ): Promise<Hex>;
   /** Processes a crypto payment, transferring tokens from the buyer on-chain. */
   processCryptoPayment(
@@ -56,31 +59,32 @@ export interface PaymentTreasuryWrites {
     amount: bigint,
     lineItems: readonly LineItem[],
     externalFees: readonly ExternalFees[],
+    options?: CallSignerOptions,
   ): Promise<Hex>;
   /** Cancels a pending payment and marks it as refundable. */
-  cancelPayment(paymentId: Hex): Promise<Hex>;
+  cancelPayment(paymentId: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Confirms a payment, marking funds as settled and triggering instant transfers. */
-  confirmPayment(paymentId: Hex, buyerAddress: Address): Promise<Hex>;
+  confirmPayment(paymentId: Hex, buyerAddress: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Confirms multiple payments in a single transaction. */
-  confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[]): Promise<Hex>;
+  confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[], options?: CallSignerOptions): Promise<Hex>;
   /** Disburses protocol and platform fees to their respective recipients. */
-  disburseFees(): Promise<Hex>;
+  disburseFees(options?: CallSignerOptions): Promise<Hex>;
   /** Withdraws settled raised funds to the campaign creator. */
-  withdraw(): Promise<Hex>;
+  withdraw(options?: CallSignerOptions): Promise<Hex>;
   /** Issues a refund for a cancelled payment to the specified refund address. */
-  claimRefund(paymentId: Hex, refundAddress: Address): Promise<Hex>;
+  claimRefund(paymentId: Hex, refundAddress: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Issues a refund for a cancelled payment directly to the caller. */
-  claimRefundSelf(paymentId: Hex): Promise<Hex>;
+  claimRefundSelf(paymentId: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Claims funds from payments that have passed their expiration timestamp. */
-  claimExpiredFunds(): Promise<Hex>;
+  claimExpiredFunds(options?: CallSignerOptions): Promise<Hex>;
   /** Claims line item amounts that do not count toward the funding goal. */
-  claimNonGoalLineItems(token: Address): Promise<Hex>;
+  claimNonGoalLineItems(token: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Pauses the treasury, halting payment processing; emits a pause message. */
-  pauseTreasury(message: Hex): Promise<Hex>;
+  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Unpauses the treasury, resuming normal operation; emits an unpause message. */
-  unpauseTreasury(message: Hex): Promise<Hex>;
+  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Cancels the treasury permanently; emits a cancellation message. */
-  cancelTreasury(message: Hex): Promise<Hex>;
+  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for PaymentTreasury write methods. */
@@ -95,6 +99,7 @@ export interface PaymentTreasurySimulate {
     expiration: bigint,
     lineItems: readonly LineItem[],
     externalFees: readonly ExternalFees[],
+    options?: CallSignerOptions,
   ): Promise<void>;
   /** Simulates createPaymentBatch; throws a typed error on revert. */
   createPaymentBatch(
@@ -106,6 +111,7 @@ export interface PaymentTreasurySimulate {
     expirations: readonly bigint[],
     lineItemsArray: readonly (readonly LineItem[])[],
     externalFeesArray: readonly (readonly ExternalFees[])[],
+    options?: CallSignerOptions,
   ): Promise<void>;
   /** Simulates processCryptoPayment; throws a typed error on revert. */
   processCryptoPayment(
@@ -116,31 +122,32 @@ export interface PaymentTreasurySimulate {
     amount: bigint,
     lineItems: readonly LineItem[],
     externalFees: readonly ExternalFees[],
+    options?: CallSignerOptions,
   ): Promise<void>;
   /** Simulates cancelPayment; throws a typed error on revert. */
-  cancelPayment(paymentId: Hex): Promise<void>;
+  cancelPayment(paymentId: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates confirmPayment; throws a typed error on revert. */
-  confirmPayment(paymentId: Hex, buyerAddress: Address): Promise<void>;
+  confirmPayment(paymentId: Hex, buyerAddress: Address, options?: CallSignerOptions): Promise<void>;
   /** Simulates confirmPaymentBatch; throws a typed error on revert. */
-  confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[]): Promise<void>;
+  confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[], options?: CallSignerOptions): Promise<void>;
   /** Simulates disburseFees; throws a typed error on revert. */
-  disburseFees(): Promise<void>;
+  disburseFees(options?: CallSignerOptions): Promise<void>;
   /** Simulates withdraw; throws a typed error on revert. */
-  withdraw(): Promise<void>;
+  withdraw(options?: CallSignerOptions): Promise<void>;
   /** Simulates claimRefund; throws a typed error on revert. */
-  claimRefund(paymentId: Hex, refundAddress: Address): Promise<void>;
+  claimRefund(paymentId: Hex, refundAddress: Address, options?: CallSignerOptions): Promise<void>;
   /** Simulates claimRefundSelf; throws a typed error on revert. */
-  claimRefundSelf(paymentId: Hex): Promise<void>;
+  claimRefundSelf(paymentId: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates claimExpiredFunds; throws a typed error on revert. */
-  claimExpiredFunds(): Promise<void>;
+  claimExpiredFunds(options?: CallSignerOptions): Promise<void>;
   /** Simulates claimNonGoalLineItems; throws a typed error on revert. */
-  claimNonGoalLineItems(token: Address): Promise<void>;
+  claimNonGoalLineItems(token: Address, options?: CallSignerOptions): Promise<void>;
   /** Simulates pauseTreasury; throws a typed error on revert. */
-  pauseTreasury(message: Hex): Promise<void>;
+  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates unpauseTreasury; throws a typed error on revert. */
-  unpauseTreasury(message: Hex): Promise<void>;
+  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates cancelTreasury; throws a typed error on revert. */
-  cancelTreasury(message: Hex): Promise<void>;
+  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for PaymentTreasury. */

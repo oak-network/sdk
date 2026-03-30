@@ -3,6 +3,7 @@ import { ITEM_REGISTRY_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
 import type { ItemRegistryWrites } from "./types";
 import type { Item } from "../../types/structs";
+import type { CallSignerOptions } from "../../client/types";
 
 /**
  * Builds write methods for an ItemRegistry contract instance.
@@ -19,8 +20,8 @@ export function createItemRegistryWrites(
   const contract = { address, abi: ITEM_REGISTRY_ABI } as const;
 
   return {
-    async addItem(itemId: Hex, item: Item): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async addItem(itemId: Hex, item: Item, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -39,8 +40,8 @@ export function createItemRegistryWrites(
         ],
       });
     },
-    async addItemsBatch(itemIds: readonly Hex[], items: readonly Item[]): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async addItemsBatch(itemIds: readonly Hex[], items: readonly Item[], options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,

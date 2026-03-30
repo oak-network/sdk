@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { LineItemTypeInfo } from "../../types/structs";
+import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for a GlobalParams contract instance. */
 export interface GlobalParamsReads {
@@ -36,69 +37,69 @@ export interface GlobalParamsReads {
 /** Write methods for a GlobalParams contract instance. */
 export interface GlobalParamsWrites {
   /** Enlists a new platform with admin address, fee percent, and adapter. */
-  enlistPlatform(platformHash: Hex, platformAdminAddress: Address, platformFeePercent: bigint, platformAdapter: Address): Promise<Hex>;
+  enlistPlatform(platformHash: Hex, platformAdminAddress: Address, platformFeePercent: bigint, platformAdapter: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Removes a previously enlisted platform. */
-  delistPlatform(platformBytes: Hex): Promise<Hex>;
+  delistPlatform(platformBytes: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the admin address for an enlisted platform. */
-  updatePlatformAdminAddress(platformBytes: Hex, platformAdminAddress: Address): Promise<Hex>;
+  updatePlatformAdminAddress(platformBytes: Hex, platformAdminAddress: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the claim delay for an enlisted platform. */
-  updatePlatformClaimDelay(platformBytes: Hex, claimDelay: bigint): Promise<Hex>;
+  updatePlatformClaimDelay(platformBytes: Hex, claimDelay: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the protocol admin address. */
-  updateProtocolAdminAddress(protocolAdminAddress: Address): Promise<Hex>;
+  updateProtocolAdminAddress(protocolAdminAddress: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the protocol fee percent. */
-  updateProtocolFeePercent(protocolFeePercent: bigint): Promise<Hex>;
+  updateProtocolFeePercent(protocolFeePercent: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Sets the adapter contract for a platform. */
-  setPlatformAdapter(platformBytes: Hex, platformAdapter: Address): Promise<Hex>;
+  setPlatformAdapter(platformBytes: Hex, platformAdapter: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Registers or updates a line item type for a platform. */
-  setPlatformLineItemType(platformHash: Hex, typeId: Hex, label: string, countsTowardGoal: boolean, applyProtocolFee: boolean, canRefund: boolean, instantTransfer: boolean): Promise<Hex>;
+  setPlatformLineItemType(platformHash: Hex, typeId: Hex, label: string, countsTowardGoal: boolean, applyProtocolFee: boolean, canRefund: boolean, instantTransfer: boolean, options?: CallSignerOptions): Promise<Hex>;
   /** Removes a line item type for a platform. */
-  removePlatformLineItemType(platformHash: Hex, typeId: Hex): Promise<Hex>;
+  removePlatformLineItemType(platformHash: Hex, typeId: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Adds a token to the accepted list for a currency. */
-  addTokenToCurrency(currency: Hex, token: Address): Promise<Hex>;
+  addTokenToCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Removes a token from the accepted list for a currency. */
-  removeTokenFromCurrency(currency: Hex, token: Address): Promise<Hex>;
+  removeTokenFromCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Associates a platform data key with a platform. */
-  addPlatformData(platformBytes: Hex, platformDataKey: Hex): Promise<Hex>;
+  addPlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Removes a platform data key association. */
-  removePlatformData(platformBytes: Hex, platformDataKey: Hex): Promise<Hex>;
+  removePlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Adds a key-value entry to the global data registry. */
-  addToRegistry(key: Hex, value: Hex): Promise<Hex>;
+  addToRegistry(key: Hex, value: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Transfers contract ownership to a new address. */
-  transferOwnership(newOwner: Address): Promise<Hex>;
+  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Renounces contract ownership permanently. */
-  renounceOwnership(): Promise<Hex>;
+  renounceOwnership(options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for GlobalParams write methods. */
 export interface GlobalParamsSimulate {
   /** Simulates enlistPlatform; throws a typed error on revert. */
-  enlistPlatform(platformHash: Hex, platformAdminAddress: Address, platformFeePercent: bigint, platformAdapter: Address): Promise<void>;
+  enlistPlatform(platformHash: Hex, platformAdminAddress: Address, platformFeePercent: bigint, platformAdapter: Address, options?: CallSignerOptions): Promise<void>;
   /** Simulates delistPlatform; throws a typed error on revert. */
-  delistPlatform(platformBytes: Hex): Promise<void>;
+  delistPlatform(platformBytes: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates updatePlatformAdminAddress; throws a typed error on revert. */
-  updatePlatformAdminAddress(platformBytes: Hex, platformAdminAddress: Address): Promise<void>;
+  updatePlatformAdminAddress(platformBytes: Hex, platformAdminAddress: Address, options?: CallSignerOptions): Promise<void>;
   /** Simulates updatePlatformClaimDelay; throws a typed error on revert. */
-  updatePlatformClaimDelay(platformBytes: Hex, claimDelay: bigint): Promise<void>;
+  updatePlatformClaimDelay(platformBytes: Hex, claimDelay: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates updateProtocolAdminAddress; throws a typed error on revert. */
-  updateProtocolAdminAddress(protocolAdminAddress: Address): Promise<void>;
+  updateProtocolAdminAddress(protocolAdminAddress: Address, options?: CallSignerOptions): Promise<void>;
   /** Simulates updateProtocolFeePercent; throws a typed error on revert. */
-  updateProtocolFeePercent(protocolFeePercent: bigint): Promise<void>;
+  updateProtocolFeePercent(protocolFeePercent: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates setPlatformAdapter; throws a typed error on revert. */
-  setPlatformAdapter(platformBytes: Hex, platformAdapter: Address): Promise<void>;
+  setPlatformAdapter(platformBytes: Hex, platformAdapter: Address, options?: CallSignerOptions): Promise<void>;
   /** Simulates setPlatformLineItemType; throws a typed error on revert. */
-  setPlatformLineItemType(platformHash: Hex, typeId: Hex, label: string, countsTowardGoal: boolean, applyProtocolFee: boolean, canRefund: boolean, instantTransfer: boolean): Promise<void>;
+  setPlatformLineItemType(platformHash: Hex, typeId: Hex, label: string, countsTowardGoal: boolean, applyProtocolFee: boolean, canRefund: boolean, instantTransfer: boolean, options?: CallSignerOptions): Promise<void>;
   /** Simulates removePlatformLineItemType; throws a typed error on revert. */
-  removePlatformLineItemType(platformHash: Hex, typeId: Hex): Promise<void>;
+  removePlatformLineItemType(platformHash: Hex, typeId: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates addTokenToCurrency; throws a typed error on revert. */
-  addTokenToCurrency(currency: Hex, token: Address): Promise<void>;
+  addTokenToCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<void>;
   /** Simulates removeTokenFromCurrency; throws a typed error on revert. */
-  removeTokenFromCurrency(currency: Hex, token: Address): Promise<void>;
+  removeTokenFromCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<void>;
   /** Simulates addPlatformData; throws a typed error on revert. */
-  addPlatformData(platformBytes: Hex, platformDataKey: Hex): Promise<void>;
+  addPlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates removePlatformData; throws a typed error on revert. */
-  removePlatformData(platformBytes: Hex, platformDataKey: Hex): Promise<void>;
+  removePlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates addToRegistry; throws a typed error on revert. */
-  addToRegistry(key: Hex, value: Hex): Promise<void>;
+  addToRegistry(key: Hex, value: Hex, options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for a GlobalParams contract instance. */

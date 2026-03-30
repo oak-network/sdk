@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { CreateCampaignParams } from "../../types/params";
+import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for a CampaignInfoFactory contract instance. */
 export interface CampaignInfoFactoryReads {
@@ -18,21 +19,21 @@ export interface CampaignInfoFactoryWrites {
    * @param params - Full campaign creation parameters
    * @returns Transaction hash
    */
-  createCampaign(params: CreateCampaignParams): Promise<Hex>;
+  createCampaign(params: CreateCampaignParams, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the CampaignInfo implementation address. */
-  updateImplementation(newImplementation: Address): Promise<Hex>;
+  updateImplementation(newImplementation: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Transfers contract ownership to a new address. */
-  transferOwnership(newOwner: Address): Promise<Hex>;
+  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Renounces contract ownership permanently. */
-  renounceOwnership(): Promise<Hex>;
+  renounceOwnership(options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for CampaignInfoFactory write methods. */
 export interface CampaignInfoFactorySimulate {
   /** Simulates createCampaign; throws a typed error on revert. */
-  createCampaign(params: CreateCampaignParams): Promise<void>;
+  createCampaign(params: CreateCampaignParams, options?: CallSignerOptions): Promise<void>;
   /** Simulates updateImplementation; throws a typed error on revert. */
-  updateImplementation(newImplementation: Address): Promise<void>;
+  updateImplementation(newImplementation: Address, options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for a CampaignInfoFactory contract instance. */

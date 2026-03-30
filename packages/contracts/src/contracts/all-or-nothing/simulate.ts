@@ -3,6 +3,7 @@ import { ALL_OR_NOTHING_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
 import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
 import type { AllOrNothingSimulate } from "./types";
+import type { CallSignerOptions } from "../../client/types";
 
 
 /**
@@ -24,8 +25,8 @@ export function createAllOrNothingSimulate(
   const contract = { address, abi: ALL_OR_NOTHING_ABI } as const;
 
   return {
-    async pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[]): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -36,8 +37,8 @@ export function createAllOrNothingSimulate(
         }),
       );
     },
-    async pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -48,8 +49,8 @@ export function createAllOrNothingSimulate(
         }),
       );
     },
-    async claimRefund(tokenId: bigint): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -60,8 +61,8 @@ export function createAllOrNothingSimulate(
         }),
       );
     },
-    async disburseFees(): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async disburseFees(options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -72,8 +73,8 @@ export function createAllOrNothingSimulate(
         }),
       );
     },
-    async withdraw(): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async withdraw(options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,

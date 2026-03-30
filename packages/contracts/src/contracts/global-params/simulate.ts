@@ -3,6 +3,7 @@ import { GLOBAL_PARAMS_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
 import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
 import type { GlobalParamsSimulate } from "./types";
+import type { CallSignerOptions } from "../../client/types";
 
 
 /**
@@ -24,8 +25,8 @@ export function createGlobalParamsSimulate(
   const contract = { address, abi: GLOBAL_PARAMS_ABI } as const;
 
   return {
-    async enlistPlatform(platformHash: Hex, platformAdminAddress: Address, platformFeePercent: bigint, platformAdapter: Address) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async enlistPlatform(platformHash: Hex, platformAdminAddress: Address, platformFeePercent: bigint, platformAdapter: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -36,8 +37,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async delistPlatform(platformBytes: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async delistPlatform(platformBytes: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -48,8 +49,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async updatePlatformAdminAddress(platformBytes: Hex, platformAdminAddress: Address) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async updatePlatformAdminAddress(platformBytes: Hex, platformAdminAddress: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -60,8 +61,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async updatePlatformClaimDelay(platformBytes: Hex, claimDelay: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async updatePlatformClaimDelay(platformBytes: Hex, claimDelay: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -72,8 +73,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async updateProtocolAdminAddress(protocolAdminAddress: Address) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async updateProtocolAdminAddress(protocolAdminAddress: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -84,8 +85,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async updateProtocolFeePercent(protocolFeePercent: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async updateProtocolFeePercent(protocolFeePercent: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -96,8 +97,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async setPlatformAdapter(platformBytes: Hex, platformAdapter: Address) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async setPlatformAdapter(platformBytes: Hex, platformAdapter: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -108,8 +109,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async setPlatformLineItemType(platformHash: Hex, typeId: Hex, label: string, countsTowardGoal: boolean, applyProtocolFee: boolean, canRefund: boolean, instantTransfer: boolean) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async setPlatformLineItemType(platformHash: Hex, typeId: Hex, label: string, countsTowardGoal: boolean, applyProtocolFee: boolean, canRefund: boolean, instantTransfer: boolean, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -120,8 +121,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async removePlatformLineItemType(platformHash: Hex, typeId: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async removePlatformLineItemType(platformHash: Hex, typeId: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -132,8 +133,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async addTokenToCurrency(currency: Hex, token: Address) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async addTokenToCurrency(currency: Hex, token: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -144,8 +145,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async removeTokenFromCurrency(currency: Hex, token: Address) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async removeTokenFromCurrency(currency: Hex, token: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -156,8 +157,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async addPlatformData(platformBytes: Hex, platformDataKey: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async addPlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -168,8 +169,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async removePlatformData(platformBytes: Hex, platformDataKey: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async removePlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -180,8 +181,8 @@ export function createGlobalParamsSimulate(
         }),
       );
     },
-    async addToRegistry(key: Hex, value: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async addToRegistry(key: Hex, value: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,

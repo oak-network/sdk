@@ -3,6 +3,7 @@ import { CAMPAIGN_INFO_FACTORY_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
 import type { CampaignInfoFactoryWrites } from "./types";
 import type { CreateCampaignParams } from "../../types/params";
+import type { CallSignerOptions } from "../../client/types";
 
 /**
  * Builds write methods for a CampaignInfoFactory contract instance.
@@ -19,8 +20,8 @@ export function createCampaignInfoFactoryWrites(
   const contract = { address, abi: CAMPAIGN_INFO_FACTORY_ABI } as const;
 
   return {
-    async createCampaign(params: CreateCampaignParams): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async createCampaign(params: CreateCampaignParams, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -45,16 +46,16 @@ export function createCampaignInfoFactoryWrites(
         ],
       });
     },
-    async updateImplementation(newImplementation: Address): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async updateImplementation(newImplementation: Address, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "updateImplementation", args: [newImplementation] });
     },
-    async transferOwnership(newOwner: Address): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "transferOwnership", args: [newOwner] });
     },
-    async renounceOwnership(): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async renounceOwnership(options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "renounceOwnership", args: [] });
     },
   };
