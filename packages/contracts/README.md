@@ -11,7 +11,7 @@ pnpm add @oaknetwork/contracts
 ## Quick Start
 
 ```typescript
-import { createOakContractsClient, CHAIN_IDS, toHex } from "@oaknetwork/contracts";
+import { createOakContractsClient, CHAIN_IDS } from "@oaknetwork/contracts";
 
 const oak = createOakContractsClient({
   chainId:    CHAIN_IDS.CELO_TESTNET_SEPOLIA,
@@ -22,19 +22,63 @@ const oak = createOakContractsClient({
 
 ## Client Configuration
 
-Two config shapes are supported:
+Three config patterns are supported:
 
-### Simple (chainId + rpcUrl + privateKey)
+### Pattern 1 — Simple (chainId + rpcUrl + privateKey)
+
+Full read/write access using a raw private key. Suitable for backend services and scripts.
 
 ```typescript
 const oak = createOakContractsClient({
   chainId:    CHAIN_IDS.CELO_TESTNET_SEPOLIA,
   rpcUrl:     "https://forno.celo-sepolia.celo-testnet.org",
-  privateKey: "0x...",
+  privateKey: "0x...",   // 0x-prefixed 32-byte hex string
 });
 ```
 
-### Full (bring your own clients)
+### Pattern 2 — Read-only (chainId + rpcUrl, no privateKey)
+
+No private key required. All read methods work normally; write methods throw `"No signer configured"` immediately — no RPC call is made.
+
+```typescript
+const oak = createOakContractsClient({
+  chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+  rpcUrl:  "https://forno.celo-sepolia.celo-testnet.org",
+});
+
+// Reads work fine
+const admin = await oak.globalParams("0x...").getProtocolAdminAddress();
+
+// Writes throw synchronously — no RPC call
+await oak.globalParams("0x...").transferOwnership("0x..."); // throws "No signer configured"
+```
+
+### Pattern 3 — Per-entity signer override
+
+Start with a read-only base client and supply a signer only for the entities that need to write. Designed for browser wallets (MetaMask, Privy, etc.) where the signer is resolved after the client is created.
+
+```typescript
+import { createOakContractsClient, createWallet, CHAIN_IDS } from "@oaknetwork/contracts";
+
+// Base client — no key required at construction time
+const oak = createOakContractsClient({
+  chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+  rpcUrl:  "https://forno.celo-sepolia.celo-testnet.org",
+});
+
+// Resolve signer later (e.g. after wallet connect)
+const signer = createWallet(privateKey, rpcUrl, oak.config.chain);
+// or: const signer = await getSigner(window.ethereum, oak.config.chain);
+
+// Supply signer at the entity level
+const gp = oak.globalParams("0x...", { signer });
+const admin = await gp.getProtocolAdminAddress(); // read
+await gp.transferOwnership("0x...");              // write — signer is present
+```
+
+### Pattern 4 — Full (bring your own clients)
+
+Pass pre-built viem `PublicClient` and `WalletClient` directly. Useful for advanced configurations (custom transports, account abstraction, etc.).
 
 ```typescript
 import {
