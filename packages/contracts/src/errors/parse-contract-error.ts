@@ -57,6 +57,9 @@ export function getRevertData(error: unknown): string | null {
     if (typeof e["data"] === "string" && (e["data"] as string).startsWith("0x")) {
       return e["data"] as string;
     }
+    if (typeof e["raw"] === "string" && (e["raw"] as string).startsWith("0x")) {
+      return e["raw"] as string;
+    }
     if (
       e["data"] &&
       typeof e["data"] === "object" &&
