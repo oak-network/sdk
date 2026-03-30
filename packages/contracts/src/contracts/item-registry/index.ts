@@ -16,7 +16,7 @@ import type { ItemRegistryEntity } from "./types";
 export function createItemRegistryEntity(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): ItemRegistryEntity {
   return {

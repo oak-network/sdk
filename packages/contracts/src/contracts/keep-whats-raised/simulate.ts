@@ -1,6 +1,6 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { KEEP_WHATS_RAISED_ABI } from "./abi";
-import { requireAccount } from "../../utils/account";
+import { requireSigner, requireAccount } from "../../utils/account";
 import { simulateWithErrorDecode } from "../../errors";
 import type { KeepWhatsRaisedSimulate } from "./types";
 import type { TieredReward } from "../../types/structs";
@@ -24,7 +24,7 @@ import type {
 export function createKeepWhatsRaisedSimulate(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): KeepWhatsRaisedSimulate {
   const contract = { address, abi: KEEP_WHATS_RAISED_ABI } as const;
@@ -35,7 +35,7 @@ export function createKeepWhatsRaisedSimulate(
 
   return {
     async pauseTreasury(message: Hex) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -47,7 +47,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async unpauseTreasury(message: Hex) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -59,7 +59,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async cancelTreasury(message: Hex) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -76,7 +76,7 @@ export function createKeepWhatsRaisedSimulate(
       feeKeys: KeepWhatsRaisedFeeKeys,
       feeValues: KeepWhatsRaisedFeeValues,
     ) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -112,7 +112,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[]) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -133,7 +133,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async removeReward(rewardName: Hex) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -145,7 +145,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async approveWithdrawal() {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -157,7 +157,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async setPaymentGatewayFee(pledgeId: Hex, fee: bigint) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -178,7 +178,7 @@ export function createKeepWhatsRaisedSimulate(
       reward: readonly Hex[],
       isPledgeForAReward: boolean,
     ) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -196,7 +196,7 @@ export function createKeepWhatsRaisedSimulate(
       tip: bigint,
       rewardNames: readonly Hex[],
     ) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -214,7 +214,7 @@ export function createKeepWhatsRaisedSimulate(
       pledgeAmount: bigint,
       tip: bigint,
     ) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -226,7 +226,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async claimRefund(tokenId: bigint) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -238,7 +238,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async claimTip() {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -250,7 +250,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async claimFund() {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -262,7 +262,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async disburseFees() {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -274,7 +274,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async withdraw(token: Address, amount: bigint) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -286,7 +286,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async updateDeadline(deadline: bigint) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -298,7 +298,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async updateGoalAmount(goalAmount: bigint) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -310,7 +310,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async approve(to: Address, tokenId: bigint) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -322,7 +322,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async setApprovalForAll(operator: Address, approved: boolean) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -334,7 +334,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async safeTransferFrom(from: Address, to: Address, tokenId: bigint) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -346,7 +346,7 @@ export function createKeepWhatsRaisedSimulate(
       );
     },
     async transferFrom(from: Address, to: Address, tokenId: bigint) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,

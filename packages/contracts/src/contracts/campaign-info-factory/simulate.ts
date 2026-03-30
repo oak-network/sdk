@@ -1,6 +1,6 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { CAMPAIGN_INFO_FACTORY_ABI } from "./abi";
-import { requireAccount } from "../../utils/account";
+import { requireSigner, requireAccount } from "../../utils/account";
 import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
 import type { CampaignInfoFactorySimulate } from "./types";
 import type { CreateCampaignParams } from "../../types/params";
@@ -18,14 +18,14 @@ import type { CreateCampaignParams } from "../../types/params";
 export function createCampaignInfoFactorySimulate(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): CampaignInfoFactorySimulate {
   const contract = { address, abi: CAMPAIGN_INFO_FACTORY_ABI } as const;
 
   return {
     async createCampaign(params: CreateCampaignParams): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -53,7 +53,7 @@ export function createCampaignInfoFactorySimulate(
       );
     },
     async updateImplementation(newImplementation: Address): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
