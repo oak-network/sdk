@@ -1,6 +1,6 @@
 import type { Address, Hex, WalletClient, Chain } from "../../lib";
 import { ITEM_REGISTRY_ABI } from "./abi";
-import { requireAccount } from "../../utils/account";
+import { requireSigner, requireAccount } from "../../utils/account";
 import type { ItemRegistryWrites } from "./types";
 import type { Item } from "../../types/structs";
 
@@ -13,15 +13,15 @@ import type { Item } from "../../types/structs";
  */
 export function createItemRegistryWrites(
   address: Address,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): ItemRegistryWrites {
   const contract = { address, abi: ITEM_REGISTRY_ABI } as const;
 
   return {
     async addItem(itemId: Hex, item: Item): Promise<Hex> {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -40,8 +40,8 @@ export function createItemRegistryWrites(
       });
     },
     async addItemsBatch(itemIds: readonly Hex[], items: readonly Item[]): Promise<Hex> {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,

@@ -1,6 +1,6 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { ITEM_REGISTRY_ABI } from "./abi";
-import { requireAccount } from "../../utils/account";
+import { requireSigner, requireAccount } from "../../utils/account";
 import { simulateWithErrorDecode } from "../../errors";
 import type { ItemRegistrySimulate } from "./types";
 import type { Item } from "../../types/structs";
@@ -18,14 +18,14 @@ import type { Item } from "../../types/structs";
 export function createItemRegistrySimulate(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): ItemRegistrySimulate {
   const contract = { address, abi: ITEM_REGISTRY_ABI } as const;
 
   return {
     async addItem(itemId: Hex, item: Item): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -47,7 +47,7 @@ export function createItemRegistrySimulate(
       );
     },
     async addItemsBatch(itemIds: readonly Hex[], items: readonly Item[]): Promise<void> {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,

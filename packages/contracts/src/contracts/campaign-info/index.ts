@@ -24,7 +24,7 @@ import type { CampaignInfoEntity } from "./types";
 export function createCampaignInfoEntity(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): CampaignInfoEntity {
   return {

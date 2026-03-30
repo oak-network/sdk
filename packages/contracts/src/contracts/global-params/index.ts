@@ -16,7 +16,7 @@ import type { GlobalParamsEntity } from "./types";
 export function createGlobalParamsEntity(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): GlobalParamsEntity {
   return {

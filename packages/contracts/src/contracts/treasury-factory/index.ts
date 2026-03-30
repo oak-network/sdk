@@ -16,7 +16,7 @@ import type { TreasuryFactoryEntity } from "./types";
 export function createTreasuryFactoryEntity(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): TreasuryFactoryEntity {
   return {
