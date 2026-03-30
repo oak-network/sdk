@@ -55,13 +55,14 @@ export function isSimpleConfig(
 export function isReadOnlySimpleConfig(
   config: OakContractsClientConfig,
 ): config is SimpleReadOnlyOakContractsClientConfig {
+  const c = config as unknown as Record<string, unknown>;
   const hasReadOnlyFields =
     "chainId" in config &&
     "rpcUrl" in config &&
-    !("privateKey" in config) &&
-    !("chain" in config) &&
-    !("provider" in config) &&
-    !("signer" in config);
+    c["privateKey"] == null &&
+    c["chain"] == null &&
+    c["provider"] == null &&
+    c["signer"] == null;
 
   if (!hasReadOnlyFields) {
     return false;
