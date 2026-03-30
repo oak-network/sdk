@@ -1,4 +1,4 @@
-import { isSimpleConfig } from "../../src/client/guard";
+import { isSimpleConfig, isReadOnlySimpleConfig } from "../../src/client/guard";
 import type { OakContractsClientConfig } from "../../src/client/types";
 
 describe("isSimpleConfig", () => {
@@ -45,19 +45,19 @@ describe("isSimpleConfig", () => {
     ).toBe(false);
   });
 
-  it("returns false when privateKey is not a string", () => {
-    expect(
+  it("throws when privateKey is not a string", () => {
+    expect(() =>
       isSimpleConfig({ ...valid, privateKey: 42 } as unknown as OakContractsClientConfig),
-    ).toBe(false);
+    ).toThrow("Invalid privateKey");
   });
 
-  it("returns false when privateKey does not start with 0x", () => {
-    expect(
+  it("throws when privateKey does not start with 0x", () => {
+    expect(() =>
       isSimpleConfig({
         ...valid,
         privateKey: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
       } as unknown as OakContractsClientConfig),
-    ).toBe(false);
+    ).toThrow("Invalid privateKey");
   });
 
   it("returns false for a full config shape", () => {
@@ -67,5 +67,56 @@ describe("isSimpleConfig", () => {
       signer: {} as never,
     };
     expect(isSimpleConfig(full)).toBe(false);
+  });
+});
+
+describe("isReadOnlySimpleConfig", () => {
+  it("returns true for valid read-only config", () => {
+    const config = { chainId: 11142220, rpcUrl: "https://rpc.example.com" };
+    expect(isReadOnlySimpleConfig(config as OakContractsClientConfig)).toBe(true);
+  });
+
+  it("returns false when chainId is missing", () => {
+    const config = { rpcUrl: "https://rpc.example.com" };
+    expect(isReadOnlySimpleConfig(config as unknown as OakContractsClientConfig)).toBe(false);
+  });
+
+  it("returns false when privateKey is present", () => {
+    const config = {
+      chainId: 11142220,
+      rpcUrl: "https://rpc.example.com",
+      privateKey: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+    };
+    expect(isReadOnlySimpleConfig(config as OakContractsClientConfig)).toBe(false);
+  });
+
+  it("returns false when provider/signer are present", () => {
+    const config = {
+      chain: 11142220,
+      provider: {} as never,
+      signer: {} as never,
+    };
+    expect(isReadOnlySimpleConfig(config as OakContractsClientConfig)).toBe(false);
+  });
+
+  it("throws when chainId is not a number", () => {
+    const config = { chainId: "bad", rpcUrl: "https://rpc.example.com" };
+    expect(() =>
+      isReadOnlySimpleConfig(config as unknown as OakContractsClientConfig),
+    ).toThrow("Invalid chainId");
+  });
+
+  it("throws when rpcUrl is empty", () => {
+    const config = { chainId: 11142220, rpcUrl: "" };
+    expect(() =>
+      isReadOnlySimpleConfig(config as unknown as OakContractsClientConfig),
+    ).toThrow("Invalid rpcUrl");
+  });
+
+  it("throws when rpcUrl is not a string", () => {
+    const config = { chainId: 11142220, rpcUrl: 123 };
+    expect(() =>
+      isReadOnlySimpleConfig(config as unknown as OakContractsClientConfig),
+    ).toThrow("Invalid rpcUrl");
   });
 });

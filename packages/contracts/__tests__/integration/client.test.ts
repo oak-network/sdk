@@ -131,13 +131,6 @@ describe("entity factory methods", () => {
     expect(entity.events).toBeDefined();
   });
 
-  it("itemRegistry returns entity", () => {
-    const entity = client.itemRegistry(addr.itemRegistry);
-    expect(typeof entity.getItem).toBe("function");
-    expect(typeof entity.addItem).toBe("function");
-    expect(entity.simulate).toBeDefined();
-    expect(entity.events).toBeDefined();
-  });
 });
 
 describe("waitForReceipt", () => {

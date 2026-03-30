@@ -136,6 +136,10 @@ describe("getRevertData", () => {
     expect(getRevertData("string")).toBeNull();
   });
 
+  it("extracts data from { raw: '0x...' }", () => {
+    expect(getRevertData({ raw: "0xabcd" })).toBe("0xabcd");
+  });
+
   it("returns null for non-hex data string", () => {
     expect(getRevertData({ data: "not-hex" })).toBeNull();
   });

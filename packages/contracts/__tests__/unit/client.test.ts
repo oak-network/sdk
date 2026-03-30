@@ -4,6 +4,7 @@ import { getChainFromId } from "../../src/utils/chain";
 import { createJsonRpcProvider, createWallet } from "../../src/lib/viem/provider";
 import { CHAIN_IDS } from "../../src/constants/chains";
 import type { PublicClient, WalletClient, Chain } from "../../src/lib";
+import type { OakContractsClientConfig } from "../../src/client/types";
 
 const PK = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const RPC = "https://rpc.example.com";
@@ -19,6 +20,16 @@ describe("buildClients", () => {
     expect(c.id).toBe(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
     expect(publicClient).toBeDefined();
     expect(walletClient).toBeDefined();
+  });
+
+  it("builds read-only client (no privateKey)", () => {
+    const { chain: c, publicClient, walletClient } = buildClients(
+      { chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA, rpcUrl: RPC } as OakContractsClientConfig,
+      { timeout: 30000 },
+    );
+    expect(c.id).toBe(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
+    expect(publicClient).toBeDefined();
+    expect(walletClient).toBeNull();
   });
 
   it("builds from full config with Chain object", () => {

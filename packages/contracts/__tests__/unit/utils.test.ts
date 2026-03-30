@@ -1,9 +1,20 @@
-import { requireAccount } from "../../src/utils/account";
+import { requireAccount, requireSigner } from "../../src/utils/account";
 import { getChainFromId } from "../../src/utils/chain";
 import { keccak256, id } from "../../src/utils/hash";
 import { isHex, toHex } from "../../src/utils/hex";
 import { getCurrentTimestamp, addDays } from "../../src/utils/time";
 import type { WalletClient } from "../../src/lib";
+
+describe("requireSigner", () => {
+  it("returns the walletClient when non-null", () => {
+    const wallet = { account: { address: "0x1234" } } as unknown as WalletClient;
+    expect(requireSigner(wallet)).toBe(wallet);
+  });
+
+  it("throws when walletClient is null", () => {
+    expect(() => requireSigner(null)).toThrow("No signer configured");
+  });
+});
 
 describe("requireAccount", () => {
   it("returns the account when present", () => {

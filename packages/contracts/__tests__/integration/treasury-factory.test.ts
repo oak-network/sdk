@@ -16,7 +16,7 @@ describe("TreasuryFactory — writes (may revert)", () => {
     } catch {
       /* revert expected */
     }
-  });
+  }, 30_000);
 
   it("registerTreasuryImplementation executes", async () => {
     try {

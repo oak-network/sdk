@@ -21,7 +21,6 @@ export interface TestConfig {
     paymentTreasury: Address;
     allOrNothing: Address;
     keepWhatsRaised: Address;
-    itemRegistry: Address;
   };
 }
 
@@ -37,7 +36,6 @@ export function loadTestConfig(): TestConfig {
       paymentTreasury: requireEnv("PAYMENT_TREASURY_ADDRESS") as Address,
       allOrNothing: requireEnv("ALL_OR_NOTHING_ADDRESS") as Address,
       keepWhatsRaised: requireEnv("KEEP_WHATS_RAISED_ADDRESS") as Address,
-      itemRegistry: requireEnv("ITEM_REGISTRY_ADDRESS") as Address,
     },
   };
 }
