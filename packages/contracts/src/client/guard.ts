@@ -16,6 +16,8 @@ export function isSimpleConfig(
     typeof (config as SimpleOakContractsClientConfig).rpcUrl === "string" &&
     (config as SimpleOakContractsClientConfig).rpcUrl.length > 0 &&
     typeof (config as SimpleOakContractsClientConfig).privateKey === "string" &&
-    (config as SimpleOakContractsClientConfig).privateKey.startsWith("0x")
+    (config as SimpleOakContractsClientConfig).privateKey.startsWith("0x") &&
+    (config as SimpleOakContractsClientConfig).privateKey.length === 66 &&
+    /^0x[0-9a-fA-F]{64}$/.test((config as SimpleOakContractsClientConfig).privateKey)
   );
 }

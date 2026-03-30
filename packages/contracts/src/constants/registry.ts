@@ -17,6 +17,13 @@ export type DataRegistryKeyName = keyof typeof DATA_REGISTRY_KEYS;
  * @param baseKey - Base registry key (bytes32)
  * @param platformHash - Platform hash (bytes32)
  * @returns Scoped registry key (bytes32)
+ *
+ * @example
+ * ```typescript
+ * const platformHash = keccak256(toHex("my-platform"));
+ * const scopedKey = scopedToPlatform(DATA_REGISTRY_KEYS.BUFFER_TIME, platformHash);
+ * const value = await gp.getFromRegistry(scopedKey);
+ * ```
  */
 export function scopedToPlatform(baseKey: Hex, platformHash: Hex): Hex {
   return keccak256(encodeAbiParameters([{ type: "bytes32" }, { type: "bytes32" }], [baseKey, platformHash]));
