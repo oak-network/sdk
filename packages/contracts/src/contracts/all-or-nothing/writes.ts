@@ -3,6 +3,7 @@ import { ALL_OR_NOTHING_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
 import type { AllOrNothingWrites } from "./types";
 import type { TieredReward } from "../../types/structs";
+import type { CallSignerOptions } from "../../client/types";
 
 /**
  * Builds write methods for an AllOrNothing treasury contract instance.
@@ -19,64 +20,64 @@ export function createAllOrNothingWrites(
   const contract = { address, abi: ALL_OR_NOTHING_ABI } as const;
 
   return {
-    async pauseTreasury(message: Hex): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "pauseTreasury", args: [message] });
     },
-    async unpauseTreasury(message: Hex): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "unpauseTreasury", args: [message] });
     },
-    async cancelTreasury(message: Hex): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "cancelTreasury", args: [message] });
     },
-    async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[]): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "addRewards", args: [[...rewardNames], [...rewards]] });
     },
-    async removeReward(rewardName: Hex): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "removeReward", args: [rewardName] });
     },
-    async pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[]): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "pledgeForAReward", args: [backer, pledgeToken, shippingFee, [...rewardNames]] });
     },
-    async pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "pledgeWithoutAReward", args: [backer, pledgeToken, pledgeAmount] });
     },
-    async claimRefund(tokenId: bigint): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "claimRefund", args: [tokenId] });
     },
-    async disburseFees(): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async disburseFees(options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "disburseFees", args: [] });
     },
-    async withdraw(): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async withdraw(options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "withdraw", args: [] });
     },
-    async burn(tokenId: bigint): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async burn(tokenId: bigint, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "burn", args: [tokenId] });
     },
-    async approve(to: Address, tokenId: bigint): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "approve", args: [to, tokenId] });
     },
-    async setApprovalForAll(operator: Address, approved: boolean): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "setApprovalForAll", args: [operator, approved] });
     },
-    async safeTransferFrom(from: Address, to: Address, tokenId: bigint): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "safeTransferFrom", args: [from, to, tokenId] });
     },
-    async transferFrom(from: Address, to: Address, tokenId: bigint): Promise<Hex> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "transferFrom", args: [from, to, tokenId] });
     },
   };

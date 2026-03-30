@@ -22,7 +22,7 @@ const oak = createOakContractsClient({
 
 ## Client Configuration
 
-Three config patterns are supported:
+Four config/signer patterns are supported. Mix and match as needed.
 
 ### Pattern 1 — Simple (chainId + rpcUrl + privateKey)
 
@@ -34,6 +34,10 @@ const oak = createOakContractsClient({
   rpcUrl:     "https://forno.celo-sepolia.celo-testnet.org",
   privateKey: "0x...",   // 0x-prefixed 32-byte hex string
 });
+
+const gp = oak.globalParams("0x...");
+const admin = await gp.getProtocolAdminAddress();       // read
+await gp.enlistPlatform(hash, adminAddr, fee, adapter); // write — uses client key
 ```
 
 ### Pattern 2 — Read-only (chainId + rpcUrl, no privateKey)
@@ -46,37 +50,56 @@ const oak = createOakContractsClient({
   rpcUrl:  "https://forno.celo-sepolia.celo-testnet.org",
 });
 
-// Reads work fine
-const admin = await oak.globalParams("0x...").getProtocolAdminAddress();
-
-// Writes throw synchronously — no RPC call
-await oak.globalParams("0x...").transferOwnership("0x..."); // throws "No signer configured"
+const gp = oak.globalParams("0x...");
+const admin = await gp.getProtocolAdminAddress(); // reads work fine
+await gp.transferOwnership("0x...");              // throws "No signer configured"
 ```
 
 ### Pattern 3 — Per-entity signer override
 
-Start with a read-only base client and supply a signer only for the entities that need to write. Designed for browser wallets (MetaMask, Privy, etc.) where the signer is resolved after the client is created.
+Supply a signer when creating an entity. Every write/simulate call on that entity uses the provided signer — no need to pass it again per call. Designed for browser wallets (MetaMask, Privy, etc.) where the signer is resolved after the client is created.
 
 ```typescript
 import { createOakContractsClient, createWallet, CHAIN_IDS } from "@oaknetwork/contracts";
 
-// Base client — no key required at construction time
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
   rpcUrl:  "https://forno.celo-sepolia.celo-testnet.org",
 });
 
-// Resolve signer later (e.g. after wallet connect)
+// Resolve signer after wallet connect
 const signer = createWallet(privateKey, rpcUrl, oak.config.chain);
 // or: const signer = await getSigner(window.ethereum, oak.config.chain);
 
-// Supply signer at the entity level
+// All write/simulate calls on gp automatically use signer
 const gp = oak.globalParams("0x...", { signer });
-const admin = await gp.getProtocolAdminAddress(); // read
-await gp.transferOwnership("0x...");              // write — signer is present
+const admin = await gp.getProtocolAdminAddress();       // read
+await gp.simulate.enlistPlatform(hash, addr, fee, adapter); // simulate — uses signer
+await gp.enlistPlatform(hash, addr, fee, adapter);          // write — uses signer
 ```
 
-### Pattern 4 — Full (bring your own clients)
+### Pattern 4 — Per-call signer override
+
+Supply a different signer for a single write or simulate call. The entity itself has no fixed signer; the override is passed as the last optional argument. Useful when different operations on the same contract require different signers (e.g. multi-sig flows, role switching).
+
+```typescript
+const gp = oak.globalParams("0x...");  // no entity-level signer
+
+// Read — no signer needed
+const admin = await gp.getProtocolAdminAddress();
+
+// Write/simulate — inject signer only for this one call
+await gp.simulate.enlistPlatform(hash, addr, fee, adapter, { signer });
+await gp.enlistPlatform(hash, addr, fee, adapter, { signer });
+
+// Different call, different signer
+await gp.transferOwnership(newOwner, { signer: anotherWallet });
+
+// No override → throws "No signer configured"
+await gp.delistPlatform(hash); // throws if no client/entity signer set
+```
+
+### Pattern 5 — Full (bring your own clients)
 
 Pass pre-built viem `PublicClient` and `WalletClient` directly. Useful for advanced configurations (custom transports, account abstraction, etc.).
 
@@ -96,6 +119,15 @@ const signer   = createWalletClient({ account, chain, transport: http(RPC_URL) }
 
 const oak = createOakContractsClient({ chain, provider, signer });
 ```
+
+### Signer resolution priority
+
+When a write or simulate method is called, the signer is resolved in this order:
+
+1. **Per-call** `options.signer` — highest priority
+2. **Per-entity** `signer` passed to the entity factory method
+3. **Client-level** `walletClient` from `createOakContractsClient`
+4. **Throws** `"No signer configured"` if none of the above is set
 
 ## Supported Chain IDs
 

@@ -4,6 +4,7 @@ import { requireSigner, requireAccount } from "../../utils/account";
 import { simulateWithErrorDecode } from "../../errors";
 import type { PaymentTreasurySimulate } from "./types";
 import type { LineItem, ExternalFees } from "../../types/structs";
+import type { CallSignerOptions } from "../../client/types";
 
 /**
  * Builds simulate methods for PaymentTreasury write calls.
@@ -37,8 +38,9 @@ export function createPaymentTreasurySimulate(
       expiration: bigint,
       lineItems: readonly LineItem[],
       externalFees: readonly ExternalFees[],
+      options?: CallSignerOptions,
     ) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -67,8 +69,9 @@ export function createPaymentTreasurySimulate(
       expirations: readonly bigint[],
       lineItemsArray: readonly (readonly LineItem[])[],
       externalFeesArray: readonly (readonly ExternalFees[])[],
+      options?: CallSignerOptions,
     ) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -96,8 +99,9 @@ export function createPaymentTreasurySimulate(
       amount: bigint,
       lineItems: readonly LineItem[],
       externalFees: readonly ExternalFees[],
+      options?: CallSignerOptions,
     ) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -116,8 +120,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async cancelPayment(paymentId: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async cancelPayment(paymentId: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -128,8 +132,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async confirmPayment(paymentId: Hex, buyerAddress: Address) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async confirmPayment(paymentId: Hex, buyerAddress: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -140,8 +144,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[]) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[], options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -152,8 +156,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async disburseFees() {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async disburseFees(options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -164,8 +168,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async withdraw() {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async withdraw(options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -176,8 +180,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async claimRefund(paymentId: Hex, refundAddress: Address) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async claimRefund(paymentId: Hex, refundAddress: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -188,8 +192,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async claimRefundSelf(paymentId: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async claimRefundSelf(paymentId: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -200,8 +204,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async claimExpiredFunds() {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async claimExpiredFunds(options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -212,8 +216,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async claimNonGoalLineItems(token: Address) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async claimNonGoalLineItems(token: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -224,8 +228,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async pauseTreasury(message: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async pauseTreasury(message: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -236,8 +240,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async unpauseTreasury(message: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async unpauseTreasury(message: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -248,8 +252,8 @@ export function createPaymentTreasurySimulate(
         }),
       );
     },
-    async cancelTreasury(message: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async cancelTreasury(message: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,

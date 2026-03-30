@@ -3,6 +3,7 @@ import { TREASURY_FACTORY_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
 import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
 import type { TreasuryFactorySimulate } from "./types";
+import type { CallSignerOptions } from "../../client/types";
 
 
 /**
@@ -24,8 +25,8 @@ export function createTreasuryFactorySimulate(
   const contract = { address, abi: TREASURY_FACTORY_ABI } as const;
 
   return {
-    async deploy(platformHash: Hex, infoAddress: Address, implementationId: bigint): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async deploy(platformHash: Hex, infoAddress: Address, implementationId: bigint, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -36,8 +37,8 @@ export function createTreasuryFactorySimulate(
         }),
       );
     },
-    async registerTreasuryImplementation(platformHash: Hex, implementationId: bigint, implementation: Address): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async registerTreasuryImplementation(platformHash: Hex, implementationId: bigint, implementation: Address, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -48,8 +49,8 @@ export function createTreasuryFactorySimulate(
         }),
       );
     },
-    async approveTreasuryImplementation(platformHash: Hex, implementationId: bigint): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async approveTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -60,8 +61,8 @@ export function createTreasuryFactorySimulate(
         }),
       );
     },
-    async disapproveTreasuryImplementation(implementation: Address): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async disapproveTreasuryImplementation(implementation: Address, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -72,8 +73,8 @@ export function createTreasuryFactorySimulate(
         }),
       );
     },
-    async removeTreasuryImplementation(platformHash: Hex, implementationId: bigint): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async removeTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,

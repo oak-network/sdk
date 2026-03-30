@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { LineItemTypeInfo, CampaignConfig } from "../../types/structs";
+import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for a CampaignInfo contract instance. */
 export interface CampaignInfoReads {
@@ -68,51 +69,51 @@ export interface CampaignInfoReads {
 /** Write methods for a CampaignInfo contract instance. */
 export interface CampaignInfoWrites {
   /** Updates the campaign deadline timestamp. */
-  updateDeadline(deadline: bigint): Promise<Hex>;
+  updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the campaign funding goal amount. */
-  updateGoalAmount(goalAmount: bigint): Promise<Hex>;
+  updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the campaign launch timestamp. */
-  updateLaunchTime(launchTime: bigint): Promise<Hex>;
+  updateLaunchTime(launchTime: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Updates whether a platform is selected for this campaign. */
-  updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[]): Promise<Hex>;
+  updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[], options?: CallSignerOptions): Promise<Hex>;
   /** Updates the NFT image URI for pledge tokens. */
-  setImageURI(newImageURI: string): Promise<Hex>;
+  setImageURI(newImageURI: string, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the ERC-721 contract metadata URI. */
-  updateContractURI(newContractURI: string): Promise<Hex>;
+  updateContractURI(newContractURI: string, options?: CallSignerOptions): Promise<Hex>;
   /** Mints a pledge NFT for a backer; returns the tx hash (tokenId is in receipt events). */
-  mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint): Promise<Hex>;
+  mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Burns a pledge NFT. */
-  burn(tokenId: bigint): Promise<Hex>;
+  burn(tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Pauses the campaign. */
-  pauseCampaign(message: Hex): Promise<Hex>;
+  pauseCampaign(message: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Unpauses the campaign. */
-  unpauseCampaign(message: Hex): Promise<Hex>;
+  unpauseCampaign(message: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Cancels the campaign permanently. */
-  cancelCampaign(message: Hex): Promise<Hex>;
+  cancelCampaign(message: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Sets the platform treasury address for a platform. */
-  setPlatformInfo(platformBytes: Hex, platformTreasuryAddress: Address): Promise<Hex>;
+  setPlatformInfo(platformBytes: Hex, platformTreasuryAddress: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Transfers contract ownership to a new address. */
-  transferOwnership(newOwner: Address): Promise<Hex>;
+  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Renounces contract ownership permanently. */
-  renounceOwnership(): Promise<Hex>;
+  renounceOwnership(options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for CampaignInfo write methods. */
 export interface CampaignInfoSimulate {
   /** Simulates updateDeadline; throws a typed error on revert. */
-  updateDeadline(deadline: bigint): Promise<void>;
+  updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates updateGoalAmount; throws a typed error on revert. */
-  updateGoalAmount(goalAmount: bigint): Promise<void>;
+  updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates updateLaunchTime; throws a typed error on revert. */
-  updateLaunchTime(launchTime: bigint): Promise<void>;
+  updateLaunchTime(launchTime: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates updateSelectedPlatform; throws a typed error on revert. */
-  updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[]): Promise<void>;
+  updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[], options?: CallSignerOptions): Promise<void>;
   /** Simulates mintNFTForPledge; throws a typed error on revert. */
-  mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint): Promise<void>;
+  mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates pauseCampaign; throws a typed error on revert. */
-  pauseCampaign(message: Hex): Promise<void>;
+  pauseCampaign(message: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates cancelCampaign; throws a typed error on revert. */
-  cancelCampaign(message: Hex): Promise<void>;
+  cancelCampaign(message: Hex, options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for a CampaignInfo contract instance. */

@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { TieredReward } from "../../types/structs";
+import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for an AllOrNothing treasury contract instance. */
 export interface AllOrNothingReads {
@@ -40,49 +41,49 @@ export interface AllOrNothingReads {
 /** Write methods for an AllOrNothing treasury contract instance. */
 export interface AllOrNothingWrites {
   /** Pauses the treasury. */
-  pauseTreasury(message: Hex): Promise<Hex>;
+  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Unpauses the treasury. */
-  unpauseTreasury(message: Hex): Promise<Hex>;
+  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Cancels the treasury permanently. */
-  cancelTreasury(message: Hex): Promise<Hex>;
+  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Adds one or more reward tiers. */
-  addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[]): Promise<Hex>;
+  addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<Hex>;
   /** Removes a reward tier by name. */
-  removeReward(rewardName: Hex): Promise<Hex>;
+  removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<Hex>;
   /** Pledges for a reward; mints a pledge NFT. */
-  pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[]): Promise<Hex>;
+  pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions): Promise<Hex>;
   /** Pledges without selecting a reward tier. */
-  pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint): Promise<Hex>;
+  pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Claims a refund for a pledge NFT (campaign did not reach goal). */
-  claimRefund(tokenId: bigint): Promise<Hex>;
+  claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Disburses accumulated fees to protocol and platform. */
-  disburseFees(): Promise<Hex>;
+  disburseFees(options?: CallSignerOptions): Promise<Hex>;
   /** Withdraws raised funds (campaign succeeded). */
-  withdraw(): Promise<Hex>;
+  withdraw(options?: CallSignerOptions): Promise<Hex>;
   /** Burns a pledge NFT. */
-  burn(tokenId: bigint): Promise<Hex>;
+  burn(tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Approves an address to transfer a specific pledge NFT. */
-  approve(to: Address, tokenId: bigint): Promise<Hex>;
+  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Sets or revokes operator approval for all tokens. */
-  setApprovalForAll(operator: Address, approved: boolean): Promise<Hex>;
+  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<Hex>;
   /** Safely transfers a pledge NFT. */
-  safeTransferFrom(from: Address, to: Address, tokenId: bigint): Promise<Hex>;
+  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Transfers a pledge NFT without ERC-721 receiver check. */
-  transferFrom(from: Address, to: Address, tokenId: bigint): Promise<Hex>;
+  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for AllOrNothing write methods. */
 export interface AllOrNothingSimulate {
   /** Simulates pledgeForAReward; throws a typed error on revert. */
-  pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[]): Promise<void>;
+  pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions): Promise<void>;
   /** Simulates pledgeWithoutAReward; throws a typed error on revert. */
-  pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint): Promise<void>;
+  pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates claimRefund; throws a typed error on revert. */
-  claimRefund(tokenId: bigint): Promise<void>;
+  claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates disburseFees; throws a typed error on revert. */
-  disburseFees(): Promise<void>;
+  disburseFees(options?: CallSignerOptions): Promise<void>;
   /** Simulates withdraw; throws a typed error on revert. */
-  withdraw(): Promise<void>;
+  withdraw(options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for an AllOrNothing treasury contract instance. */

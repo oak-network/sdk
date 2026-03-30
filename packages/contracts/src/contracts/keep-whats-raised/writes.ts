@@ -2,6 +2,7 @@ import type { Address, Hex, WalletClient, Chain } from "../../lib";
 import { KEEP_WHATS_RAISED_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
 import type { KeepWhatsRaisedWrites } from "./types";
+import type { CallSignerOptions } from "../../client/types";
 import type { TieredReward } from "../../types/structs";
 import type { CampaignData } from "../../types/structs";
 import type {
@@ -25,8 +26,8 @@ export function createKeepWhatsRaisedWrites(
   const contract = { address, abi: KEEP_WHATS_RAISED_ABI } as const;
 
   return {
-    async pauseTreasury(message: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async pauseTreasury(message: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -35,8 +36,8 @@ export function createKeepWhatsRaisedWrites(
         args: [message],
       });
     },
-    async unpauseTreasury(message: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async unpauseTreasury(message: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -45,8 +46,8 @@ export function createKeepWhatsRaisedWrites(
         args: [message],
       });
     },
-    async cancelTreasury(message: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async cancelTreasury(message: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -60,8 +61,9 @@ export function createKeepWhatsRaisedWrites(
       campaignData: CampaignData,
       feeKeys: KeepWhatsRaisedFeeKeys,
       feeValues: KeepWhatsRaisedFeeValues,
+      options?: CallSignerOptions,
     ) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -94,8 +96,8 @@ export function createKeepWhatsRaisedWrites(
         ],
       });
     },
-    async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[]) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -113,8 +115,8 @@ export function createKeepWhatsRaisedWrites(
         ],
       });
     },
-    async removeReward(rewardName: Hex) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async removeReward(rewardName: Hex, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -123,8 +125,8 @@ export function createKeepWhatsRaisedWrites(
         args: [rewardName],
       });
     },
-    async approveWithdrawal() {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async approveWithdrawal(options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -133,8 +135,8 @@ export function createKeepWhatsRaisedWrites(
         args: [],
       });
     },
-    async setPaymentGatewayFee(pledgeId: Hex, fee: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async setPaymentGatewayFee(pledgeId: Hex, fee: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -152,8 +154,9 @@ export function createKeepWhatsRaisedWrites(
       fee: bigint,
       reward: readonly Hex[],
       isPledgeForAReward: boolean,
+      options?: CallSignerOptions,
     ) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -168,8 +171,9 @@ export function createKeepWhatsRaisedWrites(
       pledgeToken: Address,
       tip: bigint,
       rewardNames: readonly Hex[],
+      options?: CallSignerOptions,
     ) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -184,8 +188,9 @@ export function createKeepWhatsRaisedWrites(
       pledgeToken: Address,
       pledgeAmount: bigint,
       tip: bigint,
+      options?: CallSignerOptions,
     ) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -194,8 +199,8 @@ export function createKeepWhatsRaisedWrites(
         args: [pledgeId, backer, pledgeToken, pledgeAmount, tip],
       });
     },
-    async claimRefund(tokenId: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async claimRefund(tokenId: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -204,8 +209,8 @@ export function createKeepWhatsRaisedWrites(
         args: [tokenId],
       });
     },
-    async claimTip() {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async claimTip(options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -214,8 +219,8 @@ export function createKeepWhatsRaisedWrites(
         args: [],
       });
     },
-    async claimFund() {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async claimFund(options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -224,8 +229,8 @@ export function createKeepWhatsRaisedWrites(
         args: [],
       });
     },
-    async disburseFees() {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async disburseFees(options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -234,8 +239,8 @@ export function createKeepWhatsRaisedWrites(
         args: [],
       });
     },
-    async withdraw(token: Address, amount: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async withdraw(token: Address, amount: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -244,8 +249,8 @@ export function createKeepWhatsRaisedWrites(
         args: [token, amount],
       });
     },
-    async updateDeadline(deadline: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async updateDeadline(deadline: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -254,8 +259,8 @@ export function createKeepWhatsRaisedWrites(
         args: [deadline],
       });
     },
-    async updateGoalAmount(goalAmount: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -264,8 +269,8 @@ export function createKeepWhatsRaisedWrites(
         args: [goalAmount],
       });
     },
-    async approve(to: Address, tokenId: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async approve(to: Address, tokenId: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -274,8 +279,8 @@ export function createKeepWhatsRaisedWrites(
         args: [to, tokenId],
       });
     },
-    async setApprovalForAll(operator: Address, approved: boolean) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -284,8 +289,8 @@ export function createKeepWhatsRaisedWrites(
         args: [operator, approved],
       });
     },
-    async safeTransferFrom(from: Address, to: Address, tokenId: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,
@@ -294,8 +299,8 @@ export function createKeepWhatsRaisedWrites(
         args: [from, to, tokenId],
       });
     },
-    async transferFrom(from: Address, to: Address, tokenId: bigint) {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({
         ...contract,
         chain,

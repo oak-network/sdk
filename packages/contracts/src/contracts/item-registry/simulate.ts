@@ -4,6 +4,7 @@ import { requireSigner, requireAccount } from "../../utils/account";
 import { simulateWithErrorDecode } from "../../errors";
 import type { ItemRegistrySimulate } from "./types";
 import type { Item } from "../../types/structs";
+import type { CallSignerOptions } from "../../client/types";
 
 /**
  * Builds simulate methods for ItemRegistry write calls.
@@ -24,8 +25,8 @@ export function createItemRegistrySimulate(
   const contract = { address, abi: ITEM_REGISTRY_ABI } as const;
 
   return {
-    async addItem(itemId: Hex, item: Item): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async addItem(itemId: Hex, item: Item, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
@@ -46,8 +47,8 @@ export function createItemRegistrySimulate(
         }),
       );
     },
-    async addItemsBatch(itemIds: readonly Hex[], items: readonly Item[]): Promise<void> {
-      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+    async addItemsBatch(itemIds: readonly Hex[], items: readonly Item[], options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,

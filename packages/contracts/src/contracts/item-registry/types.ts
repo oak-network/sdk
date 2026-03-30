@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { Item } from "../../types/structs";
+import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for ItemRegistry. */
 export interface ItemRegistryReads {
@@ -10,17 +11,17 @@ export interface ItemRegistryReads {
 /** Write methods for ItemRegistry. */
 export interface ItemRegistryWrites {
   /** Registers a single item under the caller's address with the given item ID. */
-  addItem(itemId: Hex, item: Item): Promise<Hex>;
+  addItem(itemId: Hex, item: Item, options?: CallSignerOptions): Promise<Hex>;
   /** Registers multiple items in a single transaction; itemIds and items must be the same length. */
-  addItemsBatch(itemIds: readonly Hex[], items: readonly Item[]): Promise<Hex>;
+  addItemsBatch(itemIds: readonly Hex[], items: readonly Item[], options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for ItemRegistry write methods. */
 export interface ItemRegistrySimulate {
   /** Simulates addItem; throws a typed error on revert. */
-  addItem(itemId: Hex, item: Item): Promise<void>;
+  addItem(itemId: Hex, item: Item, options?: CallSignerOptions): Promise<void>;
   /** Simulates addItemsBatch; throws a typed error on revert. */
-  addItemsBatch(itemIds: readonly Hex[], items: readonly Item[]): Promise<void>;
+  addItemsBatch(itemIds: readonly Hex[], items: readonly Item[], options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for ItemRegistry. */
