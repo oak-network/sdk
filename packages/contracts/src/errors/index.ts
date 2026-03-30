@@ -1,5 +1,9 @@
 export type { ContractErrorBase } from "./base";
-export { parseContractError, getRevertData, simulateWithErrorDecode } from "./parse-contract-error";
+export {
+  parseContractError,
+  getRevertData,
+  simulateWithErrorDecode,
+} from "./parse-contract-error";
 
 export {
   GlobalParamsCurrencyHasNoTokensError,
@@ -120,11 +124,4 @@ export {
 } from "./contracts/shared";
 export type { SharedError } from "./contracts/shared";
 
-import type { ContractErrorBase } from "./base";
-
-/**
- * Returns a human-readable recovery suggestion for a typed contract error, if available.
- */
-export function getRecoveryHint(error: ContractErrorBase): string | undefined {
-  return error.recoveryHint;
-}
+export { getRecoveryHint } from "./recovery";

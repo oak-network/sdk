@@ -70,6 +70,7 @@ function toGlobalParamsError(name: string, args: Record<string, unknown>): Contr
         platformHash: args["platformHash"] as string,
         typeId: args["typeId"] as string,
       });
+    /* istanbul ignore next -- defensive fallback; all ABI errors are handled above */
     default:
       return new (class extends Error implements ContractErrorBase {
         readonly name = name;

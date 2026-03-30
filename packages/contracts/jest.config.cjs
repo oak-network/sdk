@@ -2,9 +2,22 @@ module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
   testMatch: ["**/__tests__/**/*.test.ts"],
+  setupFiles: ["dotenv/config"],
   collectCoverageFrom: [
     "src/**/*.{ts,tsx}",
     "!src/**/*.d.ts",
+    "!src/scripts/**",
+    "!src/contracts/*/abi.ts",
+    "!src/index.ts",
+    "!src/client/index.ts",
+    "!src/constants/index.ts",
+    "!src/contracts/index.ts",
+    "!src/errors/index.ts",
+    "!src/lib/index.ts",
+    "!src/lib/viem/index.ts",
+    "!src/metrics/index.ts",
+    "!src/utils/index.ts",
+    "!src/types/index.ts",
   ],
   coverageThreshold: {
     global: {

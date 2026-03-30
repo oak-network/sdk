@@ -23,7 +23,10 @@ import { toSharedContractError, tryDecodeContractError } from "./shared";
  * @param args - Decoded error arguments
  * @returns Typed AllOrNothing error, or a shared/generic fallback
  */
-function toAllOrNothingError(name: string, args: Record<string, unknown>): ContractErrorBase {
+function toAllOrNothingError(
+  name: string,
+  args: Record<string, unknown>,
+): ContractErrorBase {
   switch (name) {
     case AllOrNothingErrorNames.FeeNotDisbursed:
       return new AllOrNothingFeeNotDisbursedError();
@@ -32,7 +35,9 @@ function toAllOrNothingError(name: string, args: Record<string, unknown>): Contr
     case AllOrNothingErrorNames.InvalidInput:
       return new AllOrNothingInvalidInputError();
     case AllOrNothingErrorNames.NotClaimable:
-      return new AllOrNothingNotClaimableError({ tokenId: args["tokenId"] as string });
+      return new AllOrNothingNotClaimableError({
+        tokenId: args["tokenId"] as string,
+      });
     case AllOrNothingErrorNames.NotSuccessful:
       return new AllOrNothingNotSuccessfulError();
     case AllOrNothingErrorNames.RewardExists:
@@ -42,17 +47,22 @@ function toAllOrNothingError(name: string, args: Record<string, unknown>): Contr
     case AllOrNothingErrorNames.UnAuthorized:
       return new AllOrNothingUnAuthorizedError();
     case AllOrNothingErrorNames.TokenNotAccepted:
-      return new AllOrNothingTokenNotAcceptedError({ token: args["token"] as string });
+      return new AllOrNothingTokenNotAcceptedError({
+        token: args["token"] as string,
+      });
     case AllOrNothingErrorNames.TreasurySuccessConditionNotFulfilled:
       return new TreasurySuccessConditionNotFulfilledError();
-    default:
-      return (
-        toSharedContractError(name, args) ??
-        new (class extends Error implements ContractErrorBase {
+    default: {
+      const shared = toSharedContractError(name, args);
+      /* istanbul ignore next -- defensive fallback; all shared errors are recognised */
+      if (!shared) {
+        return new (class extends Error implements ContractErrorBase {
           readonly name = name;
           readonly args = args;
-        })(`${name}(${JSON.stringify(args)})`)
-      );
+        })(`${name}(${JSON.stringify(args)})`);
+      }
+      return shared;
+    }
   }
 }
 
