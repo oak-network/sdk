@@ -1,6 +1,6 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { PAYMENT_TREASURY_ABI } from "./abi";
-import { requireAccount } from "../../utils/account";
+import { requireSigner, requireAccount } from "../../utils/account";
 import { simulateWithErrorDecode } from "../../errors";
 import type { PaymentTreasurySimulate } from "./types";
 import type { LineItem, ExternalFees } from "../../types/structs";
@@ -18,7 +18,7 @@ import type { LineItem, ExternalFees } from "../../types/structs";
 export function createPaymentTreasurySimulate(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): PaymentTreasurySimulate {
   const contract = { address, abi: PAYMENT_TREASURY_ABI } as const;
@@ -38,7 +38,7 @@ export function createPaymentTreasurySimulate(
       lineItems: readonly LineItem[],
       externalFees: readonly ExternalFees[],
     ) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -68,7 +68,7 @@ export function createPaymentTreasurySimulate(
       lineItemsArray: readonly (readonly LineItem[])[],
       externalFeesArray: readonly (readonly ExternalFees[])[],
     ) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -97,7 +97,7 @@ export function createPaymentTreasurySimulate(
       lineItems: readonly LineItem[],
       externalFees: readonly ExternalFees[],
     ) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -117,7 +117,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async cancelPayment(paymentId: Hex) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -129,7 +129,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async confirmPayment(paymentId: Hex, buyerAddress: Address) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -141,7 +141,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[]) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -153,7 +153,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async disburseFees() {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -165,7 +165,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async withdraw() {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -177,7 +177,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async claimRefund(paymentId: Hex, refundAddress: Address) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -189,7 +189,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async claimRefundSelf(paymentId: Hex) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -201,7 +201,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async claimExpiredFunds() {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -213,7 +213,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async claimNonGoalLineItems(token: Address) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -225,7 +225,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async pauseTreasury(message: Hex) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -237,7 +237,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async unpauseTreasury(message: Hex) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,
@@ -249,7 +249,7 @@ export function createPaymentTreasurySimulate(
       );
     },
     async cancelTreasury(message: Hex) {
-      const account = requireAccount(walletClient);
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
       await wrap(() =>
         publicClient.simulateContract({
           ...contract,

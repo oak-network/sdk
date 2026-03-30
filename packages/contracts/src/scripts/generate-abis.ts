@@ -15,6 +15,7 @@
  *
  * @returns void
  * @throws {Error} Not yet implemented
+ * @internal
  */
 export function generateAbis(): void {
   throw new Error("TODO: generate-abis not implemented");

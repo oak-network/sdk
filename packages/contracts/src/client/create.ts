@@ -13,7 +13,7 @@ import type {
   KeepWhatsRaisedTreasuryEntity,
   ItemRegistryEntity,
 } from "./types";
-import { DEFAULT_CLIENT_OPTIONS, type OakContractsClientOptions } from "./types";
+import { DEFAULT_CLIENT_OPTIONS, type OakContractsClientOptions, type EntitySignerOptions } from "./types";
 import { buildClients } from "./resolve";
 import { createGlobalParamsEntity } from "../contracts/global-params";
 import { createCampaignInfoFactoryEntity } from "../contracts/campaign-info-factory";
@@ -64,29 +64,29 @@ export function createOakContractsClient(
     walletClient,
     waitForReceipt,
 
-    globalParams(address: Address): GlobalParamsEntity {
-      return createGlobalParamsEntity(address, publicClient, walletClient, chain);
+    globalParams(address: Address, options?: EntitySignerOptions): GlobalParamsEntity {
+      return createGlobalParamsEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },
-    campaignInfoFactory(address: Address): CampaignInfoFactoryEntity {
-      return createCampaignInfoFactoryEntity(address, publicClient, walletClient, chain);
+    campaignInfoFactory(address: Address, options?: EntitySignerOptions): CampaignInfoFactoryEntity {
+      return createCampaignInfoFactoryEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },
-    treasuryFactory(address: Address): TreasuryFactoryEntity {
-      return createTreasuryFactoryEntity(address, publicClient, walletClient, chain);
+    treasuryFactory(address: Address, options?: EntitySignerOptions): TreasuryFactoryEntity {
+      return createTreasuryFactoryEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },
-    campaignInfo(address: Address): CampaignInfoEntity {
-      return createCampaignInfoEntity(address, publicClient, walletClient, chain);
+    campaignInfo(address: Address, options?: EntitySignerOptions): CampaignInfoEntity {
+      return createCampaignInfoEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },
-    paymentTreasury(address: Address): PaymentTreasuryEntity {
-      return createPaymentTreasuryEntity(address, publicClient, walletClient, chain);
+    paymentTreasury(address: Address, options?: EntitySignerOptions): PaymentTreasuryEntity {
+      return createPaymentTreasuryEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },
-    allOrNothingTreasury(address: Address): AllOrNothingTreasuryEntity {
-      return createAllOrNothingEntity(address, publicClient, walletClient, chain);
+    allOrNothingTreasury(address: Address, options?: EntitySignerOptions): AllOrNothingTreasuryEntity {
+      return createAllOrNothingEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },
-    keepWhatsRaisedTreasury(address: Address): KeepWhatsRaisedTreasuryEntity {
-      return createKeepWhatsRaisedEntity(address, publicClient, walletClient, chain);
+    keepWhatsRaisedTreasury(address: Address, options?: EntitySignerOptions): KeepWhatsRaisedTreasuryEntity {
+      return createKeepWhatsRaisedEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },
-    itemRegistry(address: Address): ItemRegistryEntity {
-      return createItemRegistryEntity(address, publicClient, walletClient, chain);
+    itemRegistry(address: Address, options?: EntitySignerOptions): ItemRegistryEntity {
+      return createItemRegistryEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },
   };
 }

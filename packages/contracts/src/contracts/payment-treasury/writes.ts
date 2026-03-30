@@ -1,6 +1,6 @@
 import type { Address, Hex, WalletClient, Chain } from "../../lib";
 import { PAYMENT_TREASURY_ABI } from "./abi";
-import { requireAccount } from "../../utils/account";
+import { requireSigner, requireAccount } from "../../utils/account";
 import type { PaymentTreasuryWrites } from "./types";
 import type { LineItem, ExternalFees } from "../../types/structs";
 
@@ -13,7 +13,7 @@ import type { LineItem, ExternalFees } from "../../types/structs";
  */
 export function createPaymentTreasuryWrites(
   address: Address,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): PaymentTreasuryWrites {
   const contract = { address, abi: PAYMENT_TREASURY_ABI } as const;
@@ -29,8 +29,8 @@ export function createPaymentTreasuryWrites(
       lineItems: readonly LineItem[],
       externalFees: readonly ExternalFees[],
     ) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -57,8 +57,8 @@ export function createPaymentTreasuryWrites(
       lineItemsArray: readonly (readonly LineItem[])[],
       externalFeesArray: readonly (readonly ExternalFees[])[],
     ) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -84,8 +84,8 @@ export function createPaymentTreasuryWrites(
       lineItems: readonly LineItem[],
       externalFees: readonly ExternalFees[],
     ) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -102,8 +102,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async cancelPayment(paymentId: Hex) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -112,8 +112,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async confirmPayment(paymentId: Hex, buyerAddress: Address) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -122,8 +122,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[]) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -132,8 +132,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async disburseFees() {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -142,8 +142,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async withdraw() {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -152,8 +152,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async claimRefund(paymentId: Hex, refundAddress: Address) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -162,8 +162,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async claimRefundSelf(paymentId: Hex) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -172,8 +172,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async claimExpiredFunds() {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -182,8 +182,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async claimNonGoalLineItems(token: Address) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -192,8 +192,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async pauseTreasury(message: Hex) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -202,8 +202,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async unpauseTreasury(message: Hex) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,
@@ -212,8 +212,8 @@ export function createPaymentTreasuryWrites(
       });
     },
     async cancelTreasury(message: Hex) {
-      const account = requireAccount(walletClient);
-      return walletClient.writeContract({
+      const signer = requireSigner(walletClient); const account = requireAccount(signer);
+      return signer.writeContract({
         ...contract,
         chain,
         account,

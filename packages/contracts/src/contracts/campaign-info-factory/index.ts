@@ -16,7 +16,7 @@ import type { CampaignInfoFactoryEntity } from "./types";
 export function createCampaignInfoFactoryEntity(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): CampaignInfoFactoryEntity {
   return {

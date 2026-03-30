@@ -41,7 +41,8 @@ export function decodeErrorArgs(
   if (errorAbi?.inputs) {
     errorAbi.inputs.forEach((input, i) => {
       if (input.name && decodedArgs[i] !== undefined) {
-        args[input.name] = decodedArgs[i];
+        const value = decodedArgs[i];
+        args[input.name] = typeof value === "bigint" ? String(value) : value;
       }
     });
   }

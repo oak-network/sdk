@@ -16,7 +16,7 @@ import type { KeepWhatsRaisedTreasuryEntity } from "./types";
 export function createKeepWhatsRaisedEntity(
   address: Address,
   publicClient: PublicClient,
-  walletClient: WalletClient,
+  walletClient: WalletClient | null,
   chain: Chain,
 ): KeepWhatsRaisedTreasuryEntity {
   return {

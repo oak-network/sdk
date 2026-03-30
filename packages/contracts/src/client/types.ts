@@ -20,6 +20,16 @@ export interface Wallet extends WalletClient {
   account: Account;
 }
 
+/** Read-only simple configuration: chainId + RPC URL, no private key. Writes and simulations will throw. */
+export interface SimpleReadOnlyOakContractsClientConfig {
+  /** Numeric chain ID (e.g. CHAIN_IDS.CELO_TESTNET_SEPOLIA). */
+  chainId: number;
+  /** RPC URL for the chain. */
+  rpcUrl: string;
+  /** Optional client-level overrides. */
+  options?: Partial<OakContractsClientOptions>;
+}
+
 /** Simple configuration: chainId + RPC URL + private key. */
 export interface SimpleOakContractsClientConfig {
   /** Numeric chain ID (e.g. CHAIN_IDS.CELO_TESTNET_SEPOLIA). */
@@ -44,8 +54,15 @@ export interface FullOakContractsClientConfig {
   options?: Partial<OakContractsClientOptions>;
 }
 
-/** Union of simple and full client configurations. */
+/** Optional per-entity signer override passed as the second argument to entity factory methods. */
+export interface EntitySignerOptions {
+  /** WalletClient to use for writes and simulations on this entity. Overrides the client-level signer. */
+  signer: WalletClient;
+}
+
+/** Union of all supported client configurations. */
 export type OakContractsClientConfig =
+  | SimpleReadOnlyOakContractsClientConfig
   | SimpleOakContractsClientConfig
   | FullOakContractsClientConfig;
 
@@ -99,8 +116,8 @@ export interface OakContractsClient {
   readonly options: OakContractsClientOptions;
   /** Viem PublicClient for reads and receipt polling. */
   readonly publicClient: PublicClient;
-  /** Viem WalletClient for sending transactions. */
-  readonly walletClient: WalletClient;
+  /** Viem WalletClient for sending transactions. Null for read-only clients. */
+  readonly walletClient: WalletClient | null;
   /**
    * Waits for a transaction to be mined and returns a minimal receipt.
    * @param txHash - Transaction hash to wait for
@@ -108,19 +125,19 @@ export interface OakContractsClient {
    */
   waitForReceipt(txHash: Hex): Promise<TransactionReceipt>;
   /** Returns a GlobalParams entity for the given contract address. */
-  globalParams(address: Address): GlobalParamsEntity;
+  globalParams(address: Address, options?: EntitySignerOptions): GlobalParamsEntity;
   /** Returns a CampaignInfoFactory entity for the given contract address. */
-  campaignInfoFactory(address: Address): CampaignInfoFactoryEntity;
+  campaignInfoFactory(address: Address, options?: EntitySignerOptions): CampaignInfoFactoryEntity;
   /** Returns a TreasuryFactory entity for the given contract address. */
-  treasuryFactory(address: Address): TreasuryFactoryEntity;
+  treasuryFactory(address: Address, options?: EntitySignerOptions): TreasuryFactoryEntity;
   /** Returns a CampaignInfo entity for the given contract address. */
-  campaignInfo(address: Address): CampaignInfoEntity;
+  campaignInfo(address: Address, options?: EntitySignerOptions): CampaignInfoEntity;
   /** Returns a PaymentTreasury entity for the given contract address. */
-  paymentTreasury(address: Address): PaymentTreasuryEntity;
+  paymentTreasury(address: Address, options?: EntitySignerOptions): PaymentTreasuryEntity;
   /** Returns an AllOrNothing treasury entity for the given contract address. */
-  allOrNothingTreasury(address: Address): AllOrNothingTreasuryEntity;
+  allOrNothingTreasury(address: Address, options?: EntitySignerOptions): AllOrNothingTreasuryEntity;
   /** Returns a KeepWhatsRaised treasury entity for the given contract address. */
-  keepWhatsRaisedTreasury(address: Address): KeepWhatsRaisedTreasuryEntity;
+  keepWhatsRaisedTreasury(address: Address, options?: EntitySignerOptions): KeepWhatsRaisedTreasuryEntity;
   /** Returns an ItemRegistry entity for the given contract address. */
-  itemRegistry(address: Address): ItemRegistryEntity;
+  itemRegistry(address: Address, options?: EntitySignerOptions): ItemRegistryEntity;
 }
