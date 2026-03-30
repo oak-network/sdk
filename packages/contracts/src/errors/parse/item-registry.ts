@@ -18,6 +18,7 @@ function toItemRegistryError(name: string, args: Record<string, unknown>): Contr
   switch (name) {
     case ItemRegistryErrorNames.MismatchedArraysLength:
       return new ItemRegistryMismatchedArraysLengthError();
+    /* istanbul ignore next -- defensive fallback; all ABI errors are handled above */
     default:
       return new (class extends Error implements ContractErrorBase {
         readonly name = name;

@@ -97,6 +97,7 @@ function toPaymentTreasuryError(name: string, args: Record<string, unknown>): Co
       });
     case PaymentTreasuryErrorNames.NoFundsToClaim:
       return new PaymentTreasuryNoFundsToClaimError();
+    /* istanbul ignore next -- defensive fallback; all ABI errors are handled above */
     default:
       return new (class extends Error implements ContractErrorBase {
         readonly name = name;

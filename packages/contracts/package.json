@@ -38,6 +38,8 @@
     "build": "tsup",
     "prepublishOnly": "pnpm run build",
     "test": "jest --coverage",
+    "test:unit": "jest --testPathPatterns='__tests__/unit' --coverage",
+    "test:integration": "jest --testPathPatterns='__tests__/integration' --coverage",
     "test:watch": "jest --watchAll"
   },
   "dependencies": {
@@ -46,6 +48,7 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^20.14.11",
+    "dotenv": "^17.3.1",
     "jest": "^30.0.5",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",

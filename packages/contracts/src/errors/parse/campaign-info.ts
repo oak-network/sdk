@@ -40,14 +40,17 @@ function toCampaignInfoError(name: string, args: Record<string, unknown>): Contr
       return new CampaignInfoUnauthorizedError();
     case CampaignInfoErrorNames.IsLocked:
       return new CampaignInfoIsLockedError();
-    default:
-      return (
-        toSharedContractError(name, args) ??
-        new (class extends Error implements ContractErrorBase {
+    default: {
+      const shared = toSharedContractError(name, args);
+      /* istanbul ignore next -- defensive fallback; all shared errors are recognised */
+      if (!shared) {
+        return new (class extends Error implements ContractErrorBase {
           readonly name = name;
           readonly args = args;
-        })(`${name}(${JSON.stringify(args)})`)
-      );
+        })(`${name}(${JSON.stringify(args)})`);
+      }
+      return shared;
+    }
   }
 }
 

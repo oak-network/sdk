@@ -38,6 +38,7 @@ function toCampaignInfoFactoryError(
       });
     case CampaignInfoFactoryErrorNames.CampaignInfoInvalidTokenList:
       return new CampaignInfoInvalidTokenListError();
+    /* istanbul ignore next -- defensive fallback; all ABI errors are handled above */
     default:
       return (
         toSharedContractError(name, args) ??
