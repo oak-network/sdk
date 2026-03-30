@@ -60,6 +60,12 @@ export interface EntitySignerOptions {
   signer: WalletClient;
 }
 
+/** Optional per-call signer override. When provided, overrides the entity-level and client-level signer for a single call. */
+export interface CallSignerOptions {
+  /** WalletClient to use for this specific call. Overrides the entity-level and client-level signer. */
+  signer?: WalletClient;
+}
+
 /** Union of all supported client configurations. */
 export type OakContractsClientConfig =
   | SimpleReadOnlyOakContractsClientConfig
@@ -107,6 +113,7 @@ export type {
   KeepWhatsRaisedTreasuryEntity,
   ItemRegistryEntity,
 };
+
 
 /** Oak Contracts SDK client; entity factories and receipt helper. */
 export interface OakContractsClient {
