@@ -90,7 +90,7 @@ describe("GlobalParams entity", () => {
     it("renounceOwnership", async () => { await entity.simulate.renounceOwnership(); });
   });
 
-  it("events is empty object", () => { expect(entity.events).toEqual({}); });
+  it("events is empty", () => { expect(entity.events).toEqual({}); });
 });
 
 // ============================================================
