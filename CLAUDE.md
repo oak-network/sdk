@@ -10,7 +10,7 @@ This document provides strict rules and standards for AI assistants (Claude Code
 ## Table of Contents
 
 1. [Architecture Principles (Payments SDK)](#architecture-principles-payments-sdk)
-2. [Contracts Package (`packages/contracts`)](#contracts-package-packagescontracts)
+2. [Architecture Principles (Contracts SDK)](#architecture-principles-contracts-sdk)
 3. [Code Standards](#code-standards)
 4. [Security Rules](#security-rules)
 5. [Testing Requirements](#testing-requirements)
@@ -25,7 +25,7 @@ This document provides strict rules and standards for AI assistants (Claude Code
 
 ## Architecture Principles (Payments SDK)
 
-> **Scope:** This section applies to the **payments SDK** (`packages/payments-sdk`). For the contracts package (`packages/contracts`), see [Contracts Package](#contracts-package-packagescontracts) below.
+> **Scope:** This section applies to the **payments SDK** (`packages/payments-sdk`). For the contracts package (`packages/contracts`), see [Architecture Principles (Contracts SDK)](#architecture-principles-contracts-sdk) below.
 
 ### Core Patterns (DO NOT BREAK)
 
@@ -82,7 +82,7 @@ export class CustomerService {
 
 ---
 
-## Contracts Package (`packages/contracts`)
+## Architecture Principles (Contracts SDK)
 
 > **This section is specific to `packages/contracts`.** The contracts package interacts with on-chain smart contracts via **viem**, not REST APIs. Its patterns differ significantly from the payments SDK above.
 
