@@ -4,7 +4,6 @@ TypeScript SDK for interacting with Oak Network smart contracts. Provides a type
 
 > Full Documentation: [oaknetwork.org/docs/contracts-sdk/overview](https://oaknetwork.org/docs/contracts-sdk/overview)
 
-
 ## Prerequisites
 
 > **You need deployed contract addresses to use this SDK.**
@@ -16,12 +15,15 @@ TypeScript SDK for interacting with Oak Network smart contracts. Provides a type
 ```bash
 pnpm add @oaknetwork/contracts
 ```
+
 ```bash
 npm install @oaknetwork/contracts
 ```
+
 ```bash
 yarn add @oaknetwork/contracts
 ```
+
 **Requirements:** Node.js 18+, TypeScript 5.x recommended.
 
 ### Supported Chain IDs
@@ -29,11 +31,11 @@ yarn add @oaknetwork/contracts
 ```typescript
 import { CHAIN_IDS } from "@oaknetwork/contracts";
 
-CHAIN_IDS.ETHEREUM_MAINNET         // 1
-CHAIN_IDS.CELO_MAINNET             // 42220
-CHAIN_IDS.ETHEREUM_TESTNET_SEPOLIA // 11155111
-CHAIN_IDS.ETHEREUM_TESTNET_GOERLI  // 5
-CHAIN_IDS.CELO_TESTNET_SEPOLIA     // 11142220
+CHAIN_IDS.ETHEREUM_MAINNET; // 1
+CHAIN_IDS.CELO_MAINNET; // 42220
+CHAIN_IDS.ETHEREUM_TESTNET_SEPOLIA; // 11155111
+CHAIN_IDS.ETHEREUM_TESTNET_GOERLI; // 5
+CHAIN_IDS.CELO_TESTNET_SEPOLIA; // 11142220
 ```
 
 > See the full installation documentation here: [oaknetwork.org/docs/contracts-sdk/installation](https://oaknetwork.org/docs/contracts-sdk/installation)
@@ -46,11 +48,12 @@ CHAIN_IDS.CELO_TESTNET_SEPOLIA     // 11142220
 import { createOakContractsClient, CHAIN_IDS } from "@oaknetwork/contracts";
 
 const oak = createOakContractsClient({
-  chainId:    CHAIN_IDS.CELO_TESTNET_SEPOLIA,
-  rpcUrl:     "https://forno.celo-sepolia.celo-testnet.org",
+  chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+  rpcUrl: "https://forno.celo-sepolia.celo-testnet.org",
   privateKey: "0x...",
 });
 ```
+
 See the full [Quickstart](https://oaknetwork.org/docs/contracts-sdk/quickstart) guide for a step-by-step walkthrough.
 
 ## Client Configuration
@@ -63,13 +66,13 @@ Full read/write access using a raw private key. Suitable for backend services an
 
 ```typescript
 const oak = createOakContractsClient({
-  chainId:    CHAIN_IDS.CELO_TESTNET_SEPOLIA,
-  rpcUrl:     "https://forno.celo-sepolia.celo-testnet.org",
-  privateKey: "0x...",   // 0x-prefixed 32-byte hex string
+  chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+  rpcUrl: "https://forno.celo-sepolia.celo-testnet.org",
+  privateKey: "0x...", // 0x-prefixed 32-byte hex string
 });
 
 const gp = oak.globalParams("0x...");
-const admin = await gp.getProtocolAdminAddress();       // read
+const admin = await gp.getProtocolAdminAddress(); // read
 await gp.enlistPlatform(hash, adminAddr, fee, adapter); // write — uses client key
 ```
 
@@ -80,12 +83,12 @@ No private key required. All read methods work normally; write methods throw `"N
 ```typescript
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
-  rpcUrl:  "https://forno.celo-sepolia.celo-testnet.org",
+  rpcUrl: "https://forno.celo-sepolia.celo-testnet.org",
 });
 
 const gp = oak.globalParams("0x...");
 const admin = await gp.getProtocolAdminAddress(); // reads work fine
-await gp.transferOwnership("0x...");              // throws "No signer configured"
+await gp.transferOwnership("0x..."); // throws "No signer configured"
 ```
 
 ### Pattern 3 — Per-entity signer override
@@ -93,11 +96,15 @@ await gp.transferOwnership("0x...");              // throws "No signer configure
 Supply a signer when creating an entity. Every write/simulate call on that entity uses the provided signer — no need to pass it again per call. Designed for browser wallets (MetaMask, Privy, etc.) where the signer is resolved after the client is created.
 
 ```typescript
-import { createOakContractsClient, createWallet, CHAIN_IDS } from "@oaknetwork/contracts";
+import {
+  createOakContractsClient,
+  createWallet,
+  CHAIN_IDS,
+} from "@oaknetwork/contracts";
 
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
-  rpcUrl:  "https://forno.celo-sepolia.celo-testnet.org",
+  rpcUrl: "https://forno.celo-sepolia.celo-testnet.org",
 });
 
 // Resolve signer after wallet connect
@@ -106,9 +113,9 @@ const signer = createWallet(privateKey, rpcUrl, oak.config.chain);
 
 // All write/simulate calls on gp automatically use signer
 const gp = oak.globalParams("0x...", { signer });
-const admin = await gp.getProtocolAdminAddress();       // read
+const admin = await gp.getProtocolAdminAddress(); // read
 await gp.simulate.enlistPlatform(hash, addr, fee, adapter); // simulate — uses signer
-await gp.enlistPlatform(hash, addr, fee, adapter);          // write — uses signer
+await gp.enlistPlatform(hash, addr, fee, adapter); // write — uses signer
 ```
 
 ### Pattern 4 — Per-call signer override
@@ -116,7 +123,7 @@ await gp.enlistPlatform(hash, addr, fee, adapter);          // write — uses si
 Supply a different signer for a single write or simulate call. The entity itself has no fixed signer; the override is passed as the last optional argument. Useful when different operations on the same contract require different signers (e.g. multi-sig flows, role switching).
 
 ```typescript
-const gp = oak.globalParams("0x...");  // no entity-level signer
+const gp = oak.globalParams("0x..."); // no entity-level signer
 
 // Read — no signer needed
 const admin = await gp.getProtocolAdminAddress();
@@ -146,9 +153,9 @@ import {
   CHAIN_IDS,
 } from "@oaknetwork/contracts";
 
-const chain    = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
+const chain = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
 const provider = createPublicClient({ chain, transport: http(RPC_URL) });
-const signer   = createWalletClient({ account, chain, transport: http(RPC_URL) });
+const signer = createWalletClient({ account, chain, transport: http(RPC_URL) });
 
 const oak = createOakContractsClient({ chain, provider, signer });
 ```
@@ -174,17 +181,17 @@ Protocol-wide configuration registry. Manages platform listings, fee settings, t
 const gp = oak.globalParams("0x...");
 
 // Reads
-const admin      = await gp.getProtocolAdminAddress();
-const fee        = await gp.getProtocolFeePercent();       // bigint bps (e.g. 100 = 1%)
-const count      = await gp.getNumberOfListedPlatforms();
-const isListed   = await gp.checkIfPlatformIsListed(platformHash);
-const platAdmin  = await gp.getPlatformAdminAddress(platformHash);
-const platFee    = await gp.getPlatformFeePercent(platformHash);
-const delay      = await gp.getPlatformClaimDelay(platformHash);
-const adapter    = await gp.getPlatformAdapter(platformHash);
-const tokens     = await gp.getTokensForCurrency(currency); // Address[]
-const lineItem   = await gp.getPlatformLineItemType(platformHash, typeId);
-const value      = await gp.getFromRegistry(key);
+const admin = await gp.getProtocolAdminAddress();
+const fee = await gp.getProtocolFeePercent(); // bigint bps (e.g. 100 = 1%)
+const count = await gp.getNumberOfListedPlatforms();
+const isListed = await gp.checkIfPlatformIsListed(platformHash);
+const platAdmin = await gp.getPlatformAdminAddress(platformHash);
+const platFee = await gp.getPlatformFeePercent(platformHash);
+const delay = await gp.getPlatformClaimDelay(platformHash);
+const adapter = await gp.getPlatformAdapter(platformHash);
+const tokens = await gp.getTokensForCurrency(currency); // Address[]
+const lineItem = await gp.getPlatformLineItemType(platformHash, typeId);
+const value = await gp.getFromRegistry(key);
 
 // Writes
 await gp.enlistPlatform(platformHash, adminAddress, feePercent, adapterAddress);
@@ -194,7 +201,15 @@ await gp.updatePlatformClaimDelay(platformHash, delaySeconds);
 await gp.updateProtocolAdminAddress(newAdmin);
 await gp.updateProtocolFeePercent(newFeePercent);
 await gp.setPlatformAdapter(platformHash, adapterAddress);
-await gp.setPlatformLineItemType(platformHash, typeId, label, countsTowardGoal, applyProtocolFee, canRefund, instantTransfer);
+await gp.setPlatformLineItemType(
+  platformHash,
+  typeId,
+  label,
+  countsTowardGoal,
+  applyProtocolFee,
+  canRefund,
+  instantTransfer,
+);
 await gp.removePlatformLineItemType(platformHash, typeId);
 await gp.addTokenToCurrency(currency, tokenAddress);
 await gp.removeTokenFromCurrency(currency, tokenAddress);
@@ -224,33 +239,33 @@ import {
 
 const factory = oak.campaignInfoFactory("0x...");
 
-const PLATFORM_HASH  = keccak256(toHex("my-platform"));
-const CURRENCY       = toHex("USD", { size: 32 });
+const PLATFORM_HASH = keccak256(toHex("my-platform"));
+const CURRENCY = toHex("USD", { size: 32 });
 const identifierHash = keccak256(toHex("my-campaign-slug"));
-const now            = getCurrentTimestamp();
+const now = getCurrentTimestamp();
 
 // Reads
 const infoAddress = await factory.identifierToCampaignInfo(identifierHash);
-const isValid     = await factory.isValidCampaignInfo(infoAddress);
+const isValid = await factory.isValidCampaignInfo(infoAddress);
 
 // Writes
 const txHash = await factory.createCampaign({
-  creator:              "0x...",
+  creator: "0x...",
   identifierHash,
   selectedPlatformHash: [PLATFORM_HASH],
   campaignData: {
-    launchTime: now + 3_600n,              // 1 hour from now
-    deadline:   addDays(now, 30),        // 30 days from now
+    launchTime: now + 3_600n, // 1 hour from now
+    deadline: addDays(now, 30), // 30 days from now
     goalAmount: 1_000_000n,
-    currency:   CURRENCY,
+    currency: CURRENCY,
   },
-  nftName:     "My Campaign NFT",
-  nftSymbol:   "MCN",
+  nftName: "My Campaign NFT",
+  nftSymbol: "MCN",
   nftImageURI: "https://example.com/nft.png",
   contractURI: "https://example.com/contract.json",
 });
 
-const receipt        = await oak.waitForReceipt(txHash);
+const receipt = await oak.waitForReceipt(txHash);
 const campaignAddress = await factory.identifierToCampaignInfo(identifierHash);
 ```
 
@@ -266,16 +281,16 @@ Per-campaign configuration and state. Each campaign deployed via the CampaignInf
 const ci = oak.campaignInfo("0x...");
 
 // Reads
-const launchTime    = await ci.getLaunchTime();
-const deadline      = await ci.getDeadline();
-const goalAmount    = await ci.getGoalAmount();
-const currency      = await ci.getCampaignCurrency();
-const totalRaised   = await ci.getTotalRaisedAmount();
-const available     = await ci.getTotalAvailableRaisedAmount();
-const isLocked      = await ci.isLocked();
-const isCancelled   = await ci.cancelled();
-const config        = await ci.getCampaignConfig();
-const tokens        = await ci.getAcceptedTokens();
+const launchTime = await ci.getLaunchTime();
+const deadline = await ci.getDeadline();
+const goalAmount = await ci.getGoalAmount();
+const currency = await ci.getCampaignCurrency();
+const totalRaised = await ci.getTotalRaisedAmount();
+const available = await ci.getTotalAvailableRaisedAmount();
+const isLocked = await ci.isLocked();
+const isCancelled = await ci.cancelled();
+const config = await ci.getCampaignConfig();
+const tokens = await ci.getAcceptedTokens();
 
 // Writes
 await ci.updateDeadline(newDeadline);
@@ -284,6 +299,7 @@ await ci.pauseCampaign(message);
 await ci.unpauseCampaign(message);
 await ci.cancelCampaign(message);
 ```
+
 > For complete details on the Campaign Info contract entity, please visit the following link: [Campaign Info](https://oaknetwork.org/docs/contracts-sdk/campaign-info).
 
 ---
@@ -299,11 +315,16 @@ const tf = oak.treasuryFactory("0x...");
 const txHash = await tf.deploy(platformHash, infoAddress, implementationId);
 
 // Implementation management
-await tf.registerTreasuryImplementation(platformHash, implementationId, implAddress);
+await tf.registerTreasuryImplementation(
+  platformHash,
+  implementationId,
+  implAddress,
+);
 await tf.approveTreasuryImplementation(platformHash, implementationId);
 await tf.disapproveTreasuryImplementation(implAddress);
 await tf.removeTreasuryImplementation(platformHash, implementationId);
 ```
+
 > For complete details on the Treasury Factory contract entity, please visit the following link: [Treasury Factory](https://oaknetwork.org/docs/contracts-sdk/treasury-factory).
 
 ---
@@ -314,9 +335,9 @@ Handles fiat-style payments via a payment gateway. Manages payment creation, con
 
 > **Two treasury variants, one SDK method.** The `paymentTreasury()` method works with both on-chain implementations:
 >
-> | Variant | Description |
-> |---------|-------------|
-> | **PaymentTreasury** | Standard payment treasury with no time restrictions. Payments can be created, confirmed, and refunded at any time while the treasury is active. |
+> | Variant                            | Description                                                                                                                                                                                                                                          |
+> | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | **PaymentTreasury**                | Standard payment treasury with no time restrictions. Payments can be created, confirmed, and refunded at any time while the treasury is active.                                                                                                      |
 > | **TimeConstrainedPaymentTreasury** | Time-constrained variant that enforces launch-time and deadline windows on-chain. Payments can only be created within the campaign window (launch → deadline + buffer). Refunds, withdrawals, and fee disbursements are only available after launch. |
 >
 > Both contracts share the same ABI and the same SDK interface. Time enforcement is handled entirely on-chain — simply pass the deployed contract address regardless of which variant was deployed:
@@ -326,12 +347,21 @@ Handles fiat-style payments via a payment gateway. Manages payment creation, con
 const pt = oak.paymentTreasury("0x...");
 
 // Reads
-const raised    = await pt.getRaisedAmount();
-const refunded  = await pt.getRefundedAmount();
-const payment   = await pt.getPaymentData(paymentId);
+const raised = await pt.getRaisedAmount();
+const refunded = await pt.getRefundedAmount();
+const payment = await pt.getPaymentData(paymentId);
 
 // Writes
-const txHash = await pt.createPayment(paymentId, buyerId, itemId, paymentToken, amount, expiration, lineItems, externalFees);
+const txHash = await pt.createPayment(
+  paymentId,
+  buyerId,
+  itemId,
+  paymentToken,
+  amount,
+  expiration,
+  lineItems,
+  externalFees,
+);
 await pt.confirmPayment(paymentId, buyerAddress);
 await pt.claimRefund(paymentId, refundAddress);
 await pt.claimRefundSelf(paymentId);
@@ -356,8 +386,8 @@ Crowdfunding treasury where funds are only released if the campaign goal is met.
 const aon = oak.allOrNothingTreasury("0x...");
 
 // Reads
-const raised   = await aon.getRaisedAmount();
-const reward   = await aon.getReward(rewardName);
+const raised = await aon.getRaisedAmount();
+const reward = await aon.getReward(rewardName);
 
 // Writes
 await aon.addRewards(rewardNames, rewards);
@@ -372,9 +402,10 @@ await aon.cancelTreasury(message);
 
 // ERC-721
 const owner = await aon.ownerOf(tokenId);
-const uri   = await aon.tokenURI(tokenId);
+const uri = await aon.tokenURI(tokenId);
 await aon.safeTransferFrom(from, to, tokenId);
 ```
+
 > For complete details on the AllOrNothing Treasury contract entity, please visit the following link: [AllOrNothing Treasury](https://oaknetwork.org/docs/contracts-sdk/all-or-nothing).
 
 ---
@@ -387,9 +418,9 @@ Crowdfunding treasury where the creator keeps all funds raised regardless of whe
 const kwr = oak.keepWhatsRaisedTreasury("0x...");
 
 // Reads
-const raised    = await kwr.getRaisedAmount();
+const raised = await kwr.getRaisedAmount();
 const available = await kwr.getAvailableRaisedAmount();
-const reward    = await kwr.getReward(rewardName);
+const reward = await kwr.getReward(rewardName);
 
 // Writes
 await kwr.configureTreasury(config, campaignData, feeKeys, feeValues);
@@ -406,6 +437,7 @@ await kwr.pauseTreasury(message);
 await kwr.unpauseTreasury(message);
 await kwr.cancelTreasury(message);
 ```
+
 > For complete details on the KeepWhatsRaised Treasury contract entity, please visit the following link: [KeepWhatsRaised Treasury](https://oaknetwork.org/docs/contracts-sdk/keep-whats-raised).
 
 ---
@@ -424,6 +456,7 @@ const item = await ir.getItem(ownerAddress, itemId);
 await ir.addItem(itemId, item);
 await ir.addItemsBatch(itemIds, items);
 ```
+
 > For complete details on the Item Registry contract entity, please visit the following link: [Item Registry](https://oaknetwork.org/docs/contracts-sdk/item-registry).
 
 ---
@@ -463,6 +496,7 @@ try {
   handleError(err);
 }
 ```
+
 > See the full error handling guidelines here: [Error handling](https://oaknetwork.org/docs/contracts-sdk/error-handling)
 
 ---
@@ -503,29 +537,30 @@ const platformHash = keccak256(toHex("my-platform"));
 const currency = toHex("USD", { size: 32 });
 
 // Timestamp helpers
-const now      = getCurrentTimestamp();          // bigint seconds
-const deadline = addDays(now, 30);              // 30 days from now
+const now = getCurrentTimestamp(); // bigint seconds
+const deadline = addDays(now, 30); // 30 days from now
 
 // Fee calculations (fees are in basis points, 10_000 = 100%)
 const feeAmount = (raisedAmount * platformFee) / BPS_DENOMINATOR;
 
 // Browser wallet (frontend)
-const chain    = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
+const chain = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
 const provider = createBrowserProvider(window.ethereum, chain);
-const signer   = await getSigner(window.ethereum, chain);
+const signer = await getSigner(window.ethereum, chain);
 ```
+
 For complete guidelines on utility functions, please refer to the following link: [Utility Functions](https://oaknetwork.org/docs/contracts-sdk/utilities).
 
 ---
 
 ## Exported Entry Points
 
-| Entry point                       | Contents                                   |
-|-----------------------------------|--------------------------------------------|
-| `@oaknetwork/contracts`           | Everything — client, types, utils, errors  |
-| `@oaknetwork/contracts/utils`     | Utility functions only (no client)         |
-| `@oaknetwork/contracts/contracts` | Contract entity factories only             |
-| `@oaknetwork/contracts/client`    | `createOakContractsClient` only            |
+| Entry point                       | Contents                                    |
+| --------------------------------- | ------------------------------------------- |
+| `@oaknetwork/contracts`           | Everything — client, types, utils, errors   |
+| `@oaknetwork/contracts/utils`     | Utility functions only (no client)          |
+| `@oaknetwork/contracts/contracts` | Contract entity factories only              |
+| `@oaknetwork/contracts/client`    | `createOakContractsClient` only             |
 | `@oaknetwork/contracts/errors`    | Error classes and `parseContractError` only |
 
 ---
@@ -544,30 +579,15 @@ pnpm install
 pnpm build
 ```
 
-### Run all tests with coverage
+**Do not** use npm or yarn. The repository enforces pnpm >= 10.0.0.
+
+### Running tests
 
 ```bash
-pnpm test
-```
-
-### Run unit tests only
-
-```bash
-pnpm test:unit
-```
-
-### Run integration tests only
-
-```bash
-pnpm test:integration
-```
-
-### Run tests in watch mode
-
-Re-runs tests automatically on file changes.
-
-```bash
-pnpm test:watch
+pnpm test:unit          # Unit tests
+pnpm test:integration   # Integration tests (requires credentials)
+pnpm test:all           # All tests with coverage
+pnpm test:watch         # Watch mode
 ```
 
 ---
@@ -586,6 +606,16 @@ We use [Changesets](https://github.com/changesets/changesets) to manage versions
 ## Development Guidelines
 
 See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture principles, security rules, testing requirements, and anti-patterns.
+
+---
+
+### Code review checklist
+
+- [ ] `pnpm build` succeeds
+- [ ] `pnpm test` passes with >90% coverage
+- [ ] `pnpm lint` has no errors
+- [ ] Changeset created with `pnpm changeset`
+- [ ] Documentation updated if needed
 
 ---
 

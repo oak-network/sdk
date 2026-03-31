@@ -6,12 +6,7 @@ import {
 } from "../../src/lib/viem/provider";
 import { sepolia } from "../../src/lib/viem/index";
 import type { EIP1193Provider } from "viem";
-import { getTestConfig } from "../setup/test-client";
-
-const cfg = getTestConfig();
-
-const TEST_PRIVATE_KEY = cfg.privateKey;
-const TEST_RPC_URL = cfg.rpcUrl;
+import { TEST_PRIVATE_KEY, TEST_RPC_URL } from "../setup/constant";
 
 describe("createJsonRpcProvider", () => {
   it("returns a PublicClient with readContract method", () => {

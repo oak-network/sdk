@@ -7,13 +7,15 @@ import {
 } from "../../src/lib/viem/provider";
 import { CHAIN_IDS } from "../../src/constants/chains";
 import type { OakContractsClientConfig } from "../../src/client/types";
-import { getTestConfig } from "../setup/test-client";
+import {
+  TEST_PRIVATE_KEY,
+  TEST_RPC_URL,
+  TEST_GLOBAL_PARAMS_ADDRESS,
+} from "../setup/constant";
 
-const cfg = getTestConfig();
-
-const PK = cfg.privateKey;
-const RPC = cfg.rpcUrl;
-const ADDR = cfg.addresses.globalParams;
+const PK = TEST_PRIVATE_KEY;
+const RPC = TEST_RPC_URL;
+const ADDR = TEST_GLOBAL_PARAMS_ADDRESS;
 const chain = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
 
 describe("buildClients", () => {
