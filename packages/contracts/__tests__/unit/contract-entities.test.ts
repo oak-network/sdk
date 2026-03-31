@@ -86,9 +86,11 @@ describe("GlobalParams entity", () => {
     it("addPlatformData", async () => { await entity.simulate.addPlatformData(B32, B32); });
     it("removePlatformData", async () => { await entity.simulate.removePlatformData(B32, B32); });
     it("addToRegistry", async () => { await entity.simulate.addToRegistry(B32, B32); });
+    it("transferOwnership", async () => { await entity.simulate.transferOwnership(ADDR); });
+    it("renounceOwnership", async () => { await entity.simulate.renounceOwnership(); });
   });
 
-  it("events is empty object", () => { expect(entity.events).toEqual({}); });
+  it("events is empty", () => { expect(entity.events).toEqual({}); });
 });
 
 // ============================================================
@@ -122,6 +124,8 @@ describe("CampaignInfoFactory entity", () => {
   it("renounceOwnership", async () => { await entity.renounceOwnership(); });
   it("simulate.createCampaign", async () => { await entity.simulate.createCampaign(params); });
   it("simulate.updateImplementation", async () => { await entity.simulate.updateImplementation(ADDR); });
+  it("simulate.transferOwnership", async () => { await entity.simulate.transferOwnership(ADDR); });
+  it("simulate.renounceOwnership", async () => { await entity.simulate.renounceOwnership(); });
   it("events is empty", () => { expect(entity.events).toEqual({}); });
 });
 
@@ -213,9 +217,16 @@ describe("CampaignInfo entity", () => {
     it("updateGoalAmount", async () => { await entity.simulate.updateGoalAmount(0n); });
     it("updateLaunchTime", async () => { await entity.simulate.updateLaunchTime(0n); });
     it("updateSelectedPlatform", async () => { await entity.simulate.updateSelectedPlatform(B32, true, [], []); });
+    it("setImageURI", async () => { await entity.simulate.setImageURI("uri"); });
+    it("updateContractURI", async () => { await entity.simulate.updateContractURI("uri"); });
     it("mintNFTForPledge", async () => { await entity.simulate.mintNFTForPledge(ADDR, B32, ADDR, 0n, 0n, 0n); });
+    it("burn", async () => { await entity.simulate.burn(0n); });
     it("pauseCampaign", async () => { await entity.simulate.pauseCampaign(B32); });
+    it("unpauseCampaign", async () => { await entity.simulate.unpauseCampaign(B32); });
     it("cancelCampaign", async () => { await entity.simulate.cancelCampaign(B32); });
+    it("setPlatformInfo", async () => { await entity.simulate.setPlatformInfo(B32, ADDR); });
+    it("transferOwnership", async () => { await entity.simulate.transferOwnership(ADDR); });
+    it("renounceOwnership", async () => { await entity.simulate.renounceOwnership(); });
   });
 
   it("events is empty", () => { expect(entity.events).toEqual({}); });
@@ -330,11 +341,21 @@ describe("AllOrNothing entity", () => {
   });
 
   describe("simulate", () => {
+    it("pauseTreasury", async () => { await entity.simulate.pauseTreasury(B32); });
+    it("unpauseTreasury", async () => { await entity.simulate.unpauseTreasury(B32); });
+    it("cancelTreasury", async () => { await entity.simulate.cancelTreasury(B32); });
+    it("addRewards", async () => { await entity.simulate.addRewards([B32], [{ rewardValue: 100n, isRewardTier: false, itemId: [], itemValue: [], itemQuantity: [] }]); });
+    it("removeReward", async () => { await entity.simulate.removeReward(B32); });
     it("pledgeForAReward", async () => { await entity.simulate.pledgeForAReward(ADDR, ADDR, 0n, [B32]); });
     it("pledgeWithoutAReward", async () => { await entity.simulate.pledgeWithoutAReward(ADDR, ADDR, 100n); });
     it("claimRefund", async () => { await entity.simulate.claimRefund(0n); });
     it("disburseFees", async () => { await entity.simulate.disburseFees(); });
     it("withdraw", async () => { await entity.simulate.withdraw(); });
+    it("burn", async () => { await entity.simulate.burn(0n); });
+    it("approve", async () => { await entity.simulate.approve(ADDR, 0n); });
+    it("setApprovalForAll", async () => { await entity.simulate.setApprovalForAll(ADDR, true); });
+    it("safeTransferFrom", async () => { await entity.simulate.safeTransferFrom(ADDR, ADDR, 0n); });
+    it("transferFrom", async () => { await entity.simulate.transferFrom(ADDR, ADDR, 0n); });
   });
 
   it("events is empty", () => { expect(entity.events).toEqual({}); });

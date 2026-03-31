@@ -1,15 +1,15 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { ALL_OR_NOTHING_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode } from "../../errors";
 import type { AllOrNothingSimulate } from "./types";
+import type { TieredReward } from "../../types/structs";
 import type { CallSignerOptions } from "../../client/types";
-
 
 /**
  * Builds simulate methods for AllOrNothing write calls.
  * Each method calls simulateContract against the current chain state and throws a typed
- * SDK error on revert, decoded via parseContractError.
+ * SDK error on revert, decoded via simulateWithErrorDecode.
  * @param address - Deployed AllOrNothing contract address
  * @param publicClient - Viem PublicClient used to call simulateContract
  * @param walletClient - Viem WalletClient used to resolve the account for simulation
@@ -25,6 +25,66 @@ export function createAllOrNothingSimulate(
   const contract = { address, abi: ALL_OR_NOTHING_ABI } as const;
 
   return {
+    async pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "pauseTreasury",
+          args: [message],
+        }),
+      );
+    },
+    async unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "unpauseTreasury",
+          args: [message],
+        }),
+      );
+    },
+    async cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "cancelTreasury",
+          args: [message],
+        }),
+      );
+    },
+    async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "addRewards",
+          args: [[...rewardNames], [...rewards]],
+        }),
+      );
+    },
+    async removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "removeReward",
+          args: [rewardName],
+        }),
+      );
+    },
     async pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions): Promise<void> {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       await simulateWithErrorDecode(() =>
@@ -82,6 +142,66 @@ export function createAllOrNothingSimulate(
           account,
           functionName: "withdraw",
           args: [],
+        }),
+      );
+    },
+    async burn(tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "burn",
+          args: [tokenId],
+        }),
+      );
+    },
+    async approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "approve",
+          args: [to, tokenId],
+        }),
+      );
+    },
+    async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "setApprovalForAll",
+          args: [operator, approved],
+        }),
+      );
+    },
+    async safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "safeTransferFrom",
+          args: [from, to, tokenId],
+        }),
+      );
+    },
+    async transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "transferFrom",
+          args: [from, to, tokenId],
         }),
       );
     },

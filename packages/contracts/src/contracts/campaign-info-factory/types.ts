@@ -34,6 +34,10 @@ export interface CampaignInfoFactorySimulate {
   createCampaign(params: CreateCampaignParams, options?: CallSignerOptions): Promise<void>;
   /** Simulates updateImplementation; throws a typed error on revert. */
   updateImplementation(newImplementation: Address, options?: CallSignerOptions): Promise<void>;
+  /** Simulates transferOwnership; throws a typed error on revert. */
+  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<void>;
+  /** Simulates renounceOwnership; throws a typed error on revert. */
+  renounceOwnership(options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for a CampaignInfoFactory contract instance. */

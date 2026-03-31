@@ -4,8 +4,7 @@ import { requireSigner, requireAccount } from "../../utils/account";
 import { simulateWithErrorDecode } from "../../errors";
 import type { KeepWhatsRaisedSimulate } from "./types";
 import type { CallSignerOptions } from "../../client/types";
-import type { TieredReward } from "../../types/structs";
-import type { CampaignData } from "../../types/structs";
+import type { TieredReward, CampaignData } from "../../types/structs";
 import type {
   KeepWhatsRaisedConfig,
   KeepWhatsRaisedFeeKeys,
@@ -15,7 +14,7 @@ import type {
 /**
  * Builds simulate methods for KeepWhatsRaised write calls.
  * Each method calls simulateContract against the current chain state and throws a typed
- * SDK error on revert, decoded via parseContractError.
+ * SDK error on revert, decoded via simulateWithErrorDecode.
  * @param address - Deployed KeepWhatsRaised contract address
  * @param publicClient - Viem PublicClient used to call simulateContract
  * @param walletClient - Viem WalletClient used to resolve the account for simulation
@@ -30,14 +29,10 @@ export function createKeepWhatsRaisedSimulate(
 ): KeepWhatsRaisedSimulate {
   const contract = { address, abi: KEEP_WHATS_RAISED_ABI } as const;
 
-  const wrap = async (fn: () => Promise<unknown>) => {
-    await simulateWithErrorDecode(fn);
-  };
-
   return {
     async pauseTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -49,7 +44,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async unpauseTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -61,7 +56,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async cancelTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -79,7 +74,7 @@ export function createKeepWhatsRaisedSimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -115,7 +110,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -136,7 +131,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async removeReward(rewardName: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -148,7 +143,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async approveWithdrawal(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -160,7 +155,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async setPaymentGatewayFee(pledgeId: Hex, fee: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -182,7 +177,7 @@ export function createKeepWhatsRaisedSimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -201,7 +196,7 @@ export function createKeepWhatsRaisedSimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -220,7 +215,7 @@ export function createKeepWhatsRaisedSimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -232,7 +227,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async claimRefund(tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -244,7 +239,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async claimTip(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -256,7 +251,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async claimFund(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -268,7 +263,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async disburseFees(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -280,7 +275,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async withdraw(token: Address, amount: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -292,7 +287,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async updateDeadline(deadline: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -304,7 +299,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -316,7 +311,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async approve(to: Address, tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -328,7 +323,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -340,7 +335,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -352,7 +347,7 @@ export function createKeepWhatsRaisedSimulate(
     },
     async transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await wrap(() =>
+      await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,

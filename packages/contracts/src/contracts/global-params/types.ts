@@ -100,6 +100,10 @@ export interface GlobalParamsSimulate {
   removePlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates addToRegistry; throws a typed error on revert. */
   addToRegistry(key: Hex, value: Hex, options?: CallSignerOptions): Promise<void>;
+  /** Simulates transferOwnership; throws a typed error on revert. */
+  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<void>;
+  /** Simulates renounceOwnership; throws a typed error on revert. */
+  renounceOwnership(options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for a GlobalParams contract instance. */

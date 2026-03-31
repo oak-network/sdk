@@ -1,7 +1,6 @@
 import type { Address, Hex } from "../../lib";
-import type { TieredReward } from "../../types/structs";
+import type { TieredReward, CampaignData } from "../../types/structs";
 import type { KeepWhatsRaisedConfig, KeepWhatsRaisedFeeKeys, KeepWhatsRaisedFeeValues } from "../../types/params";
-import type { CampaignData } from "../../types/structs";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for KeepWhatsRaised treasury. */

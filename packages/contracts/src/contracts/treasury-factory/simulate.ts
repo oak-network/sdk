@@ -1,15 +1,14 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { TREASURY_FACTORY_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode } from "../../errors";
 import type { TreasuryFactorySimulate } from "./types";
 import type { CallSignerOptions } from "../../client/types";
-
 
 /**
  * Builds simulate methods for TreasuryFactory write calls.
  * Each method calls simulateContract against the current chain state and throws a typed
- * SDK error on revert, decoded via parseContractError.
+ * SDK error on revert, decoded via simulateWithErrorDecode.
  * @param address - Deployed TreasuryFactory contract address
  * @param publicClient - Viem PublicClient used to call simulateContract
  * @param walletClient - Viem WalletClient used to resolve the account for simulation

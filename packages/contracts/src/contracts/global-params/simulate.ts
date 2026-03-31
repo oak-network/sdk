@@ -1,15 +1,14 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { GLOBAL_PARAMS_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode } from "../../errors";
 import type { GlobalParamsSimulate } from "./types";
 import type { CallSignerOptions } from "../../client/types";
-
 
 /**
  * Builds simulate methods for GlobalParams write calls.
  * Each method calls simulateContract against the current chain state and throws a typed
- * SDK error on revert, decoded via parseContractError.
+ * SDK error on revert, decoded via simulateWithErrorDecode.
  * @param address - Deployed GlobalParams contract address
  * @param publicClient - Viem PublicClient used to call simulateContract
  * @param walletClient - Viem WalletClient used to resolve the account for simulation
@@ -190,6 +189,30 @@ export function createGlobalParamsSimulate(
           account,
           functionName: "addToRegistry",
           args: [key, value],
+        }),
+      );
+    },
+    async transferOwnership(newOwner: Address, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "transferOwnership",
+          args: [newOwner],
+        }),
+      );
+    },
+    async renounceOwnership(options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "renounceOwnership",
+          args: [],
         }),
       );
     },

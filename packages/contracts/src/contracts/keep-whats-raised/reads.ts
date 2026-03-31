@@ -119,7 +119,7 @@ export function createKeepWhatsRaisedReads(
       return publicClient.readContract({
         ...contract,
         functionName: "supportsInterface",
-        args: [interfaceId as `0x${string}`],
+        args: [interfaceId],
       });
     },
   };
