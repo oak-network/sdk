@@ -47,7 +47,7 @@ jobs:
 
       - name: Build packages
         if: steps.changesets.outputs.hasChangesets == 'false'
-        run: pnpm --filter=!@oaknetwork/contracts build
+        run: pnpm build
 
       - name: Update npm for OIDC support
         if: steps.changesets.outputs.hasChangesets == 'false'
