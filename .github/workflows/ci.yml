@@ -47,6 +47,15 @@ jobs:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           OAK_ENVIRONMENT: sandbox
+          RPC_URL: ${{ secrets.RPC_URL }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          ALL_OR_NOTHING_ADDRESS: ${{ secrets.ALL_OR_NOTHING_ADDRESS }}
+          CAMPAIGN_INFO_FACTORY_ADDRESS: ${{ secrets.CAMPAIGN_INFO_FACTORY_ADDRESS }}
+          GLOBAL_PARAMS_ADDRESS: ${{ secrets.GLOBAL_PARAMS_ADDRESS }}
+          TREASURY_FACTORY_ADDRESS: ${{ secrets.TREASURY_FACTORY_ADDRESS }}
+          CAMPAIGN_INFO_ADDRESS: ${{ secrets.CAMPAIGN_INFO_ADDRESS }}
+          PAYMENT_TREASURY_ADDRESS: ${{ secrets.PAYMENT_TREASURY_ADDRESS }}
+          KEEP_WHATS_RAISED_ADDRESS: ${{ secrets.KEEP_WHATS_RAISED_ADDRESS }}
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
