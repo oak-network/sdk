@@ -108,12 +108,12 @@ export interface CampaignInfoSimulate {
   updateLaunchTime(launchTime: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates updateSelectedPlatform; throws a typed error on revert. */
   updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[], options?: CallSignerOptions): Promise<void>;
-  /** Simulates mintNFTForPledge; throws a typed error on revert. */
-  mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates setImageURI; throws a typed error on revert. */
   setImageURI(newImageURI: string, options?: CallSignerOptions): Promise<void>;
   /** Simulates updateContractURI; throws a typed error on revert. */
   updateContractURI(newContractURI: string, options?: CallSignerOptions): Promise<void>;
+  /** Simulates mintNFTForPledge; throws a typed error on revert. */
+  mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates burn; throws a typed error on revert. */
   burn(tokenId: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates pauseCampaign; throws a typed error on revert. */

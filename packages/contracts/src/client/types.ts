@@ -1,5 +1,4 @@
-import type { Account, Address, Hex, PublicClient, WalletClient } from "../lib";
-import type { Chain } from "../lib";
+import type { Account, Address, Chain, Hex, PublicClient, WalletClient } from "../lib";
 import type { GlobalParamsEntity } from "../contracts/global-params/types";
 import type { CampaignInfoFactoryEntity } from "../contracts/campaign-info-factory/types";
 import type { TreasuryFactoryEntity } from "../contracts/treasury-factory/types";

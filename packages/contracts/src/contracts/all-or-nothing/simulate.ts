@@ -1,16 +1,15 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { ALL_OR_NOTHING_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { parseContractError, getRevertData, simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode } from "../../errors";
 import type { AllOrNothingSimulate } from "./types";
 import type { TieredReward } from "../../types/structs";
 import type { CallSignerOptions } from "../../client/types";
 
-
 /**
  * Builds simulate methods for AllOrNothing write calls.
  * Each method calls simulateContract against the current chain state and throws a typed
- * SDK error on revert, decoded via parseContractError.
+ * SDK error on revert, decoded via simulateWithErrorDecode.
  * @param address - Deployed AllOrNothing contract address
  * @param publicClient - Viem PublicClient used to call simulateContract
  * @param walletClient - Viem WalletClient used to resolve the account for simulation
