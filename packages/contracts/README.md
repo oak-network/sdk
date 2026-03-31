@@ -630,9 +630,7 @@ See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture pri
 
 ## License
 
-MIT
-
----
+[MIT](../../LICENSE)
 
 ## Security
 
