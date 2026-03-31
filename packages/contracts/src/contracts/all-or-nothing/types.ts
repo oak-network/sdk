@@ -74,6 +74,16 @@ export interface AllOrNothingWrites {
 
 /** Simulate counterparts for AllOrNothing write methods. */
 export interface AllOrNothingSimulate {
+  /** Simulates pauseTreasury; throws a typed error on revert. */
+  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
+  /** Simulates unpauseTreasury; throws a typed error on revert. */
+  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
+  /** Simulates cancelTreasury; throws a typed error on revert. */
+  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
+  /** Simulates addRewards; throws a typed error on revert. */
+  addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<void>;
+  /** Simulates removeReward; throws a typed error on revert. */
+  removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates pledgeForAReward; throws a typed error on revert. */
   pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions): Promise<void>;
   /** Simulates pledgeWithoutAReward; throws a typed error on revert. */
@@ -84,6 +94,16 @@ export interface AllOrNothingSimulate {
   disburseFees(options?: CallSignerOptions): Promise<void>;
   /** Simulates withdraw; throws a typed error on revert. */
   withdraw(options?: CallSignerOptions): Promise<void>;
+  /** Simulates burn; throws a typed error on revert. */
+  burn(tokenId: bigint, options?: CallSignerOptions): Promise<void>;
+  /** Simulates approve; throws a typed error on revert. */
+  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
+  /** Simulates setApprovalForAll; throws a typed error on revert. */
+  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<void>;
+  /** Simulates safeTransferFrom; throws a typed error on revert. */
+  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
+  /** Simulates transferFrom; throws a typed error on revert. */
+  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for an AllOrNothing treasury contract instance. */

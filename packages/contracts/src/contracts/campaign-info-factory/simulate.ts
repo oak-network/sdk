@@ -65,6 +65,30 @@ export function createCampaignInfoFactorySimulate(
         }),
       );
     },
+    async transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "transferOwnership",
+          args: [newOwner],
+        }),
+      );
+    },
+    async renounceOwnership(options?: CallSignerOptions): Promise<void> {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "renounceOwnership",
+          args: [],
+        }),
+      );
+    },
   };
 }
 

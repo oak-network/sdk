@@ -110,10 +110,24 @@ export interface CampaignInfoSimulate {
   updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[], options?: CallSignerOptions): Promise<void>;
   /** Simulates mintNFTForPledge; throws a typed error on revert. */
   mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint, options?: CallSignerOptions): Promise<void>;
+  /** Simulates setImageURI; throws a typed error on revert. */
+  setImageURI(newImageURI: string, options?: CallSignerOptions): Promise<void>;
+  /** Simulates updateContractURI; throws a typed error on revert. */
+  updateContractURI(newContractURI: string, options?: CallSignerOptions): Promise<void>;
+  /** Simulates burn; throws a typed error on revert. */
+  burn(tokenId: bigint, options?: CallSignerOptions): Promise<void>;
   /** Simulates pauseCampaign; throws a typed error on revert. */
   pauseCampaign(message: Hex, options?: CallSignerOptions): Promise<void>;
+  /** Simulates unpauseCampaign; throws a typed error on revert. */
+  unpauseCampaign(message: Hex, options?: CallSignerOptions): Promise<void>;
   /** Simulates cancelCampaign; throws a typed error on revert. */
   cancelCampaign(message: Hex, options?: CallSignerOptions): Promise<void>;
+  /** Simulates setPlatformInfo; throws a typed error on revert. */
+  setPlatformInfo(platformBytes: Hex, platformTreasuryAddress: Address, options?: CallSignerOptions): Promise<void>;
+  /** Simulates transferOwnership; throws a typed error on revert. */
+  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<void>;
+  /** Simulates renounceOwnership; throws a typed error on revert. */
+  renounceOwnership(options?: CallSignerOptions): Promise<void>;
 }
 
 /** Event helpers for a CampaignInfo contract instance. */
