@@ -1,14 +1,46 @@
-# @oaknetwork/contracts
+# Oak Contracts SDK
 
 TypeScript SDK for interacting with Oak Network smart contracts. Provides a type-safe client with full read/write access to all Oak protocol contracts.
+
+> Full Documentation: [oaknetwork.org/docs/contracts-sdk/overview](https://oaknetwork.org/docs/contracts-sdk/overview)
+
+
+## Prerequisites
+
+> **You need deployed contract addresses to use this SDK.**
+
+> The SDK interacts with Oak Network smart contracts that must already be deployed on-chain. To get your contract addresses and sandbox environment access, contact our team at **support@oaknetwork.org**.
 
 ## Installation
 
 ```bash
 pnpm add @oaknetwork/contracts
 ```
+```bash
+npm install @oaknetwork/contracts
+```
+```bash
+yarn add @oaknetwork/contracts
+```
+**Requirements:** Node.js 18+, TypeScript 5.x recommended.
+
+### Supported Chain IDs
+
+```typescript
+import { CHAIN_IDS } from "@oaknetwork/contracts";
+
+CHAIN_IDS.ETHEREUM_MAINNET         // 1
+CHAIN_IDS.CELO_MAINNET             // 42220
+CHAIN_IDS.ETHEREUM_TESTNET_SEPOLIA // 11155111
+CHAIN_IDS.ETHEREUM_TESTNET_GOERLI  // 5
+CHAIN_IDS.CELO_TESTNET_SEPOLIA     // 11142220
+```
+
+> See the full installation documentation here: [oaknetwork.org/docs/contracts-sdk/installation](https://oaknetwork.org/docs/contracts-sdk/installation)
 
 ## Quick Start
+
+### Create a client
 
 ```typescript
 import { createOakContractsClient, CHAIN_IDS } from "@oaknetwork/contracts";
@@ -19,6 +51,7 @@ const oak = createOakContractsClient({
   privateKey: "0x...",
 });
 ```
+See the full [Quickstart](https://oaknetwork.org/docs/contracts-sdk/quickstart) guide for a step-by-step walkthrough.
 
 ## Client Configuration
 
@@ -129,23 +162,13 @@ When a write or simulate method is called, the signer is resolved in this order:
 3. **Client-level** `walletClient` from `createOakContractsClient`
 4. **Throws** `"No signer configured"` if none of the above is set
 
-## Supported Chain IDs
+> For a detailed step-by-step guide, please refer to the complete [Client Configuration](https://oaknetwork.org/docs/contracts-sdk/client) documentation.
 
-```typescript
-import { CHAIN_IDS } from "@oaknetwork/contracts";
-
-CHAIN_IDS.ETHEREUM_MAINNET         // 1
-CHAIN_IDS.CELO_MAINNET             // 42220
-CHAIN_IDS.ETHEREUM_TESTNET_SEPOLIA // 11155111
-CHAIN_IDS.ETHEREUM_TESTNET_GOERLI  // 5
-CHAIN_IDS.CELO_TESTNET_SEPOLIA     // 11142220
-```
-
-## Contracts
+## Contract Entities
 
 ### GlobalParams
 
-Protocol-wide configuration registry.
+Protocol-wide configuration registry. Manages platform listings, fee settings, token currencies, line item types, and a general-purpose key-value registry.
 
 ```typescript
 const gp = oak.globalParams("0x...");
@@ -181,11 +204,13 @@ await gp.addToRegistry(key, value);
 await gp.transferOwnership(newOwner);
 ```
 
+> For complete details on the Global Params contract entity, please visit the following link: [Global Params](https://oaknetwork.org/docs/contracts-sdk/global-params).
+
 ---
 
 ### CampaignInfoFactory
 
-Deploys new CampaignInfo contracts.
+Deploys new CampaignInfo contracts. Each campaign gets its own on-chain CampaignInfo instance with its own address, NFT collection, and configuration.
 
 ```typescript
 import {
@@ -229,30 +254,13 @@ const receipt        = await oak.waitForReceipt(txHash);
 const campaignAddress = await factory.identifierToCampaignInfo(identifierHash);
 ```
 
----
-
-### TreasuryFactory
-
-Deploys treasury contracts for a given CampaignInfo.
-
-```typescript
-const tf = oak.treasuryFactory("0x...");
-
-// Deploy
-const txHash = await tf.deploy(platformHash, infoAddress, implementationId);
-
-// Implementation management
-await tf.registerTreasuryImplementation(platformHash, implementationId, implAddress);
-await tf.approveTreasuryImplementation(platformHash, implementationId);
-await tf.disapproveTreasuryImplementation(implAddress);
-await tf.removeTreasuryImplementation(platformHash, implementationId);
-```
+> For complete details on the Campaign Info Factory contract entity, please visit the following link: [Campaign Info Factory](https://oaknetwork.org/docs/contracts-sdk/campaign-info-factory).
 
 ---
 
 ### CampaignInfo
 
-Per-campaign configuration and state.
+Per-campaign configuration and state. Each campaign deployed via the CampaignInfoFactory gets its own CampaignInfo contract that tracks funding progress, accepted tokens, platform settings, and NFT pledge records.
 
 ```typescript
 const ci = oak.campaignInfo("0x...");
@@ -276,12 +284,33 @@ await ci.pauseCampaign(message);
 await ci.unpauseCampaign(message);
 await ci.cancelCampaign(message);
 ```
+> For complete details on the Campaign Info contract entity, please visit the following link: [Campaign Info](https://oaknetwork.org/docs/contracts-sdk/campaign-info).
+
+---
+
+### TreasuryFactory
+
+Deploys treasury contracts for a given CampaignInfo. Manages treasury implementations that platforms can register, approve, and deploy.
+
+```typescript
+const tf = oak.treasuryFactory("0x...");
+
+// Deploy
+const txHash = await tf.deploy(platformHash, infoAddress, implementationId);
+
+// Implementation management
+await tf.registerTreasuryImplementation(platformHash, implementationId, implAddress);
+await tf.approveTreasuryImplementation(platformHash, implementationId);
+await tf.disapproveTreasuryImplementation(implAddress);
+await tf.removeTreasuryImplementation(platformHash, implementationId);
+```
+> For complete details on the Treasury Factory contract entity, please visit the following link: [Treasury Factory](https://oaknetwork.org/docs/contracts-sdk/treasury-factory).
 
 ---
 
 ### PaymentTreasury
 
-Handles fiat-style payments via a payment gateway.
+Handles fiat-style payments via a payment gateway. Manages payment creation, confirmation, refunds, fee disbursement, and fund withdrawal for campaigns.
 
 ```typescript
 const pt = oak.paymentTreasury("0x...");
@@ -302,12 +331,13 @@ await pt.pauseTreasury(message);
 await pt.unpauseTreasury(message);
 await pt.cancelTreasury(message);
 ```
+> For complete details on the Payment Treasury contract entity, please visit the following link: [Payment Treasury](https://oaknetwork.org/docs/contracts-sdk/payment-treasury).
 
 ---
 
 ### AllOrNothing Treasury
 
-Crowdfunding treasury — funds only released if goal is met, otherwise backers can claim refunds.
+Crowdfunding treasury where funds are only released if the campaign goal is met. If the goal is not reached, backers can claim full refunds. Includes ERC-721 pledge NFTs.
 
 ```typescript
 const aon = oak.allOrNothingTreasury("0x...");
@@ -332,12 +362,13 @@ const owner = await aon.ownerOf(tokenId);
 const uri   = await aon.tokenURI(tokenId);
 await aon.safeTransferFrom(from, to, tokenId);
 ```
+> For complete details on the AllOrNothing Treasury contract entity, please visit the following link: [AllOrNothing Treasury](https://oaknetwork.org/docs/contracts-sdk/all-or-nothing).
 
 ---
 
 ### KeepWhatsRaised Treasury
 
-Crowdfunding treasury — creator keeps all funds raised regardless of goal.
+Crowdfunding treasury where the creator keeps all funds raised regardless of whether the goal is met. Includes configurable fee structures, withdrawal delays, and ERC-721 pledge NFTs.
 
 ```typescript
 const kwr = oak.keepWhatsRaisedTreasury("0x...");
@@ -362,12 +393,13 @@ await kwr.pauseTreasury(message);
 await kwr.unpauseTreasury(message);
 await kwr.cancelTreasury(message);
 ```
+> For complete details on the KeepWhatsRaised Treasury contract entity, please visit the following link: [KeepWhatsRaised Treasury](https://oaknetwork.org/docs/contracts-sdk/keep-whats-raised).
 
 ---
 
 ### ItemRegistry
 
-Manages items available for purchase in campaigns.
+Manages items available for purchase in campaigns. Items represent physical goods with dimensions, weight, and category metadata.
 
 ```typescript
 const ir = oak.itemRegistry("0x...");
@@ -379,12 +411,15 @@ const item = await ir.getItem(ownerAddress, itemId);
 await ir.addItem(itemId, item);
 await ir.addItemsBatch(itemIds, items);
 ```
+> For complete details on the Item Registry contract entity, please visit the following link: [Item Registry](https://oaknetwork.org/docs/contracts-sdk/item-registry).
 
 ---
 
 ## Error Handling
 
-Contract revert errors can be decoded into typed SDK errors:
+Contract calls can revert with on-chain errors. The SDK decodes raw revert data into typed error classes with decoded arguments and human-readable recovery hints.
+
+### Decoding revert errors:
 
 ```typescript
 import { parseContractError, getRevertData } from "@oaknetwork/contracts";
@@ -415,14 +450,13 @@ try {
   handleError(err);
 }
 ```
-
-Recognized error types:
-- `GlobalParams*` — platform/protocol configuration errors
-- `CampaignInfoFactory*` — campaign creation errors
+> See the full error handling guidelines here: [Error handling](https://oaknetwork.org/docs/contracts-sdk/error-handling)
 
 ---
 
 ## Utility Functions
+
+The SDK exports pure utility functions and constants that have no client dependency. Import them from @oaknetwork/contracts or @oaknetwork/contracts/utils.
 
 ```typescript
 import {
@@ -467,6 +501,7 @@ const chain    = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
 const provider = createBrowserProvider(window.ethereum, chain);
 const signer   = await getSigner(window.ethereum, chain);
 ```
+For complete guidelines on utility functions, please refer to the following link: [Utility Functions](https://oaknetwork.org/docs/contracts-sdk/utilities).
 
 ---
 
@@ -484,13 +519,90 @@ const signer   = await getSigner(window.ethereum, chain);
 
 ## Local Development & Testing
 
+### Install dependencies
+
 ```bash
-# Install dependencies
 pnpm install
+```
 
-# Build
+### Build
+
+```bash
 pnpm build
+```
 
-# Run unit tests
+### Run all tests with coverage
+
+```bash
 pnpm test
 ```
+
+### Run unit tests only
+
+```bash
+pnpm test:unit
+```
+
+### Run integration tests only
+
+```bash
+pnpm test:integration
+```
+
+### Run tests in watch mode
+
+Re-runs tests automatically on file changes.
+
+```bash
+pnpm test:watch
+```
+
+---
+
+## Changesets Workflow
+
+We use [Changesets](https://github.com/changesets/changesets) to manage versions and changelogs:
+
+1. After making changes, run `pnpm changeset`
+2. Select impact (**Major** / **Minor** / **Patch**) for affected packages
+3. Commit the generated file in `.changeset/`
+4. CI automatically calculates versions, generates changelogs, and creates a release PR
+
+---
+
+## Development Guidelines
+
+See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture principles, security rules, testing requirements, and anti-patterns.
+
+---
+
+## Documentation
+
+- [Full docs](https://oaknetwork.org/docs/contracts-sdk/overview) — oaknetwork.org/docs/sdk/overview
+- [Quickstart](https://oaknetwork.org/docs/contracts-sdk/quickstart) — oaknetwork.org/docs/sdk/quickstart
+- [Monorepo README](../../README.md) — README.md
+- [Changelog](./CHANGELOG.md) — CHANGELOG.md
+
+---
+
+## License
+
+MIT
+
+---
+
+## Security
+
+[Security Policy](../../SECURITY.md)
+
+---
+
+## Links
+
+- [Oak Network](https://oaknetwork.org)
+- [Documentation](https://oaknetwork.org/docs/contracts-sdk/overview)
+- [GitHub](https://github.com/oak-network/sdk)
+- [Issues](https://github.com/oak-network/sdk/issues)
+- [npm](https://www.npmjs.com/package/@oaknetwork/contracts)
+
+Questions? [Open an issue](https://github.com/oak-network/sdk/issues) or contact **support@oaknetwork.org**
