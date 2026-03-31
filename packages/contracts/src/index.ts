@@ -1,10 +1,38 @@
-// Contract definitions and types
-// Add your contract code here
+export { createOakContractsClient } from "./client";
 
-/**
- * Placeholder function to ensure coverage collection works
- * Remove this once you add actual contract code
- */
-export function placeholder(): void {
-  // This ensures coverage is calculated
-}
+export * from "./utils";
+export * from "./types";
+
+export type {
+  Account,
+  Address,
+  Chain,
+  Hex,
+  PublicClient,
+  WalletClient,
+} from "./lib";
+export type { Wallet } from "./lib";
+
+export {
+  createPublicClient,
+  createWalletClient,
+  http,
+  custom,
+  stringToHex,
+  toHex,
+  parseEther,
+  formatEther,
+  parseUnits,
+  isAddress,
+  getAddress,
+  mainnet,
+  sepolia,
+  goerli,
+  createJsonRpcProvider,
+  createBrowserProvider,
+  getSigner,
+  createWallet,
+} from "./lib";
+
+export * from "./constants";
+export * from "./errors";

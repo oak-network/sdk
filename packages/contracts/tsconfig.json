@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
+    "target": "ES2020",
+    "lib": ["ES2021", "DOM"],
+    "module": "ES2022",
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -9,7 +10,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "moduleResolution": "node"
+    "moduleResolution": "bundler",
+    "noEmitOnError": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
