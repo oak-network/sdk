@@ -76,6 +76,7 @@ export function createOakContractsClient(
     campaignInfo(address: Address, options?: EntitySignerOptions): CampaignInfoEntity {
       return createCampaignInfoEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },
+    /** @see {@link OakContractsClient.paymentTreasury} — supports both PaymentTreasury and TimeConstrainedPaymentTreasury. */
     paymentTreasury(address: Address, options?: EntitySignerOptions): PaymentTreasuryEntity {
       return createPaymentTreasuryEntity(address, publicClient, options?.signer ?? walletClient, chain);
     },

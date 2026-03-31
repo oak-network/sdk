@@ -312,7 +312,17 @@ await tf.removeTreasuryImplementation(platformHash, implementationId);
 
 Handles fiat-style payments via a payment gateway. Manages payment creation, confirmation, refunds, fee disbursement, and fund withdrawal for campaigns.
 
+> **Two treasury variants, one SDK method.** The `paymentTreasury()` method works with both on-chain implementations:
+>
+> | Variant | Description |
+> |---------|-------------|
+> | **PaymentTreasury** | Standard payment treasury with no time restrictions. Payments can be created, confirmed, and refunded at any time while the treasury is active. |
+> | **TimeConstrainedPaymentTreasury** | Time-constrained variant that enforces launch-time and deadline windows on-chain. Payments can only be created within the campaign window (launch → deadline + buffer). Refunds, withdrawals, and fee disbursements are only available after launch. |
+>
+> Both contracts share the same ABI and the same SDK interface. Time enforcement is handled entirely on-chain — simply pass the deployed contract address regardless of which variant was deployed:
+
 ```typescript
+// Works for both PaymentTreasury and TimeConstrainedPaymentTreasury
 const pt = oak.paymentTreasury("0x...");
 
 // Reads
@@ -331,6 +341,9 @@ await pt.pauseTreasury(message);
 await pt.unpauseTreasury(message);
 await pt.cancelTreasury(message);
 ```
+
+> **Note:** When using a `TimeConstrainedPaymentTreasury`, calls made outside the allowed time window will revert on-chain. For example, `createPayment()` will revert if called before launch or after the deadline + buffer period.
+
 > For complete details on the Payment Treasury contract entity, please visit the following link: [Payment Treasury](https://oaknetwork.org/docs/contracts-sdk/payment-treasury).
 
 ---

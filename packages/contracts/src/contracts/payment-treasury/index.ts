@@ -7,7 +7,14 @@ import type { PaymentTreasuryEntity } from "./types";
 
 /**
  * Creates a fully composed PaymentTreasury entity combining reads, writes, simulate, and events.
- * Compatible with both PaymentTreasury and TimeConstrainedPaymentTreasury deployments.
+ *
+ * Compatible with **both** on-chain treasury variants:
+ * - **PaymentTreasury** — standard payment treasury with no time restrictions.
+ * - **TimeConstrainedPaymentTreasury** — payment treasury that enforces launch-time
+ *   and deadline constraints on-chain (payments only within the campaign window,
+ *   refunds/withdrawals only after launch). Time enforcement is handled entirely
+ *   on-chain, so the SDK interface is identical for both.
+ *
  * @param address - Deployed PaymentTreasury or TimeConstrainedPaymentTreasury contract address
  * @param publicClient - Viem PublicClient used for reads and simulation
  * @param walletClient - Viem WalletClient used for writes; must have an account attached

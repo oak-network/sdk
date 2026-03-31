@@ -139,7 +139,23 @@ export interface OakContractsClient {
   treasuryFactory(address: Address, options?: EntitySignerOptions): TreasuryFactoryEntity;
   /** Returns a CampaignInfo entity for the given contract address. */
   campaignInfo(address: Address, options?: EntitySignerOptions): CampaignInfoEntity;
-  /** Returns a PaymentTreasury entity for the given contract address. */
+  /**
+   * Returns a PaymentTreasury entity for the given contract address.
+   *
+   * This method is compatible with **both** on-chain treasury variants:
+   * - **PaymentTreasury** — standard payment treasury with no time restrictions.
+   * - **TimeConstrainedPaymentTreasury** — payment treasury that enforces launch-time
+   *   and deadline constraints on-chain (e.g. payments can only be created within the
+   *   campaign window, refunds/withdrawals only after launch).
+   *
+   * Both contracts share the same ABI and the same SDK interface. Time enforcement
+   * is handled entirely on-chain, so no client-side configuration is needed — simply
+   * pass the deployed contract address regardless of which variant was deployed.
+   *
+   * @param address - Deployed PaymentTreasury or TimeConstrainedPaymentTreasury contract address
+   * @param options - Optional per-entity signer override
+   * @returns PaymentTreasuryEntity with read, write, simulate, and event methods
+   */
   paymentTreasury(address: Address, options?: EntitySignerOptions): PaymentTreasuryEntity;
   /** Returns an AllOrNothing treasury entity for the given contract address. */
   allOrNothingTreasury(address: Address, options?: EntitySignerOptions): AllOrNothingTreasuryEntity;

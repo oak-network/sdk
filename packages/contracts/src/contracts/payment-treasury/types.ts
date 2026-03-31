@@ -153,7 +153,15 @@ export interface PaymentTreasurySimulate {
 /** Event helpers for PaymentTreasury. */
 export interface PaymentTreasuryEvents {}
 
-/** Full PaymentTreasury entity (reads, writes, simulate, events). */
+/**
+ * Full PaymentTreasury entity (reads, writes, simulate, events).
+ *
+ * This entity is compatible with both on-chain treasury variants:
+ * - **PaymentTreasury** — standard payment treasury with no time restrictions.
+ * - **TimeConstrainedPaymentTreasury** — payment treasury that enforces launch-time
+ *   and deadline constraints on-chain. Time checks are applied transparently by the
+ *   contract; the SDK interface is identical for both variants.
+ */
 export type PaymentTreasuryEntity = PaymentTreasuryReads &
   PaymentTreasuryWrites & {
     simulate: PaymentTreasurySimulate;
