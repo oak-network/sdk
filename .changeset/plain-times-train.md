@@ -2,4 +2,4 @@
 "@oaknetwork/contracts": major
 ---
 
-Added contract for sdk
+Added contract sdk v1.0.0
