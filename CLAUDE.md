@@ -1,6 +1,6 @@
 # Oak SDK - AI Development Guidelines
 
-**Last Updated:** February 2026
+**Last Updated:** March 2026
 **Status:** Pre-launch SDK (March 2026)
 
 This document provides strict rules and standards for AI assistants (Claude Code, Cursor, etc.) working on the Oak SDK codebase. Following these guidelines is **mandatory** to maintain code quality, security, and architectural consistency.
@@ -9,20 +9,23 @@ This document provides strict rules and standards for AI assistants (Claude Code
 
 ## Table of Contents
 
-1. [Architecture Principles](#architecture-principles)
-2. [Code Standards](#code-standards)
-3. [Security Rules](#security-rules)
-4. [Testing Requirements](#testing-requirements)
-5. [Anti-Patterns](#anti-patterns)
-6. [Refactoring Guidelines](#refactoring-guidelines)
-7. [Git Workflow](#git-workflow)
-8. [Performance](#performance)
-9. [Type System Rules](#type-system-rules)
-10. [Documentation](#documentation)
+1. [Architecture Principles (Payments SDK)](#architecture-principles-payments-sdk)
+2. [Contracts Package (`packages/contracts`)](#contracts-package-packagescontracts)
+3. [Code Standards](#code-standards)
+4. [Security Rules](#security-rules)
+5. [Testing Requirements](#testing-requirements)
+6. [Anti-Patterns](#anti-patterns)
+7. [Refactoring Guidelines](#refactoring-guidelines)
+8. [Git Workflow](#git-workflow)
+9. [Performance](#performance)
+10. [Type System Rules](#type-system-rules)
+11. [Documentation](#documentation)
 
 ---
 
-## Architecture Principles
+## Architecture Principles (Payments SDK)
+
+> **Scope:** This section applies to the **payments SDK** (`packages/payments-sdk`). For the contracts package (`packages/contracts`), see [Contracts Package](#contracts-package-packagescontracts) below.
 
 ### Core Patterns (DO NOT BREAK)
 
@@ -76,6 +79,189 @@ export class CustomerService {
 - **Utils** (`src/utils/`): Pure helper functions
 
 **NEVER** mix concerns (e.g., don't put HTTP logic in services, don't put business logic in HTTP client).
+
+---
+
+## Contracts Package (`packages/contracts`)
+
+> **This section is specific to `packages/contracts`.** The contracts package interacts with on-chain smart contracts via **viem**, not REST APIs. Its patterns differ significantly from the payments SDK above.
+
+### Architecture Overview
+
+```
+packages/contracts/src/
+├── client/          # createOakContractsClient, config resolution, types
+├── contracts/       # Per-protocol contract entities (kebab-case directories)
+│   ├── global-params/
+│   ├── campaign-info-factory/
+│   ├── campaign-info/
+│   ├── treasury-factory/
+│   ├── payment-treasury/
+│   ├── all-or-nothing/
+│   ├── keep-whats-raised/
+│   └── item-registry/
+├── types/           # Cross-contract structs + SDK params (no logic)
+├── utils/           # Pure helpers (account guards, chain, hash, hex, time)
+├── constants/       # Chain IDs, encoding, fees, registry
+├── errors/          # Typed revert error classes + parseContractError
+├── metrics/         # Platform/campaign/treasury reporting
+├── lib/             # Thin viem re-exports + provider helpers
+└── scripts/         # ABI generation/checking (dev tooling)
+```
+
+### Client Factory
+
+`createOakContractsClient(config)` is the entry point. It resolves viem clients and returns **entity factory methods**:
+
+```typescript
+const oak = createOakContractsClient({
+  chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+  rpcUrl: process.env.RPC_URL,
+  privateKey: process.env.PRIVATE_KEY as `0x${string}`,
+});
+
+const globalParams = oak.globalParams(GLOBAL_PARAMS_ADDRESS);
+const feePercent = await globalParams.getProtocolFeePercent();
+```
+
+Client config supports three modes:
+- **Read-only simple:** `{ chainId, rpcUrl }` -- writes/simulations throw
+- **Simple:** `{ chainId, rpcUrl, privateKey }` -- standard usage
+- **Full:** `{ chain, provider, signer }` -- BYO viem clients
+
+### Entity Composition Pattern
+
+Each contract directory contains `abi.ts`, `reads.ts`, `writes.ts`, `simulate.ts`, `events.ts`, `types.ts`, and `index.ts`. The entity factory composes them:
+
+```typescript
+// ✅ CORRECT - Entity factory pattern
+export function createGlobalParamsEntity(
+  address: Address,
+  publicClient: PublicClient,
+  walletClient: WalletClient | null,
+  chain: Chain,
+): GlobalParamsEntity {
+  return {
+    ...createGlobalParamsReads(address, publicClient),
+    ...createGlobalParamsWrites(address, walletClient, chain),
+    simulate: createGlobalParamsSimulate(address, publicClient, walletClient, chain),
+    events: createGlobalParamsEvents(address, publicClient),
+  };
+}
+```
+
+Entity types combine reads + writes + nested simulate/events:
+
+```typescript
+export type GlobalParamsEntity = GlobalParamsReads & GlobalParamsWrites & {
+  simulate: GlobalParamsSimulate;
+  events: GlobalParamsEvents;
+};
+```
+
+### Error Handling (Throws, NOT Result)
+
+The contracts package **throws errors** instead of returning `Result<T, E>`. This is correct for on-chain interactions.
+
+```typescript
+// ✅ CORRECT for contracts - throw errors
+export function requireSigner(walletClient: WalletClient | null): WalletClient {
+  if (walletClient === null) {
+    throw new Error("No signer configured.");
+  }
+  return walletClient;
+}
+
+// ❌ WRONG for contracts - do NOT use Result type
+function requireSigner(walletClient: WalletClient | null): Result<WalletClient> {
+  if (walletClient === null) return err(new Error("No signer"));
+  return ok(walletClient);
+}
+```
+
+On-chain revert errors are parsed into typed classes:
+
+- `parseContractError(error)` -- decodes revert data into a typed error class
+- `getRevertData(error)` -- extracts raw revert bytes from a caught error
+- `simulateWithErrorDecode(...)` -- simulates a transaction and decodes any revert
+- `getRecoveryHint(error)` -- returns a human-readable recovery suggestion
+
+Each contract has its own typed error classes in `src/errors/contracts/` (e.g., `GlobalParamsUnauthorizedError`, `AllOrNothingNotClaimableError`).
+
+### Signer Model
+
+Three levels of signer resolution, from most specific to least:
+
+1. **Per-call** (`CallSignerOptions`): `entity.enlistPlatform(..., { signer: walletClient })`
+2. **Per-entity** (`EntitySignerOptions`): `oak.globalParams(address, { signer: walletClient })`
+3. **Client-level**: `createOakContractsClient({ privateKey: "0x..." })`
+
+Write and simulate methods **MUST** use `requireSigner` and `requireAccount` guards before calling `writeContract` or `simulateContract`.
+
+### File and Naming Conventions
+
+| Item | Convention | Example |
+|------|-----------|---------|
+| Contract directories | kebab-case | `all-or-nothing/`, `payment-treasury/` |
+| Factory functions | `create<Contract><Layer>` | `createGlobalParamsReads`, `createAllOrNothingEntity` |
+| Type interfaces | PascalCase + suffix | `GlobalParamsReads`, `AllOrNothingTreasuryEntity` |
+| ABI files | `abi.ts` per contract | `src/contracts/global-params/abi.ts` |
+| Struct types | `src/types/structs.ts` | On-chain struct mirrors, no logic |
+| SDK params | `src/types/params.ts` | SDK input types, no logic |
+
+### Subpath Exports
+
+| Import path | Contents |
+|-------------|----------|
+| `@oaknetwork/contracts` | Client, utils, types, lib re-exports, constants, errors |
+| `@oaknetwork/contracts/contracts` | Individual `create*Entity` factories |
+| `@oaknetwork/contracts/client` | `createOakContractsClient` + client types |
+| `@oaknetwork/contracts/utils` | Pure helper functions |
+| `@oaknetwork/contracts/errors` | Error classes + parsing utilities |
+| `@oaknetwork/contracts/metrics` | Reporting helpers (**NOT** re-exported from root) |
+
+### Testing (Contracts-Specific)
+
+#### Coverage Thresholds
+
+- `pnpm test` enforces **100% coverage** globally (branches, functions, lines, statements)
+- `pnpm test:integration` relaxes thresholds via `--coverageThreshold='{}'`
+- ABI files (`abi.ts`) and barrel `index.ts` files are excluded from coverage collection
+
+#### Unit Tests
+
+Use the Hardhat `#0` private key and dummy addresses from `__tests__/setup/constant.ts`. No live RPC required:
+
+```typescript
+import { HARDHAT_PRIVATE_KEY, DUMMY_RPC_URL, DUMMY_ADDRESS } from "../setup/constant";
+
+const client = createOakContractsClient({
+  chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+  rpcUrl: DUMMY_RPC_URL,
+  privateKey: HARDHAT_PRIVATE_KEY,
+});
+```
+
+#### Integration Tests
+
+Require a `.env` file with `RPC_URL`, `PRIVATE_KEY`, and deployed contract addresses. Use `loadTestConfig()` from `__tests__/setup/config.ts`, which throws with a clear message if any required env var is missing.
+
+### Contracts Anti-Patterns
+
+1. ❌ Using `Result<T, E>` in contracts code -- use throws + typed errors
+2. ❌ Using `withAuth` or `httpClient` -- contracts use viem clients directly
+3. ❌ Inlining ABI arrays in read/write files -- always isolate in `abi.ts`
+4. ❌ Skipping `requireSigner`/`requireAccount` guards in write methods
+5. ❌ Putting logic in `src/types/` files -- types only, no runtime code
+6. ❌ Adding runtime dependencies beyond `viem` -- keep the dep footprint minimal
+
+### Build and Dependencies
+
+- **Runtime dependency:** `viem` only (`^2.23.0`)
+- **Build tool:** tsup (ESM only, `dts: true`, no splitting, clean)
+- **TypeScript:** strict mode, `moduleResolution: "bundler"`
+- **Module type:** ESM (`"type": "module"`)
+- **Published files:** `dist/` only
 
 ---
 
@@ -714,16 +900,29 @@ export function verifyWebhookSignature(
 
 ## Common Mistakes to Avoid
 
+### Shared (All Packages)
+
 1. ❌ Using `any` instead of `unknown`
-2. ❌ Not multiplying OAuth `expires_in` by 1000
-3. ❌ Silent test skips with `console.warn` + `return`
-4. ❌ Exposing `clientSecret` in public config
-5. ❌ Hardcoding URLs instead of using `buildUrl`
-6. ❌ Duplicating token-fetch logic instead of using `withAuth`
-7. ❌ Putting test tools in `dependencies` instead of `devDependencies`
-8. ❌ Creating zero-value wrapper functions
-9. ❌ Using `ReturnType<typeof>` instead of named interfaces
-10. ❌ Not handling both success and error paths in tests
+2. ❌ Silent test skips with `console.warn` + `return`
+3. ❌ Putting test tools in `dependencies` instead of `devDependencies`
+4. ❌ Creating zero-value wrapper functions
+5. ❌ Using `ReturnType<typeof>` instead of named interfaces
+6. ❌ Not handling both success and error paths in tests
+
+### Payments SDK Only
+
+7. ❌ Not multiplying OAuth `expires_in` by 1000
+8. ❌ Exposing `clientSecret` in public config
+9. ❌ Hardcoding URLs instead of using `buildUrl`
+10. ❌ Duplicating token-fetch logic instead of using `withAuth`
+
+### Contracts Package Only
+
+11. ❌ Using `Result<T, E>` instead of throws + typed errors
+12. ❌ Using `withAuth` or `httpClient` instead of viem clients
+13. ❌ Inlining ABI arrays instead of isolating in `abi.ts`
+14. ❌ Skipping `requireSigner`/`requireAccount` guards in write methods
+15. ❌ Adding runtime dependencies beyond `viem`
 
 ---
 
