@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { TieredReward } from "../../types/structs";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for an AllOrNothing treasury contract instance. */
@@ -107,7 +108,38 @@ export interface AllOrNothingSimulate {
 }
 
 /** Event helpers for an AllOrNothing treasury contract instance. */
-export interface AllOrNothingEvents {}
+export interface AllOrNothingEvents {
+  /** Returns decoded Receipt event logs (pledge events). */
+  getReceiptLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded RefundClaimed event logs. */
+  getRefundClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded WithdrawalSuccessful event logs. */
+  getWithdrawalSuccessfulLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded FeesDisbursed event logs. */
+  getFeesDisbursedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded RewardsAdded event logs. */
+  getRewardsAddedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded RewardRemoved event logs. */
+  getRewardRemovedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Paused event logs. */
+  getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Unpaused event logs. */
+  getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Transfer event logs. */
+  getTransferLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded SuccessConditionNotFulfilled event logs. */
+  getSuccessConditionNotFulfilledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Decodes a raw log entry against all known AllOrNothing events. */
+  decodeLog(log: RawLog): DecodedEventLog;
+  /** Watches for Receipt events in real time. Returns an unwatch function. */
+  watchReceipt(onLogs: EventWatchHandler): () => void;
+  /** Watches for RefundClaimed events in real time. Returns an unwatch function. */
+  watchRefundClaimed(onLogs: EventWatchHandler): () => void;
+  /** Watches for WithdrawalSuccessful events in real time. Returns an unwatch function. */
+  watchWithdrawalSuccessful(onLogs: EventWatchHandler): () => void;
+  /** Watches for FeesDisbursed events in real time. Returns an unwatch function. */
+  watchFeesDisbursed(onLogs: EventWatchHandler): () => void;
+}
 
 /** Full AllOrNothing treasury entity combining reads, writes, simulate, and events. */
 export type AllOrNothingTreasuryEntity = AllOrNothingReads & AllOrNothingWrites & {
