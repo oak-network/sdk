@@ -129,6 +129,10 @@ export interface AllOrNothingEvents {
   getTransferLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded SuccessConditionNotFulfilled event logs. */
   getSuccessConditionNotFulfilledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Approval event logs. */
+  getApprovalLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded ApprovalForAll event logs. */
+  getApprovalForAllLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known AllOrNothing events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for Receipt events in real time. Returns an unwatch function. */
@@ -139,6 +143,22 @@ export interface AllOrNothingEvents {
   watchWithdrawalSuccessful(onLogs: EventWatchHandler): () => void;
   /** Watches for FeesDisbursed events in real time. Returns an unwatch function. */
   watchFeesDisbursed(onLogs: EventWatchHandler): () => void;
+  /** Watches for RewardsAdded events in real time. Returns an unwatch function. */
+  watchRewardsAdded(onLogs: EventWatchHandler): () => void;
+  /** Watches for RewardRemoved events in real time. Returns an unwatch function. */
+  watchRewardRemoved(onLogs: EventWatchHandler): () => void;
+  /** Watches for Paused events in real time. Returns an unwatch function. */
+  watchPaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Unpaused events in real time. Returns an unwatch function. */
+  watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Transfer events in real time. Returns an unwatch function. */
+  watchTransfer(onLogs: EventWatchHandler): () => void;
+  /** Watches for SuccessConditionNotFulfilled events in real time. Returns an unwatch function. */
+  watchSuccessConditionNotFulfilled(onLogs: EventWatchHandler): () => void;
+  /** Watches for Approval events in real time. Returns an unwatch function. */
+  watchApproval(onLogs: EventWatchHandler): () => void;
+  /** Watches for ApprovalForAll events in real time. Returns an unwatch function. */
+  watchApprovalForAll(onLogs: EventWatchHandler): () => void;
 }
 
 /** Full AllOrNothing treasury entity combining reads, writes, simulate, and events. */

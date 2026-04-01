@@ -112,6 +112,12 @@ export function createAllOrNothingEvents(
     async getSuccessConditionNotFulfilledLogs(options) {
       return fetchEventLogs(publicClient, address, "SuccessConditionNotFulfilled", options);
     },
+    async getApprovalLogs(options) {
+      return fetchEventLogs(publicClient, address, "Approval", options);
+    },
+    async getApprovalForAllLogs(options) {
+      return fetchEventLogs(publicClient, address, "ApprovalForAll", options);
+    },
     decodeLog(log) {
       return decode({ topics: [...log.topics] as Hex[], data: log.data });
     },
@@ -126,6 +132,30 @@ export function createAllOrNothingEvents(
     },
     watchFeesDisbursed(onLogs) {
       return createWatcher(publicClient, address, "FeesDisbursed", onLogs);
+    },
+    watchRewardsAdded(onLogs) {
+      return createWatcher(publicClient, address, "RewardsAdded", onLogs);
+    },
+    watchRewardRemoved(onLogs) {
+      return createWatcher(publicClient, address, "RewardRemoved", onLogs);
+    },
+    watchPaused(onLogs) {
+      return createWatcher(publicClient, address, "Paused", onLogs);
+    },
+    watchUnpaused(onLogs) {
+      return createWatcher(publicClient, address, "Unpaused", onLogs);
+    },
+    watchTransfer(onLogs) {
+      return createWatcher(publicClient, address, "Transfer", onLogs);
+    },
+    watchSuccessConditionNotFulfilled(onLogs) {
+      return createWatcher(publicClient, address, "SuccessConditionNotFulfilled", onLogs);
+    },
+    watchApproval(onLogs) {
+      return createWatcher(publicClient, address, "Approval", onLogs);
+    },
+    watchApprovalForAll(onLogs) {
+      return createWatcher(publicClient, address, "ApprovalForAll", onLogs);
     },
   };
 }
