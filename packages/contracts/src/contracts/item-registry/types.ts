@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { Item } from "../../types/structs";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for ItemRegistry. */
@@ -25,7 +26,14 @@ export interface ItemRegistrySimulate {
 }
 
 /** Event helpers for ItemRegistry. */
-export interface ItemRegistryEvents {}
+export interface ItemRegistryEvents {
+  /** Returns decoded ItemAdded event logs. */
+  getItemAddedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Decodes a raw log entry against all known ItemRegistry events. */
+  decodeLog(log: RawLog): DecodedEventLog;
+  /** Watches for ItemAdded events in real time. Returns an unwatch function. */
+  watchItemAdded(onLogs: EventWatchHandler): () => void;
+}
 
 /** Full ItemRegistry entity (reads, writes, simulate, events). */
 export type ItemRegistryEntity = ItemRegistryReads &
