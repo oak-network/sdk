@@ -270,7 +270,9 @@ describe("GlobalParams — simulate (may throw)", () => {
 });
 
 describe("GlobalParams — events", () => {
-  it("events is an empty object", () => {
-    expect(gp.events).toEqual({});
+  it("events exposes event helpers", () => {
+    expect(typeof gp.events.getPlatformEnlistedLogs).toBe("function");
+    expect(typeof gp.events.decodeLog).toBe("function");
+    expect(typeof gp.events.watchPlatformEnlisted).toBe("function");
   });
 });

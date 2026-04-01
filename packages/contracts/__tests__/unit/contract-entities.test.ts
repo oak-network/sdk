@@ -5,14 +5,19 @@
  */
 
 import type { Address, PublicClient, WalletClient, Chain } from "../../src/lib";
+import { keccak256, toHex } from "viem";
 
 const ADDR = "0x0000000000000000000000000000000000000001" as Address;
 const B32 = ("0x" + "00".repeat(32)) as `0x${string}`;
+
+type WatchContractEventArgs = { onLogs: (logs: unknown[]) => void };
 
 function mockPublicClient(): PublicClient {
   return {
     readContract: jest.fn().mockResolvedValue(0n),
     simulateContract: jest.fn().mockResolvedValue({ result: undefined }),
+    getContractEvents: jest.fn().mockResolvedValue([]),
+    watchContractEvent: jest.fn().mockImplementation((_args: WatchContractEventArgs) => () => {}),
   } as unknown as PublicClient;
 }
 
@@ -90,7 +95,70 @@ describe("GlobalParams entity", () => {
     it("renounceOwnership", async () => { await entity.simulate.renounceOwnership(); });
   });
 
-  it("events is empty", () => { expect(entity.events).toEqual({}); });
+  describe("events", () => {
+    it("exposes event methods", () => {
+      expect(typeof entity.events.getPlatformEnlistedLogs).toBe("function");
+      expect(typeof entity.events.getPlatformDelistedLogs).toBe("function");
+      expect(typeof entity.events.decodeLog).toBe("function");
+      expect(typeof entity.events.watchPlatformEnlisted).toBe("function");
+    });
+    it("getPlatformEnlistedLogs", async () => { await entity.events.getPlatformEnlistedLogs(); expect(pub.getContractEvents).toHaveBeenCalled(); });
+    it("getPlatformDelistedLogs", async () => { await entity.events.getPlatformDelistedLogs(); });
+    it("getPlatformAdminAddressUpdatedLogs", async () => { await entity.events.getPlatformAdminAddressUpdatedLogs(); });
+    it("getPlatformDataAddedLogs", async () => { await entity.events.getPlatformDataAddedLogs(); });
+    it("getPlatformDataRemovedLogs", async () => { await entity.events.getPlatformDataRemovedLogs(); });
+    it("getPlatformAdapterSetLogs", async () => { await entity.events.getPlatformAdapterSetLogs(); });
+    it("getPlatformClaimDelayUpdatedLogs", async () => { await entity.events.getPlatformClaimDelayUpdatedLogs(); });
+    it("getProtocolAdminAddressUpdatedLogs", async () => { await entity.events.getProtocolAdminAddressUpdatedLogs(); });
+    it("getProtocolFeePercentUpdatedLogs", async () => { await entity.events.getProtocolFeePercentUpdatedLogs(); });
+    it("getTokenAddedToCurrencyLogs", async () => { await entity.events.getTokenAddedToCurrencyLogs(); });
+    it("getTokenRemovedFromCurrencyLogs", async () => { await entity.events.getTokenRemovedFromCurrencyLogs(); });
+    it("getOwnershipTransferredLogs", async () => { await entity.events.getOwnershipTransferredLogs(); });
+    it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
+    it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("watchPlatformEnlisted", () => { entity.events.watchPlatformEnlisted(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
+    it("watchPlatformDelisted", () => { entity.events.watchPlatformDelisted(() => {}); });
+    it("watchPlatformAdminAddressUpdated", () => { entity.events.watchPlatformAdminAddressUpdated(() => {}); });
+    it("watchPlatformDataAdded", () => { entity.events.watchPlatformDataAdded(() => {}); });
+    it("watchPlatformDataRemoved", () => { entity.events.watchPlatformDataRemoved(() => {}); });
+    it("watchPlatformAdapterSet", () => { entity.events.watchPlatformAdapterSet(() => {}); });
+    it("watchPlatformClaimDelayUpdated", () => { entity.events.watchPlatformClaimDelayUpdated(() => {}); });
+    it("watchProtocolAdminAddressUpdated", () => { entity.events.watchProtocolAdminAddressUpdated(() => {}); });
+    it("watchProtocolFeePercentUpdated", () => { entity.events.watchProtocolFeePercentUpdated(() => {}); });
+    it("watchTokenAddedToCurrency", () => { entity.events.watchTokenAddedToCurrency(() => {}); });
+    it("watchTokenRemovedFromCurrency", () => { entity.events.watchTokenRemovedFromCurrency(() => {}); });
+    it("watchOwnershipTransferred", () => { entity.events.watchOwnershipTransferred(() => {}); });
+    it("watchPaused", () => { entity.events.watchPaused(() => {}); });
+    it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("decodeLog decodes a Paused event", () => {
+      const pausedSig = keccak256(toHex("Paused(address)"));
+      const result = entity.events.decodeLog({
+        topics: [pausedSig],
+        data: ("0x" + ADDR.slice(2).padStart(64, "0")) as `0x${string}`,
+      });
+      expect(result.eventName).toBe("Paused");
+    });
+    it("getLogs with fromBlock/toBlock options", async () => {
+      await entity.events.getPlatformEnlistedLogs({ fromBlock: 0n, toBlock: 100n });
+      expect(pub.getContractEvents).toHaveBeenCalledWith(expect.objectContaining({ fromBlock: 0n, toBlock: 100n }));
+    });
+    it("watcher callback invokes handler with decoded logs", () => {
+      const captured: WatchContractEventArgs[] = [];
+      (pub.watchContractEvent as jest.Mock).mockImplementation((args: WatchContractEventArgs) => { captured.push(args); return () => {}; });
+      const handler = jest.fn();
+      entity.events.watchPlatformEnlisted(handler);
+      const pausedSig = keccak256(toHex("Paused(address)"));
+      captured[0].onLogs([{ topics: [pausedSig], data: ("0x" + ADDR.slice(2).padStart(64, "0")) as `0x${string}` }]);
+      expect(handler).toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ eventName: "Paused" })]));
+    });
+    it("fetchEventLogs decodes returned logs", async () => {
+      const pausedSig = keccak256(toHex("Paused(address)"));
+      (pub.getContractEvents as jest.Mock).mockResolvedValueOnce([{ topics: [pausedSig], data: ("0x" + ADDR.slice(2).padStart(64, "0")) as `0x${string}` }]);
+      const logs = await entity.events.getPausedLogs();
+      expect(logs).toHaveLength(1);
+      expect(logs[0].eventName).toBe("Paused");
+    });
+  });
 });
 
 // ============================================================
@@ -126,7 +194,34 @@ describe("CampaignInfoFactory entity", () => {
   it("simulate.updateImplementation", async () => { await entity.simulate.updateImplementation(ADDR); });
   it("simulate.transferOwnership", async () => { await entity.simulate.transferOwnership(ADDR); });
   it("simulate.renounceOwnership", async () => { await entity.simulate.renounceOwnership(); });
-  it("events is empty", () => { expect(entity.events).toEqual({}); });
+  describe("events", () => {
+    it("getCampaignCreatedLogs", async () => { await entity.events.getCampaignCreatedLogs(); expect(pub.getContractEvents).toHaveBeenCalled(); });
+    it("getCampaignInitializedLogs", async () => { await entity.events.getCampaignInitializedLogs(); });
+    it("getOwnershipTransferredLogs", async () => { await entity.events.getOwnershipTransferredLogs(); });
+    it("watchCampaignCreated", () => { entity.events.watchCampaignCreated(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
+    it("watchCampaignInitialized", () => { entity.events.watchCampaignInitialized(() => {}); });
+    it("watchOwnershipTransferred", () => { entity.events.watchOwnershipTransferred(() => {}); });
+    it("decodeLog decodes a CampaignInfoFactoryCampaignInitialized event", () => {
+      const sig = keccak256(toHex("CampaignInfoFactoryCampaignInitialized()"));
+      const result = entity.events.decodeLog({ topics: [sig], data: "0x" as `0x${string}` });
+      expect(result.eventName).toBe("CampaignInfoFactoryCampaignInitialized");
+    });
+    it("fetchEventLogs decodes returned logs", async () => {
+      const sig = keccak256(toHex("CampaignInfoFactoryCampaignInitialized()"));
+      (pub.getContractEvents as jest.Mock).mockResolvedValueOnce([{ topics: [sig], data: "0x" as `0x${string}` }]);
+      const logs = await entity.events.getCampaignInitializedLogs();
+      expect(logs).toHaveLength(1);
+    });
+    it("watcher callback invokes handler", () => {
+      const captured: WatchContractEventArgs[] = [];
+      (pub.watchContractEvent as jest.Mock).mockImplementation((args: WatchContractEventArgs) => { captured.push(args); return () => {}; });
+      const handler = jest.fn();
+      entity.events.watchCampaignCreated(handler);
+      const sig = keccak256(toHex("CampaignInfoFactoryCampaignInitialized()"));
+      captured[0].onLogs([{ topics: [sig], data: "0x" as `0x${string}` }]);
+      expect(handler).toHaveBeenCalled();
+    });
+  });
 });
 
 // ============================================================
@@ -149,7 +244,42 @@ describe("TreasuryFactory entity", () => {
   it("simulate.approveTreasuryImplementation", async () => { await entity.simulate.approveTreasuryImplementation(B32, 0n); });
   it("simulate.disapproveTreasuryImplementation", async () => { await entity.simulate.disapproveTreasuryImplementation(ADDR); });
   it("simulate.removeTreasuryImplementation", async () => { await entity.simulate.removeTreasuryImplementation(B32, 0n); });
-  it("events is empty", () => { expect(entity.events).toEqual({}); });
+  describe("events", () => {
+    it("getTreasuryDeployedLogs", async () => { await entity.events.getTreasuryDeployedLogs(); expect(pub.getContractEvents).toHaveBeenCalled(); });
+    it("getImplementationRegisteredLogs", async () => { await entity.events.getImplementationRegisteredLogs(); });
+    it("getImplementationRemovedLogs", async () => { await entity.events.getImplementationRemovedLogs(); });
+    it("getImplementationApprovalLogs", async () => { await entity.events.getImplementationApprovalLogs(); });
+    it("watchTreasuryDeployed", () => { entity.events.watchTreasuryDeployed(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
+    it("watchImplementationRegistered", () => { entity.events.watchImplementationRegistered(() => {}); });
+    it("watchImplementationRemoved", () => { entity.events.watchImplementationRemoved(() => {}); });
+    it("watchImplementationApproval", () => { entity.events.watchImplementationApproval(() => {}); });
+    it("decodeLog decodes a TreasuryImplementationApproval event", () => {
+      const sig = keccak256(toHex("TreasuryImplementationApproval(address,bool)"));
+      const implTopic = ("0x" + ADDR.slice(2).padStart(64, "0")) as `0x${string}`;
+      const data = ("0x" + "0".repeat(63) + "1") as `0x${string}`;
+      const result = entity.events.decodeLog({ topics: [sig, implTopic], data });
+      expect(result.eventName).toBe("TreasuryImplementationApproval");
+    });
+    it("fetchEventLogs decodes returned logs", async () => {
+      const sig = keccak256(toHex("TreasuryImplementationApproval(address,bool)"));
+      const implTopic = ("0x" + ADDR.slice(2).padStart(64, "0")) as `0x${string}`;
+      const data = ("0x" + "0".repeat(63) + "1") as `0x${string}`;
+      (pub.getContractEvents as jest.Mock).mockResolvedValueOnce([{ topics: [sig, implTopic], data }]);
+      const logs = await entity.events.getImplementationApprovalLogs();
+      expect(logs).toHaveLength(1);
+    });
+    it("watcher callback invokes handler", () => {
+      const captured: WatchContractEventArgs[] = [];
+      (pub.watchContractEvent as jest.Mock).mockImplementation((args: WatchContractEventArgs) => { captured.push(args); return () => {}; });
+      const handler = jest.fn();
+      entity.events.watchTreasuryDeployed(handler);
+      const sig = keccak256(toHex("TreasuryImplementationApproval(address,bool)"));
+      const implTopic = ("0x" + ADDR.slice(2).padStart(64, "0")) as `0x${string}`;
+      const data = ("0x" + "0".repeat(63) + "1") as `0x${string}`;
+      captured[0].onLogs([{ topics: [sig, implTopic], data }]);
+      expect(handler).toHaveBeenCalled();
+    });
+  });
 });
 
 // ============================================================
@@ -229,7 +359,52 @@ describe("CampaignInfo entity", () => {
     it("renounceOwnership", async () => { await entity.simulate.renounceOwnership(); });
   });
 
-  it("events is empty", () => { expect(entity.events).toEqual({}); });
+  describe("events", () => {
+    it("getDeadlineUpdatedLogs", async () => { await entity.events.getDeadlineUpdatedLogs(); expect(pub.getContractEvents).toHaveBeenCalled(); });
+    it("getGoalAmountUpdatedLogs", async () => { await entity.events.getGoalAmountUpdatedLogs(); });
+    it("getLaunchTimeUpdatedLogs", async () => { await entity.events.getLaunchTimeUpdatedLogs(); });
+    it("getPlatformInfoUpdatedLogs", async () => { await entity.events.getPlatformInfoUpdatedLogs(); });
+    it("getSelectedPlatformUpdatedLogs", async () => { await entity.events.getSelectedPlatformUpdatedLogs(); });
+    it("getOwnershipTransferredLogs", async () => { await entity.events.getOwnershipTransferredLogs(); });
+    it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
+    it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("watchDeadlineUpdated", () => { entity.events.watchDeadlineUpdated(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
+    it("watchGoalAmountUpdated", () => { entity.events.watchGoalAmountUpdated(() => {}); });
+    it("watchLaunchTimeUpdated", () => { entity.events.watchLaunchTimeUpdated(() => {}); });
+    it("watchPlatformInfoUpdated", () => { entity.events.watchPlatformInfoUpdated(() => {}); });
+    it("watchSelectedPlatformUpdated", () => { entity.events.watchSelectedPlatformUpdated(() => {}); });
+    it("watchOwnershipTransferred", () => { entity.events.watchOwnershipTransferred(() => {}); });
+    it("watchPaused", () => { entity.events.watchPaused(() => {}); });
+    it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("decodeLog decodes a CampaignInfoDeadlineUpdated event", () => {
+      const sig = keccak256(toHex("CampaignInfoDeadlineUpdated(uint256)"));
+      const data = ("0x" + "0".repeat(63) + "1") as `0x${string}`;
+      const result = entity.events.decodeLog({ topics: [sig], data });
+      expect(result.eventName).toBe("CampaignInfoDeadlineUpdated");
+    });
+    it("fetchEventLogs decodes returned logs", async () => {
+      const sig = keccak256(toHex("CampaignInfoDeadlineUpdated(uint256)"));
+      const data = ("0x" + "0".repeat(63) + "1") as `0x${string}`;
+      (pub.getContractEvents as jest.Mock).mockResolvedValueOnce([{ topics: [sig], data }]);
+      const logs = await entity.events.getDeadlineUpdatedLogs();
+      expect(logs).toHaveLength(1);
+      expect(logs[0].eventName).toBe("CampaignInfoDeadlineUpdated");
+    });
+    it("watcher callback invokes handler", () => {
+      const captured: WatchContractEventArgs[] = [];
+      (pub.watchContractEvent as jest.Mock).mockImplementation((args: WatchContractEventArgs) => { captured.push(args); return () => {}; });
+      const handler = jest.fn();
+      entity.events.watchDeadlineUpdated(handler);
+      const sig = keccak256(toHex("CampaignInfoDeadlineUpdated(uint256)"));
+      const data = ("0x" + "0".repeat(63) + "1") as `0x${string}`;
+      captured[0].onLogs([{ topics: [sig], data }]);
+      expect(handler).toHaveBeenCalled();
+    });
+    it("getLogs with fromBlock/toBlock options", async () => {
+      await entity.events.getDeadlineUpdatedLogs({ fromBlock: 0n, toBlock: 100n });
+      expect(pub.getContractEvents).toHaveBeenCalledWith(expect.objectContaining({ fromBlock: 0n, toBlock: 100n }));
+    });
+  });
 });
 
 // ============================================================
@@ -290,7 +465,53 @@ describe("PaymentTreasury entity", () => {
     it("cancelTreasury", async () => { await entity.simulate.cancelTreasury(B32); });
   });
 
-  it("events is empty", () => { expect(entity.events).toEqual({}); });
+  describe("events", () => {
+    it("getPaymentCreatedLogs", async () => { await entity.events.getPaymentCreatedLogs(); expect(pub.getContractEvents).toHaveBeenCalled(); });
+    it("getPaymentCancelledLogs", async () => { await entity.events.getPaymentCancelledLogs(); });
+    it("getPaymentConfirmedLogs", async () => { await entity.events.getPaymentConfirmedLogs(); });
+    it("getPaymentBatchConfirmedLogs", async () => { await entity.events.getPaymentBatchConfirmedLogs(); });
+    it("getPaymentBatchCreatedLogs", async () => { await entity.events.getPaymentBatchCreatedLogs(); });
+    it("getFeesDisbursedLogs", async () => { await entity.events.getFeesDisbursedLogs(); });
+    it("getWithdrawalWithFeeSuccessfulLogs", async () => { await entity.events.getWithdrawalWithFeeSuccessfulLogs(); });
+    it("getRefundClaimedLogs", async () => { await entity.events.getRefundClaimedLogs(); });
+    it("getNonGoalLineItemsClaimedLogs", async () => { await entity.events.getNonGoalLineItemsClaimedLogs(); });
+    it("getExpiredFundsClaimedLogs", async () => { await entity.events.getExpiredFundsClaimedLogs(); });
+    it("watchPaymentCreated", () => { entity.events.watchPaymentCreated(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
+    it("watchPaymentConfirmed", () => { entity.events.watchPaymentConfirmed(() => {}); });
+    it("watchPaymentCancelled", () => { entity.events.watchPaymentCancelled(() => {}); });
+    it("watchPaymentBatchConfirmed", () => { entity.events.watchPaymentBatchConfirmed(() => {}); });
+    it("watchPaymentBatchCreated", () => { entity.events.watchPaymentBatchCreated(() => {}); });
+    it("watchRefundClaimed", () => { entity.events.watchRefundClaimed(() => {}); });
+    it("watchFeesDisbursed", () => { entity.events.watchFeesDisbursed(() => {}); });
+    it("watchWithdrawalWithFeeSuccessful", () => { entity.events.watchWithdrawalWithFeeSuccessful(() => {}); });
+    it("watchNonGoalLineItemsClaimed", () => { entity.events.watchNonGoalLineItemsClaimed(() => {}); });
+    it("watchExpiredFundsClaimed", () => { entity.events.watchExpiredFundsClaimed(() => {}); });
+    it("decodeLog decodes a PaymentCancelled event", () => {
+      const sig = keccak256(toHex("PaymentCancelled(bytes32)"));
+      const result = entity.events.decodeLog({ topics: [sig, B32], data: "0x" as `0x${string}` });
+      expect(result.eventName).toBe("PaymentCancelled");
+    });
+    it("fetchEventLogs decodes returned logs", async () => {
+      const sig = keccak256(toHex("PaymentCancelled(bytes32)"));
+      (pub.getContractEvents as jest.Mock).mockResolvedValueOnce([{ topics: [sig, B32], data: "0x" as `0x${string}` }]);
+      const logs = await entity.events.getPaymentCancelledLogs();
+      expect(logs).toHaveLength(1);
+      expect(logs[0].eventName).toBe("PaymentCancelled");
+    });
+    it("watcher callback invokes handler", () => {
+      const captured: WatchContractEventArgs[] = [];
+      (pub.watchContractEvent as jest.Mock).mockImplementation((args: WatchContractEventArgs) => { captured.push(args); return () => {}; });
+      const handler = jest.fn();
+      entity.events.watchPaymentCreated(handler);
+      const sig = keccak256(toHex("PaymentCancelled(bytes32)"));
+      captured[0].onLogs([{ topics: [sig, B32], data: "0x" as `0x${string}` }]);
+      expect(handler).toHaveBeenCalled();
+    });
+    it("getLogs with fromBlock/toBlock options", async () => {
+      await entity.events.getPaymentCreatedLogs({ fromBlock: 0n, toBlock: 100n });
+      expect(pub.getContractEvents).toHaveBeenCalledWith(expect.objectContaining({ fromBlock: 0n, toBlock: 100n }));
+    });
+  });
 });
 
 // ============================================================
@@ -358,7 +579,57 @@ describe("AllOrNothing entity", () => {
     it("transferFrom", async () => { await entity.simulate.transferFrom(ADDR, ADDR, 0n); });
   });
 
-  it("events is empty", () => { expect(entity.events).toEqual({}); });
+  describe("events", () => {
+    it("getReceiptLogs", async () => { await entity.events.getReceiptLogs(); expect(pub.getContractEvents).toHaveBeenCalled(); });
+    it("getRefundClaimedLogs", async () => { await entity.events.getRefundClaimedLogs(); });
+    it("getWithdrawalSuccessfulLogs", async () => { await entity.events.getWithdrawalSuccessfulLogs(); });
+    it("getFeesDisbursedLogs", async () => { await entity.events.getFeesDisbursedLogs(); });
+    it("getRewardsAddedLogs", async () => { await entity.events.getRewardsAddedLogs(); });
+    it("getRewardRemovedLogs", async () => { await entity.events.getRewardRemovedLogs(); });
+    it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
+    it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("getTransferLogs", async () => { await entity.events.getTransferLogs(); });
+    it("getSuccessConditionNotFulfilledLogs", async () => { await entity.events.getSuccessConditionNotFulfilledLogs(); });
+    it("getApprovalLogs", async () => { await entity.events.getApprovalLogs(); });
+    it("getApprovalForAllLogs", async () => { await entity.events.getApprovalForAllLogs(); });
+    it("watchReceipt", () => { entity.events.watchReceipt(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
+    it("watchRefundClaimed", () => { entity.events.watchRefundClaimed(() => {}); });
+    it("watchWithdrawalSuccessful", () => { entity.events.watchWithdrawalSuccessful(() => {}); });
+    it("watchFeesDisbursed", () => { entity.events.watchFeesDisbursed(() => {}); });
+    it("watchRewardsAdded", () => { entity.events.watchRewardsAdded(() => {}); });
+    it("watchRewardRemoved", () => { entity.events.watchRewardRemoved(() => {}); });
+    it("watchPaused", () => { entity.events.watchPaused(() => {}); });
+    it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("watchTransfer", () => { entity.events.watchTransfer(() => {}); });
+    it("watchSuccessConditionNotFulfilled", () => { entity.events.watchSuccessConditionNotFulfilled(() => {}); });
+    it("watchApproval", () => { entity.events.watchApproval(() => {}); });
+    it("watchApprovalForAll", () => { entity.events.watchApprovalForAll(() => {}); });
+    it("decodeLog decodes a SuccessConditionNotFulfilled event", () => {
+      const sig = keccak256(toHex("SuccessConditionNotFulfilled()"));
+      const result = entity.events.decodeLog({ topics: [sig], data: "0x" as `0x${string}` });
+      expect(result.eventName).toBe("SuccessConditionNotFulfilled");
+    });
+    it("fetchEventLogs decodes returned logs", async () => {
+      const sig = keccak256(toHex("SuccessConditionNotFulfilled()"));
+      (pub.getContractEvents as jest.Mock).mockResolvedValueOnce([{ topics: [sig], data: "0x" as `0x${string}` }]);
+      const logs = await entity.events.getSuccessConditionNotFulfilledLogs();
+      expect(logs).toHaveLength(1);
+      expect(logs[0].eventName).toBe("SuccessConditionNotFulfilled");
+    });
+    it("watcher callback invokes handler", () => {
+      const captured: WatchContractEventArgs[] = [];
+      (pub.watchContractEvent as jest.Mock).mockImplementation((args: WatchContractEventArgs) => { captured.push(args); return () => {}; });
+      const handler = jest.fn();
+      entity.events.watchReceipt(handler);
+      const sig = keccak256(toHex("SuccessConditionNotFulfilled()"));
+      captured[0].onLogs([{ topics: [sig], data: "0x" as `0x${string}` }]);
+      expect(handler).toHaveBeenCalled();
+    });
+    it("getLogs with fromBlock/toBlock options", async () => {
+      await entity.events.getReceiptLogs({ fromBlock: 0n, toBlock: 100n });
+      expect(pub.getContractEvents).toHaveBeenCalledWith(expect.objectContaining({ fromBlock: 0n, toBlock: 100n }));
+    });
+  });
 });
 
 // ============================================================
@@ -461,7 +732,69 @@ describe("KeepWhatsRaised entity", () => {
     it("transferFrom", async () => { await entity.simulate.transferFrom(ADDR, ADDR, 0n); });
   });
 
-  it("events is empty", () => { expect(entity.events).toEqual({}); });
+  describe("events", () => {
+    it("getReceiptLogs", async () => { await entity.events.getReceiptLogs(); expect(pub.getContractEvents).toHaveBeenCalled(); });
+    it("getRefundClaimedLogs", async () => { await entity.events.getRefundClaimedLogs(); });
+    it("getWithdrawalWithFeeSuccessfulLogs", async () => { await entity.events.getWithdrawalWithFeeSuccessfulLogs(); });
+    it("getWithdrawalApprovedLogs", async () => { await entity.events.getWithdrawalApprovedLogs(); });
+    it("getFeesDisbursedLogs", async () => { await entity.events.getFeesDisbursedLogs(); });
+    it("getTreasuryConfiguredLogs", async () => { await entity.events.getTreasuryConfiguredLogs(); });
+    it("getRewardsAddedLogs", async () => { await entity.events.getRewardsAddedLogs(); });
+    it("getRewardRemovedLogs", async () => { await entity.events.getRewardRemovedLogs(); });
+    it("getTipClaimedLogs", async () => { await entity.events.getTipClaimedLogs(); });
+    it("getFundClaimedLogs", async () => { await entity.events.getFundClaimedLogs(); });
+    it("getDeadlineUpdatedLogs", async () => { await entity.events.getDeadlineUpdatedLogs(); });
+    it("getGoalAmountUpdatedLogs", async () => { await entity.events.getGoalAmountUpdatedLogs(); });
+    it("getPaymentGatewayFeeSetLogs", async () => { await entity.events.getPaymentGatewayFeeSetLogs(); });
+    it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
+    it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("getTransferLogs", async () => { await entity.events.getTransferLogs(); });
+    it("getApprovalLogs", async () => { await entity.events.getApprovalLogs(); });
+    it("getApprovalForAllLogs", async () => { await entity.events.getApprovalForAllLogs(); });
+    it("watchReceipt", () => { entity.events.watchReceipt(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
+    it("watchRefundClaimed", () => { entity.events.watchRefundClaimed(() => {}); });
+    it("watchWithdrawalWithFeeSuccessful", () => { entity.events.watchWithdrawalWithFeeSuccessful(() => {}); });
+    it("watchWithdrawalApproved", () => { entity.events.watchWithdrawalApproved(() => {}); });
+    it("watchFeesDisbursed", () => { entity.events.watchFeesDisbursed(() => {}); });
+    it("watchTreasuryConfigured", () => { entity.events.watchTreasuryConfigured(() => {}); });
+    it("watchRewardsAdded", () => { entity.events.watchRewardsAdded(() => {}); });
+    it("watchRewardRemoved", () => { entity.events.watchRewardRemoved(() => {}); });
+    it("watchTipClaimed", () => { entity.events.watchTipClaimed(() => {}); });
+    it("watchFundClaimed", () => { entity.events.watchFundClaimed(() => {}); });
+    it("watchDeadlineUpdated", () => { entity.events.watchDeadlineUpdated(() => {}); });
+    it("watchGoalAmountUpdated", () => { entity.events.watchGoalAmountUpdated(() => {}); });
+    it("watchPaymentGatewayFeeSet", () => { entity.events.watchPaymentGatewayFeeSet(() => {}); });
+    it("watchPaused", () => { entity.events.watchPaused(() => {}); });
+    it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("watchTransfer", () => { entity.events.watchTransfer(() => {}); });
+    it("watchApproval", () => { entity.events.watchApproval(() => {}); });
+    it("watchApprovalForAll", () => { entity.events.watchApprovalForAll(() => {}); });
+    it("decodeLog decodes a WithdrawalApproved event", () => {
+      const sig = keccak256(toHex("WithdrawalApproved()"));
+      const result = entity.events.decodeLog({ topics: [sig], data: "0x" as `0x${string}` });
+      expect(result.eventName).toBe("WithdrawalApproved");
+    });
+    it("fetchEventLogs decodes returned logs", async () => {
+      const sig = keccak256(toHex("WithdrawalApproved()"));
+      (pub.getContractEvents as jest.Mock).mockResolvedValueOnce([{ topics: [sig], data: "0x" as `0x${string}` }]);
+      const logs = await entity.events.getWithdrawalApprovedLogs();
+      expect(logs).toHaveLength(1);
+      expect(logs[0].eventName).toBe("WithdrawalApproved");
+    });
+    it("watcher callback invokes handler", () => {
+      const captured: WatchContractEventArgs[] = [];
+      (pub.watchContractEvent as jest.Mock).mockImplementation((args: WatchContractEventArgs) => { captured.push(args); return () => {}; });
+      const handler = jest.fn();
+      entity.events.watchReceipt(handler);
+      const sig = keccak256(toHex("WithdrawalApproved()"));
+      captured[0].onLogs([{ topics: [sig], data: "0x" as `0x${string}` }]);
+      expect(handler).toHaveBeenCalled();
+    });
+    it("getLogs with fromBlock/toBlock options", async () => {
+      await entity.events.getReceiptLogs({ fromBlock: 0n, toBlock: 100n });
+      expect(pub.getContractEvents).toHaveBeenCalledWith(expect.objectContaining({ fromBlock: 0n, toBlock: 100n }));
+    });
+  });
 });
 
 // ============================================================
@@ -480,7 +813,41 @@ describe("ItemRegistry entity", () => {
   it("addItemsBatch", async () => { await entity.addItemsBatch([B32], [item]); });
   it("simulate.addItem", async () => { await entity.simulate.addItem(B32, item); });
   it("simulate.addItemsBatch", async () => { await entity.simulate.addItemsBatch([B32], [item]); });
-  it("events is empty", () => { expect(entity.events).toEqual({}); });
+  describe("events", () => {
+    it("getItemAddedLogs", async () => { await entity.events.getItemAddedLogs(); expect(pub.getContractEvents).toHaveBeenCalled(); });
+    it("watchItemAdded", () => { entity.events.watchItemAdded(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
+    it("decodeLog decodes an ItemAdded event", () => {
+      const sig = keccak256(toHex("ItemAdded(address,bytes32,(uint256,uint256,uint256,uint256,bytes32,bytes32))"));
+      const ownerTopic = ("0x" + ADDR.slice(2).padStart(64, "0")) as `0x${string}`;
+      const tupleData = ("0x" + "0".repeat(64).repeat(6)) as `0x${string}`;
+      const result = entity.events.decodeLog({ topics: [sig, ownerTopic, B32], data: tupleData });
+      expect(result.eventName).toBe("ItemAdded");
+    });
+    it("fetchEventLogs decodes returned logs", async () => {
+      const sig = keccak256(toHex("ItemAdded(address,bytes32,(uint256,uint256,uint256,uint256,bytes32,bytes32))"));
+      const ownerTopic = ("0x" + ADDR.slice(2).padStart(64, "0")) as `0x${string}`;
+      const tupleData = ("0x" + "0".repeat(64).repeat(6)) as `0x${string}`;
+      (pub.getContractEvents as jest.Mock).mockResolvedValueOnce([{ topics: [sig, ownerTopic, B32], data: tupleData }]);
+      const logs = await entity.events.getItemAddedLogs();
+      expect(logs).toHaveLength(1);
+      expect(logs[0].eventName).toBe("ItemAdded");
+    });
+    it("watcher callback invokes handler", () => {
+      const captured: WatchContractEventArgs[] = [];
+      (pub.watchContractEvent as jest.Mock).mockImplementation((args: WatchContractEventArgs) => { captured.push(args); return () => {}; });
+      const handler = jest.fn();
+      entity.events.watchItemAdded(handler);
+      const sig = keccak256(toHex("ItemAdded(address,bytes32,(uint256,uint256,uint256,uint256,bytes32,bytes32))"));
+      const ownerTopic = ("0x" + ADDR.slice(2).padStart(64, "0")) as `0x${string}`;
+      const tupleData = ("0x" + "0".repeat(64).repeat(6)) as `0x${string}`;
+      captured[0].onLogs([{ topics: [sig, ownerTopic, B32], data: tupleData }]);
+      expect(handler).toHaveBeenCalled();
+    });
+    it("getLogs with fromBlock/toBlock options", async () => {
+      await entity.events.getItemAddedLogs({ fromBlock: 0n, toBlock: 100n });
+      expect(pub.getContractEvents).toHaveBeenCalledWith(expect.objectContaining({ fromBlock: 0n, toBlock: 100n }));
+    });
+  });
 });
 
 // ============================================================

@@ -55,7 +55,9 @@ describe("PaymentTreasury — simulate (may throw)", () => {
 });
 
 describe("PaymentTreasury — events", () => {
-  it("events is an empty object", () => {
-    expect(pt.events).toEqual({});
+  it("events exposes event helpers", () => {
+    expect(typeof pt.events.getPaymentCreatedLogs).toBe("function");
+    expect(typeof pt.events.decodeLog).toBe("function");
+    expect(typeof pt.events.watchPaymentCreated).toBe("function");
   });
 });

@@ -78,7 +78,9 @@ describe("KeepWhatsRaised — simulate (may throw)", () => {
 });
 
 describe("KeepWhatsRaised — events", () => {
-  it("events is an empty object", () => {
-    expect(kwr.events).toEqual({});
+  it("events exposes event helpers", () => {
+    expect(typeof kwr.events.getReceiptLogs).toBe("function");
+    expect(typeof kwr.events.decodeLog).toBe("function");
+    expect(typeof kwr.events.watchReceipt).toBe("function");
   });
 });
