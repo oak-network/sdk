@@ -1,4 +1,5 @@
 import type { Address, Hex } from "../../lib";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for TreasuryFactory (none in ABI). */
@@ -33,7 +34,26 @@ export interface TreasuryFactorySimulate {
 }
 
 /** Event helpers for a TreasuryFactory contract instance. */
-export interface TreasuryFactoryEvents {}
+export interface TreasuryFactoryEvents {
+  /** Returns decoded TreasuryFactoryTreasuryDeployed event logs. */
+  getTreasuryDeployedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded TreasuryImplementationRegistered event logs. */
+  getImplementationRegisteredLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded TreasuryImplementationRemoved event logs. */
+  getImplementationRemovedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded TreasuryImplementationApproval event logs. */
+  getImplementationApprovalLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Decodes a raw log entry against all known TreasuryFactory events. */
+  decodeLog(log: RawLog): DecodedEventLog;
+  /** Watches for TreasuryFactoryTreasuryDeployed events in real time. Returns an unwatch function. */
+  watchTreasuryDeployed(onLogs: EventWatchHandler): () => void;
+  /** Watches for TreasuryImplementationRegistered events in real time. Returns an unwatch function. */
+  watchImplementationRegistered(onLogs: EventWatchHandler): () => void;
+  /** Watches for TreasuryImplementationRemoved events in real time. Returns an unwatch function. */
+  watchImplementationRemoved(onLogs: EventWatchHandler): () => void;
+  /** Watches for TreasuryImplementationApproval events in real time. Returns an unwatch function. */
+  watchImplementationApproval(onLogs: EventWatchHandler): () => void;
+}
 
 /** Full TreasuryFactory entity combining reads, writes, simulate, and events. */
 export type TreasuryFactoryEntity = TreasuryFactoryReads &
