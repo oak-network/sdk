@@ -335,12 +335,10 @@ Handles fiat-style payments via a payment gateway. Manages payment creation, con
 
 > **Two treasury variants, one SDK method.** The `paymentTreasury()` method works with both on-chain implementations:
 >
->
 > | Variant                            | Description                                                                                                                                                                                                                                          |
 > | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 > | **PaymentTreasury**                | Standard payment treasury with no time restrictions. Payments can be created, confirmed, and refunded at any time while the treasury is active.                                                                                                      |
 > | **TimeConstrainedPaymentTreasury** | Time-constrained variant that enforces launch-time and deadline windows on-chain. Payments can only be created within the campaign window (launch → deadline + buffer). Refunds, withdrawals, and fee disbursements are only available after launch. |
->
 >
 > Both contracts share the same ABI and the same SDK interface. Time enforcement is handled entirely on-chain — simply pass the deployed contract address regardless of which variant was deployed:
 
@@ -460,39 +458,6 @@ await ir.addItemsBatch(itemIds, items);
 ```
 
 > For complete details on the Item Registry contract entity, please visit the following link: [Item Registry](https://oaknetwork.org/docs/contracts-sdk/item-registry).
-
----
-
-### Client convenience method
-
-```typescript
-const gp = oak.globalParams("0x...");
-
-const [count, fee] = await oak.multicall([
-  () => gp.getNumberOfListedPlatforms(),
-  () => gp.getProtocolFeePercent(),
-]);
-```
-
-### Cross-contract batching
-
-Reads from different entities are batched into one RPC call automatically:
-
-```typescript
-const gp = oak.globalParams("0x...");
-const ci = oak.campaignInfo("0x...");
-const aon = oak.allOrNothingTreasury("0x...");
-
-const [platformCount, goalAmount, raisedAmount] = await oak.multicall([
-  () => gp.getNumberOfListedPlatforms(),
-  () => ci.getGoalAmount(),
-  () => aon.getRaisedAmount(),
-]);
-```
-
-> Under the hood, the SDK enables viem's `batch.multicall` transport option. All `readContract` calls dispatched within the same tick are automatically aggregated into a single Multicall3 on-chain call — no raw ABI descriptors needed.
-
-> For complete multicall documentation, see: [Multicall](https://oaknetwork.org/docs/contracts-sdk/multicall).
 
 ---
 
@@ -917,7 +882,6 @@ For complete guidelines on utility functions, please refer to the following link
 
 ## Exported Entry Points
 
-
 | Entry point                           | Contents                                                                       |
 | ------------------------------------- | ------------------------------------------------------------------------------ |
 | `@oaknetwork/contracts-sdk`           | Everything — client, types, utils, errors                                      |
@@ -926,7 +890,6 @@ For complete guidelines on utility functions, please refer to the following link
 | `@oaknetwork/contracts-sdk/client`    | `createOakContractsClient` only                                                |
 | `@oaknetwork/contracts-sdk/errors`    | Error classes and `parseContractError` only                                    |
 | `@oaknetwork/contracts-sdk/metrics`   | Platform, campaign, and treasury reporting helpers (not re-exported from root) |
-
 
 ## Multicall
 
@@ -945,6 +908,35 @@ const [platformCount, feePercent, admin] = await multicall([
   () => gp.getProtocolAdminAddress(),
 ]);
 ```
+
+### Client convenience method
+
+```typescript
+const gp = oak.globalParams("0x...");
+
+const [count, fee] = await oak.multicall([
+  () => gp.getNumberOfListedPlatforms(),
+  () => gp.getProtocolFeePercent(),
+]);
+```
+
+### Cross-contract batching
+
+Reads from different entities are batched into one RPC call automatically:
+
+```typescript
+const gp = oak.globalParams("0x...");
+const ci = oak.campaignInfo("0x...");
+const aon = oak.allOrNothingTreasury("0x...");
+
+const [platformCount, goalAmount, raisedAmount] = await oak.multicall([
+  () => gp.getNumberOfListedPlatforms(),
+  () => ci.getGoalAmount(),
+  () => aon.getRaisedAmount(),
+]);
+```
+
+> Under the hood, the SDK enables viem's `batch.multicall` transport option. All `readContract` calls dispatched within the same tick are automatically aggregated into a single Multicall3 on-chain call — no raw ABI descriptors needed.
 
 ---
 
