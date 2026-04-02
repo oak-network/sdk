@@ -461,6 +461,7 @@ await ir.addItemsBatch(itemIds, items);
 
 ---
 
+<<<<<<< Updated upstream
 ## Multicall
 
 Batch multiple entity read calls into a single RPC round-trip via the on-chain Multicall3 contract. Pass an array of lazy closures — the same entity read methods you'd normally `await` individually.
@@ -512,6 +513,8 @@ const [platformCount, goalAmount, raisedAmount] = await oak.multicall([
 
 ---
 
+=======
+>>>>>>> Stashed changes
 ## Metrics
 
 Pre-built aggregation functions that combine multiple on-chain reads into meaningful reports. Import from `@oaknetwork/contracts/metrics`.
@@ -932,6 +935,7 @@ For complete guidelines on utility functions, please refer to the following link
 
 ## Exported Entry Points
 
+<<<<<<< Updated upstream
 | Entry point                       | Contents                                    |
 | --------------------------------- | ------------------------------------------- |
 | `@oaknetwork/contracts-sdk`           | Everything — client, types, utils, errors   |
@@ -941,6 +945,64 @@ For complete guidelines on utility functions, please refer to the following link
 | `@oaknetwork/contracts-sdk/errors`    | Error classes and `parseContractError` only |
 | `@oaknetwork/contracts-sdk/metrics`   | Platform, campaign, and treasury reporting helpers (not re-exported from root) |
 
+=======
+| Entry point                           | Contents                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------ |
+| `@oaknetwork/contracts-sdk`           | Everything — client, types, utils, errors                                      |
+| `@oaknetwork/contracts-sdk/utils`     | Utility functions only (no client)                                             |
+| `@oaknetwork/contracts-sdk/contracts` | Contract entity factories only                                                 |
+| `@oaknetwork/contracts-sdk/client`    | `createOakContractsClient` only                                                |
+| `@oaknetwork/contracts-sdk/errors`    | Error classes and `parseContractError` only                                    |
+| `@oaknetwork/contracts-sdk/metrics`   | Platform, campaign, and treasury reporting helpers (not re-exported from root) |
+
+## Multicall
+
+Batch multiple entity read calls into a single RPC round-trip via the on-chain Multicall3 contract. Pass an array of lazy closures — the same entity read methods you'd normally `await` individually.
+
+### Standalone utility
+
+```typescript
+import { multicall } from "@oaknetwork/contracts-sdk";
+
+const gp = oak.globalParams("0x...");
+
+const [platformCount, feePercent, admin] = await multicall([
+  () => gp.getNumberOfListedPlatforms(),
+  () => gp.getProtocolFeePercent(),
+  () => gp.getProtocolAdminAddress(),
+]);
+```
+
+### Client convenience method
+
+```typescript
+const gp = oak.globalParams("0x...");
+
+const [count, fee] = await oak.multicall([
+  () => gp.getNumberOfListedPlatforms(),
+  () => gp.getProtocolFeePercent(),
+]);
+```
+
+### Cross-contract batching
+
+Reads from different entities are batched into one RPC call automatically:
+
+```typescript
+const gp = oak.globalParams("0x...");
+const ci = oak.campaignInfo("0x...");
+const aon = oak.allOrNothingTreasury("0x...");
+
+const [platformCount, goalAmount, raisedAmount] = await oak.multicall([
+  () => gp.getNumberOfListedPlatforms(),
+  () => ci.getGoalAmount(),
+  () => aon.getRaisedAmount(),
+]);
+```
+
+> Under the hood, the SDK enables viem's `batch.multicall` transport option. All `readContract` calls dispatched within the same tick are automatically aggregated into a single Multicall3 on-chain call — no raw ABI descriptors needed.
+
+>>>>>>> Stashed changes
 ---
 
 ## Local Development & Testing
@@ -1026,4 +1088,8 @@ See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture pri
 - [Issues](https://github.com/oak-network/sdk/issues)
 - [npm](https://www.npmjs.com/package/@oaknetwork/contracts-sdk)
 
+<<<<<<< Updated upstream
 Questions? [Open an issue](https://github.com/oak-network/sdk/issues) or contact **support@oaknetwork.org**
+=======
+Questions? [Open an issue](https://github.com/oak-network/sdk/issues) or contact **[support@oaknetwork.org](mailto:support@oaknetwork.org)**
+>>>>>>> Stashed changes
