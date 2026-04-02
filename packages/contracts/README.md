@@ -13,15 +13,15 @@ TypeScript SDK for interacting with Oak Network smart contracts. Provides a type
 ## Installation
 
 ```bash
-pnpm add @oaknetwork/contracts
+pnpm add @oaknetwork/contracts-sdk
 ```
 
 ```bash
-npm install @oaknetwork/contracts
+npm install @oaknetwork/contracts-sdk
 ```
 
 ```bash
-yarn add @oaknetwork/contracts
+yarn add @oaknetwork/contracts-sdk
 ```
 
 **Requirements:** Node.js 18+, TypeScript 5.x recommended.
@@ -29,7 +29,7 @@ yarn add @oaknetwork/contracts
 ### Supported Chain IDs
 
 ```typescript
-import { CHAIN_IDS } from "@oaknetwork/contracts";
+import { CHAIN_IDS } from "@oaknetwork/contracts-sdk";
 
 CHAIN_IDS.ETHEREUM_MAINNET; // 1
 CHAIN_IDS.CELO_MAINNET; // 42220
@@ -45,7 +45,7 @@ CHAIN_IDS.CELO_TESTNET_SEPOLIA; // 11142220
 ### Create a client
 
 ```typescript
-import { createOakContractsClient, CHAIN_IDS } from "@oaknetwork/contracts";
+import { createOakContractsClient, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
 
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
@@ -100,7 +100,7 @@ import {
   createOakContractsClient,
   createWallet,
   CHAIN_IDS,
-} from "@oaknetwork/contracts";
+} from "@oaknetwork/contracts-sdk";
 
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
@@ -151,7 +151,7 @@ import {
   http,
   getChainFromId,
   CHAIN_IDS,
-} from "@oaknetwork/contracts";
+} from "@oaknetwork/contracts-sdk";
 
 const chain = getChainFromId(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
 const provider = createPublicClient({ chain, transport: http(RPC_URL) });
@@ -235,7 +235,7 @@ import {
   getCurrentTimestamp,
   addDays,
   CHAIN_IDS,
-} from "@oaknetwork/contracts";
+} from "@oaknetwork/contracts-sdk";
 
 const factory = oak.campaignInfoFactory("0x...");
 
@@ -580,7 +580,7 @@ Contract calls can revert with on-chain errors. The SDK decodes raw revert data 
 ### Decoding revert errors:
 
 ```typescript
-import { parseContractError, getRevertData } from "@oaknetwork/contracts";
+import { parseContractError, getRevertData } from "@oaknetwork/contracts-sdk";
 
 function handleError(err) {
   // If the error is already a typed SDK error (thrown by simulate methods)
@@ -615,7 +615,7 @@ try {
 
 ## Utility Functions
 
-The SDK exports pure utility functions and constants that have no client dependency. Import them from @oaknetwork/contracts or @oaknetwork/contracts/utils.
+The SDK exports pure utility functions and constants that have no client dependency. Import them from @oaknetwork/contracts-sdk or @oaknetwork/contracts-sdk/utils.
 
 ```typescript
 import {
@@ -641,7 +641,7 @@ import {
   BYTES32_ZERO,
   DATA_REGISTRY_KEYS,
   scopedToPlatform,
-} from "@oaknetwork/contracts";
+} from "@oaknetwork/contracts-sdk";
 
 // Hash a string to bytes32
 const platformHash = keccak256(toHex("my-platform"));
@@ -668,14 +668,14 @@ For complete guidelines on utility functions, please refer to the following link
 
 ## Exported Entry Points
 
-| Entry point                       | Contents                                                      |
-| --------------------------------- | ------------------------------------------------------------- |
-| `@oaknetwork/contracts`           | Everything — client, types, utils, errors, multicall          |
-| `@oaknetwork/contracts/utils`     | Utility functions and `multicall` (no client)                 |
-| `@oaknetwork/contracts/contracts` | Contract entity factories only                                |
-| `@oaknetwork/contracts/client`    | `createOakContractsClient` only                               |
-| `@oaknetwork/contracts/errors`    | Error classes and `parseContractError` only                   |
-| `@oaknetwork/contracts/metrics`   | `getPlatformStats`, `getCampaignSummary`, `getTreasuryReport` |
+| Entry point                       | Contents                                    |
+| --------------------------------- | ------------------------------------------- |
+| `@oaknetwork/contracts-sdk`           | Everything — client, types, utils, errors   |
+| `@oaknetwork/contracts-sdk/utils`     | Utility functions only (no client)          |
+| `@oaknetwork/contracts-sdk/contracts` | Contract entity factories only              |
+| `@oaknetwork/contracts-sdk/client`    | `createOakContractsClient` only             |
+| `@oaknetwork/contracts-sdk/errors`    | Error classes and `parseContractError` only |
+| `@oaknetwork/contracts-sdk/metrics`   | Platform, campaign, and treasury reporting helpers (not re-exported from root) |
 
 ---
 
@@ -760,6 +760,6 @@ See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture pri
 - [Documentation](https://oaknetwork.org/docs/contracts-sdk/overview)
 - [GitHub](https://github.com/oak-network/sdk)
 - [Issues](https://github.com/oak-network/sdk/issues)
-- [npm](https://www.npmjs.com/package/@oaknetwork/contracts)
+- [npm](https://www.npmjs.com/package/@oaknetwork/contracts-sdk)
 
 Questions? [Open an issue](https://github.com/oak-network/sdk/issues) or contact **support@oaknetwork.org**

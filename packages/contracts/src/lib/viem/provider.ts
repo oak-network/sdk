@@ -19,7 +19,7 @@ import type { JsonRpcProvider, Wallet } from "../../client/types";
  *
  * @example
  * ```typescript
- * import { createJsonRpcProvider, mainnet } from '@oaknetwork/contracts'
+ * import { createJsonRpcProvider, mainnet } from '@oaknetwork/contracts-sdk'
  *
  * const provider = createJsonRpcProvider('https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY', mainnet)
  * ```
@@ -46,7 +46,7 @@ export function createJsonRpcProvider(
  *
  * @example
  * ```typescript
- * import { createWallet, createJsonRpcProvider, mainnet } from '@oaknetwork/contracts'
+ * import { createWallet, createJsonRpcProvider, mainnet } from '@oaknetwork/contracts-sdk'
  *
  * const provider = createJsonRpcProvider(rpcUrl, mainnet)
  * const signer = createWallet(privateKey, provider, rpcUrl)
@@ -82,7 +82,7 @@ export function createWallet(
  *
  * @example
  * ```typescript
- * import { createBrowserProvider, mainnet } from '@oaknetwork/contracts'
+ * import { createBrowserProvider, mainnet } from '@oaknetwork/contracts-sdk'
  *
  * const provider = createBrowserProvider(window.ethereum, mainnet)
  * ```
@@ -107,7 +107,7 @@ export function createBrowserProvider(
  *
  * @example
  * ```typescript
- * import { createBrowserProvider, getSigner, mainnet } from '@oaknetwork/contracts'
+ * import { createBrowserProvider, getSigner, mainnet } from '@oaknetwork/contracts-sdk'
  *
  * const provider = createBrowserProvider(window.ethereum, mainnet)
  * const signer = await getSigner(window.ethereum, mainnet)

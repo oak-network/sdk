@@ -25,7 +25,7 @@ This document provides strict rules and standards for AI assistants (Claude Code
 
 ## Architecture Principles (Payments SDK)
 
-> **Scope:** This section applies to the **payments SDK** (`packages/payments-sdk`). For the contracts package (`packages/contracts`), see [Architecture Principles (Contracts SDK)](#architecture-principles-contracts-sdk) below.
+> **Scope:** This section applies to the **payments SDK** (`packages/payments`). For the contracts package (`packages/contracts`), see [Architecture Principles (Contracts SDK)](#architecture-principles-contracts-sdk) below.
 
 ### Core Patterns (DO NOT BREAK)
 
@@ -213,12 +213,12 @@ Write and simulate methods **MUST** use `requireSigner` and `requireAccount` gua
 
 | Import path | Contents |
 |-------------|----------|
-| `@oaknetwork/contracts` | Client, utils, types, lib re-exports, constants, errors |
-| `@oaknetwork/contracts/contracts` | Individual `create*Entity` factories |
-| `@oaknetwork/contracts/client` | `createOakContractsClient` + client types |
-| `@oaknetwork/contracts/utils` | Pure helper functions |
-| `@oaknetwork/contracts/errors` | Error classes + parsing utilities |
-| `@oaknetwork/contracts/metrics` | Reporting helpers (**NOT** re-exported from root) |
+| `@oaknetwork/contracts-sdk` | Client, utils, types, lib re-exports, constants, errors |
+| `@oaknetwork/contracts-sdk/contracts` | Individual `create*Entity` factories |
+| `@oaknetwork/contracts-sdk/client` | `createOakContractsClient` + client types |
+| `@oaknetwork/contracts-sdk/utils` | Pure helper functions |
+| `@oaknetwork/contracts-sdk/errors` | Error classes + parsing utilities |
+| `@oaknetwork/contracts-sdk/metrics` | Reporting helpers (**NOT** re-exported from root) |
 
 ### Testing (Contracts-Specific)
 
@@ -892,7 +892,7 @@ export function verifyWebhookSignature(
 
 1. Changesets gather changes
 2. Version bump via `pnpm changeset:version`
-3. Build packages: `pnpm --filter=!@oaknetwork/contracts build`
+3. Build packages: `pnpm --filter=!@oaknetwork/contracts-sdk build`
 4. Publish to npm with provenance
 5. Create GitHub releases
 
