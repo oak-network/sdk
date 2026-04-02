@@ -25,7 +25,7 @@
     {
       "name": "contracts",
       "rootPath": "packages/contracts",
-      "jestCommandLine": "pnpm --filter @oaknetwork/contracts test --",
+      "jestCommandLine": "pnpm --filter @oaknetwork/contracts-sdk test --",
       "pathToConfig": "jest.config.js"
     }
   ]

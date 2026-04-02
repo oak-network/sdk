@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Engine requirement updated: `pnpm >= 10.0.0` (was `>= 8.0.0`)
 - **CI/CD Improvements**:
   - Removed `continue-on-error` from lint step - lint failures now block PRs
-  - Excluded `@oaknetwork/contracts` placeholder package from CI builds
+  - Excluded `@oaknetwork/contracts-sdk` placeholder package from CI builds
   - Pinned npm version in release workflow to `10.9.2` for deterministic builds
   - Added `package-lock.json` to .gitignore (enforces pnpm as canonical package manager)
 
