@@ -110,7 +110,9 @@ describe("TreasuryFactory — simulate (may throw)", () => {
 });
 
 describe("TreasuryFactory — events", () => {
-  it("events is an empty object", () => {
-    expect(tf.events).toEqual({});
+  it("events exposes event helpers", () => {
+    expect(typeof tf.events.getTreasuryDeployedLogs).toBe("function");
+    expect(typeof tf.events.decodeLog).toBe("function");
+    expect(typeof tf.events.watchTreasuryDeployed).toBe("function");
   });
 });

@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { LineItemTypeInfo } from "../../types/structs";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for a GlobalParams contract instance. */
@@ -107,7 +108,66 @@ export interface GlobalParamsSimulate {
 }
 
 /** Event helpers for a GlobalParams contract instance. */
-export interface GlobalParamsEvents {}
+export interface GlobalParamsEvents {
+  /** Returns decoded PlatformEnlisted event logs. */
+  getPlatformEnlistedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformDelisted event logs. */
+  getPlatformDelistedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformAdminAddressUpdated event logs. */
+  getPlatformAdminAddressUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformDataAdded event logs. */
+  getPlatformDataAddedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformDataRemoved event logs. */
+  getPlatformDataRemovedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformAdapterSet event logs. */
+  getPlatformAdapterSetLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformClaimDelayUpdated event logs. */
+  getPlatformClaimDelayUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded ProtocolAdminAddressUpdated event logs. */
+  getProtocolAdminAddressUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded ProtocolFeePercentUpdated event logs. */
+  getProtocolFeePercentUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded TokenAddedToCurrency event logs. */
+  getTokenAddedToCurrencyLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded TokenRemovedFromCurrency event logs. */
+  getTokenRemovedFromCurrencyLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded OwnershipTransferred event logs. */
+  getOwnershipTransferredLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Paused event logs. */
+  getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Unpaused event logs. */
+  getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Decodes a raw log entry against all known GlobalParams events. */
+  decodeLog(log: RawLog): DecodedEventLog;
+  /** Watches for PlatformEnlisted events in real time. Returns an unwatch function. */
+  watchPlatformEnlisted(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformDelisted events in real time. Returns an unwatch function. */
+  watchPlatformDelisted(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformAdminAddressUpdated events in real time. Returns an unwatch function. */
+  watchPlatformAdminAddressUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformDataAdded events in real time. Returns an unwatch function. */
+  watchPlatformDataAdded(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformDataRemoved events in real time. Returns an unwatch function. */
+  watchPlatformDataRemoved(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformAdapterSet events in real time. Returns an unwatch function. */
+  watchPlatformAdapterSet(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformClaimDelayUpdated events in real time. Returns an unwatch function. */
+  watchPlatformClaimDelayUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for ProtocolAdminAddressUpdated events in real time. Returns an unwatch function. */
+  watchProtocolAdminAddressUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for ProtocolFeePercentUpdated events in real time. Returns an unwatch function. */
+  watchProtocolFeePercentUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for TokenAddedToCurrency events in real time. Returns an unwatch function. */
+  watchTokenAddedToCurrency(onLogs: EventWatchHandler): () => void;
+  /** Watches for TokenRemovedFromCurrency events in real time. Returns an unwatch function. */
+  watchTokenRemovedFromCurrency(onLogs: EventWatchHandler): () => void;
+  /** Watches for OwnershipTransferred events in real time. Returns an unwatch function. */
+  watchOwnershipTransferred(onLogs: EventWatchHandler): () => void;
+  /** Watches for Paused events in real time. Returns an unwatch function. */
+  watchPaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Unpaused events in real time. Returns an unwatch function. */
+  watchUnpaused(onLogs: EventWatchHandler): () => void;
+}
 
 /** Full GlobalParams entity combining reads, writes, simulate, and events. */
 export type GlobalParamsEntity = GlobalParamsReads & GlobalParamsWrites & {

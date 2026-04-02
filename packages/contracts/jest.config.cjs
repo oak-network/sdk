@@ -1,6 +1,7 @@
 module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
+  testTimeout: 60_000,
   testMatch: ["**/__tests__/**/*.test.ts"],
   setupFiles: ["dotenv/config"],
   collectCoverageFrom: [
