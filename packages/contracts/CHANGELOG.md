@@ -1,7 +1,15 @@
-# @oaknetwork/contracts-sdk
+---
 
 ## 1.0.0
+### Major Changes
 
-### Added
-
+### Major Changes
 - Initial release of `@oaknetwork/contracts-sdk`
+  
+  Package renamed from `@oaknetwork/contracts` to `@oaknetwork/contracts-sdk`.
+'@oaknetwork/contracts-sdk': major
+---
+
+Initial release of `@oaknetwork/contracts-sdk`
+
+Package renamed from `@oaknetwork/contracts` to `@oaknetwork/contracts-sdk`.
