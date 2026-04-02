@@ -122,6 +122,21 @@ describe("createOakContractsClient", () => {
     expect(typeof client.waitForReceipt).toBe("function");
   });
 
+  it("multicall runs closures concurrently and returns results", async () => {
+    const client = createOakContractsClient({
+      chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+      rpcUrl: RPC,
+      privateKey: PK,
+    });
+
+    const results = await client.multicall([
+      () => Promise.resolve(5n),
+      () => Promise.resolve(250n),
+    ]);
+
+    expect(results).toEqual([5n, 250n]);
+  });
+
   it("waitForReceipt calls publicClient.waitForTransactionReceipt", async () => {
     const client = createOakContractsClient({
       chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,

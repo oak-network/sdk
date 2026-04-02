@@ -113,7 +113,6 @@ export type {
   ItemRegistryEntity,
 };
 
-
 /** Oak Contracts SDK client; entity factories and receipt helper. */
 export interface OakContractsClient {
   /** Public chain configuration (no secrets). */
@@ -130,6 +129,26 @@ export interface OakContractsClient {
    * @returns TransactionReceipt with blockNumber, gasUsed, and logs
    */
   waitForReceipt(txHash: Hex): Promise<TransactionReceipt>;
+  /**
+   * Batches multiple entity read calls into a single RPC round-trip via the
+   * on-chain Multicall3 contract. Accepts an array of lazy read closures —
+   * the same calls you would normally `await` individually.
+   *
+   * @param calls - Array of zero-argument functions that each return a Promise
+   * @returns Tuple of resolved values in the same order as the input calls
+   *
+   * @example
+   * ```typescript
+   * const gp = oak.globalParams(address);
+   * const [count, fee] = await oak.multicall([
+   *   () => gp.getNumberOfListedPlatforms(),
+   *   () => gp.getProtocolFeePercent(),
+   * ]);
+   * ```
+   */
+  multicall<T extends readonly (() => Promise<unknown>)[]>(
+    calls: [...T],
+  ): Promise<{ [K in keyof T]: Awaited<ReturnType<T[K]>> }>;
   /** Returns a GlobalParams entity for the given contract address. */
   globalParams(address: Address, options?: EntitySignerOptions): GlobalParamsEntity;
   /** Returns a CampaignInfoFactory entity for the given contract address. */

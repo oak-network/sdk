@@ -14,6 +14,7 @@ import type {
   ItemRegistryEntity,
 } from "./types";
 import { DEFAULT_CLIENT_OPTIONS, type OakContractsClientOptions, type EntitySignerOptions } from "./types";
+import { multicall } from "../utils/multicall";
 import { buildClients } from "./resolve";
 import { createGlobalParamsEntity } from "../contracts/global-params";
 import { createCampaignInfoFactoryEntity } from "../contracts/campaign-info-factory";
@@ -63,6 +64,12 @@ export function createOakContractsClient(
     publicClient,
     walletClient,
     waitForReceipt,
+
+    multicall<T extends readonly (() => Promise<unknown>)[]>(
+      calls: [...T],
+    ): Promise<{ [K in keyof T]: Awaited<ReturnType<T[K]>> }> {
+      return multicall(calls);
+    },
 
     globalParams(address: Address, options?: EntitySignerOptions): GlobalParamsEntity {
       return createGlobalParamsEntity(address, publicClient, options?.signer ?? walletClient, chain);
