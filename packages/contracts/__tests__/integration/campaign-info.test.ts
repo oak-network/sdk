@@ -127,7 +127,9 @@ describe("CampaignInfo — simulate (may throw)", () => {
 });
 
 describe("CampaignInfo — events", () => {
-  it("events is an empty object", () => {
-    expect(ci.events).toEqual({});
+  it("events exposes event helpers", () => {
+    expect(typeof ci.events.getDeadlineUpdatedLogs).toBe("function");
+    expect(typeof ci.events.decodeLog).toBe("function");
+    expect(typeof ci.events.watchDeadlineUpdated).toBe("function");
   });
 });

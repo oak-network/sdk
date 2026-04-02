@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { LineItemTypeInfo, CampaignConfig } from "../../types/structs";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for a CampaignInfo contract instance. */
@@ -131,7 +132,42 @@ export interface CampaignInfoSimulate {
 }
 
 /** Event helpers for a CampaignInfo contract instance. */
-export interface CampaignInfoEvents {}
+export interface CampaignInfoEvents {
+  /** Returns decoded CampaignInfoDeadlineUpdated event logs. */
+  getDeadlineUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded CampaignInfoGoalAmountUpdated event logs. */
+  getGoalAmountUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded CampaignInfoLaunchTimeUpdated event logs. */
+  getLaunchTimeUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded CampaignInfoPlatformInfoUpdated event logs. */
+  getPlatformInfoUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded CampaignInfoSelectedPlatformUpdated event logs. */
+  getSelectedPlatformUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded OwnershipTransferred event logs. */
+  getOwnershipTransferredLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Paused event logs. */
+  getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Unpaused event logs. */
+  getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Decodes a raw log entry against all known CampaignInfo events. */
+  decodeLog(log: RawLog): DecodedEventLog;
+  /** Watches for CampaignInfoDeadlineUpdated events in real time. Returns an unwatch function. */
+  watchDeadlineUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for CampaignInfoGoalAmountUpdated events in real time. Returns an unwatch function. */
+  watchGoalAmountUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for CampaignInfoLaunchTimeUpdated events in real time. Returns an unwatch function. */
+  watchLaunchTimeUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for CampaignInfoPlatformInfoUpdated events in real time. Returns an unwatch function. */
+  watchPlatformInfoUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for CampaignInfoSelectedPlatformUpdated events in real time. Returns an unwatch function. */
+  watchSelectedPlatformUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for OwnershipTransferred events in real time. Returns an unwatch function. */
+  watchOwnershipTransferred(onLogs: EventWatchHandler): () => void;
+  /** Watches for Paused events in real time. Returns an unwatch function. */
+  watchPaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Unpaused events in real time. Returns an unwatch function. */
+  watchUnpaused(onLogs: EventWatchHandler): () => void;
+}
 
 /** Full CampaignInfo entity combining reads, writes, simulate, and events. */
 export type CampaignInfoEntity = CampaignInfoReads & CampaignInfoWrites & {
