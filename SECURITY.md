@@ -2,11 +2,12 @@
 
 ## Supported Versions
 
-We actively maintain and provide security updates for the following versions of `@oaknetwork/payments-sdk`:
+We actively maintain and provide security updates for the following published packages:
 
-| Version | Supported         |
-| ------- | ----------------- |
-| 1.x     | ✅ Active support |
+| Package                      | Supported versions | Status            |
+| ---------------------------- | ------------------ | ----------------- |
+| `@oaknetwork/payments-sdk`   | 1.x                | ✅ Active support |
+| `@oaknetwork/contracts-sdk`  | 1.x                | ✅ Active support |
 
 ## Reporting a Vulnerability
 

@@ -1,24 +1,7 @@
-# @oaknetwork/contracts
-
-## 0.1.0
-
-### Minor Changes
-
-### Minor Changes
-
-- testing changeset for releases
+# @oaknetwork/contracts-sdk
 
 ## 1.0.0
 
-### Major Changes
+### Added
 
-### Major Changes
-
-- project setup
-
-### Minor Changes
-
-### Minor Changes
-
-- update changeset
-- Fix release CI
+- Initial release of `@oaknetwork/contracts-sdk`

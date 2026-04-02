@@ -1,7 +1,21 @@
 {
-  "name": "@oaknetwork/contracts",
-  "version": "0.1.0",
+  "name": "@oaknetwork/contracts-sdk",
+  "version": "1.0.0",
   "description": "TypeScript SDK for Oak Network smart contracts",
+  "keywords": [
+    "sdk",
+    "oaknetwork",
+    "oak",
+    "typescript",
+    "viem",
+    "web3",
+    "celo",
+    "smart-contracts"
+  ],
+  "homepage": "https://oaknetwork.org/docs/contracts-sdk/overview",
+  "bugs": {
+    "url": "https://github.com/oak-network/sdk/issues"
+  },
   "publishConfig": {
     "access": "public"
   },
