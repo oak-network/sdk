@@ -496,14 +496,14 @@ const [platformCount, goalAmount, raisedAmount] = await oak.multicall([
 
 ## Metrics
 
-Pre-built aggregation functions that combine multiple on-chain reads into meaningful reports. Import from `@oaknetwork/contracts/metrics`.
+Pre-built aggregation functions that combine multiple on-chain reads into meaningful reports. Import from `@oaknetwork/contracts-sdk/metrics`.
 
 ### Platform Stats
 
 Protocol-level statistics from GlobalParams:
 
 ```typescript
-import { getPlatformStats } from "@oaknetwork/contracts/metrics";
+import { getPlatformStats } from "@oaknetwork/contracts-sdk/metrics";
 
 const stats = await getPlatformStats({
   globalParamsAddress: "0x...",
@@ -519,7 +519,7 @@ console.log(`Protocol fee: ${stats.protocolFeePercent} bps`);
 Financial aggregation from a deployed CampaignInfo contract:
 
 ```typescript
-import { getCampaignSummary } from "@oaknetwork/contracts/metrics";
+import { getCampaignSummary } from "@oaknetwork/contracts-sdk/metrics";
 
 const summary = await getCampaignSummary({
   campaignInfoAddress: "0x...",
@@ -537,7 +537,7 @@ console.log(`Refunded: ${summary.totalRefunded}`);
 Per-treasury financial report for any treasury type:
 
 ```typescript
-import { getTreasuryReport } from "@oaknetwork/contracts/metrics";
+import { getTreasuryReport } from "@oaknetwork/contracts-sdk/metrics";
 
 const report = await getTreasuryReport({
   treasuryAddress: "0x...",
@@ -784,7 +784,7 @@ const unwatch = ir.events.watchItemAdded(handler);
 
 ### Types
 
-All event methods use shared types from `@oaknetwork/contracts`:
+All event methods use shared types from `@oaknetwork/contracts-sdk`:
 
 ```typescript
 import type {
@@ -792,7 +792,7 @@ import type {
   EventFilterOptions,
   EventWatchHandler,
   RawLog,
-} from "@oaknetwork/contracts";
+} from "@oaknetwork/contracts-sdk";
 
 // EventFilterOptions — optional block range for get*Logs
 interface EventFilterOptions {
@@ -931,7 +931,7 @@ Batch multiple entity read calls into a single RPC round-trip via the on-chain M
 ### Standalone utility
 
 ```typescript
-import { multicall } from "@oaknetwork/contracts";
+import { multicall } from "@oaknetwork/contracts-sdk";
 
 const gp = oak.globalParams("0x...");
 
