@@ -8,7 +8,7 @@ TypeScript SDK for interacting with Oak Network smart contracts. Provides a type
 
 > **You need deployed contract addresses to use this SDK.**
 
-> The SDK interacts with Oak Network smart contracts that must already be deployed on-chain. To get your contract addresses and sandbox environment access, contact our team at **support@oaknetwork.org**.
+> The SDK interacts with Oak Network smart contracts that must already be deployed on-chain. To get your contract addresses and sandbox environment access, contact our team at **[support@oaknetwork.org](mailto:support@oaknetwork.org)**.
 
 ## Installation
 
@@ -335,10 +335,12 @@ Handles fiat-style payments via a payment gateway. Manages payment creation, con
 
 > **Two treasury variants, one SDK method.** The `paymentTreasury()` method works with both on-chain implementations:
 >
+>
 > | Variant                            | Description                                                                                                                                                                                                                                          |
 > | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 > | **PaymentTreasury**                | Standard payment treasury with no time restrictions. Payments can be created, confirmed, and refunded at any time while the treasury is active.                                                                                                      |
 > | **TimeConstrainedPaymentTreasury** | Time-constrained variant that enforces launch-time and deadline windows on-chain. Payments can only be created within the campaign window (launch → deadline + buffer). Refunds, withdrawals, and fee disbursements are only available after launch. |
+>
 >
 > Both contracts share the same ABI and the same SDK interface. Time enforcement is handled entirely on-chain — simply pass the deployed contract address regardless of which variant was deployed:
 
@@ -915,6 +917,7 @@ For complete guidelines on utility functions, please refer to the following link
 
 ## Exported Entry Points
 
+
 | Entry point                           | Contents                                                                       |
 | ------------------------------------- | ------------------------------------------------------------------------------ |
 | `@oaknetwork/contracts-sdk`           | Everything — client, types, utils, errors                                      |
@@ -923,6 +926,7 @@ For complete guidelines on utility functions, please refer to the following link
 | `@oaknetwork/contracts-sdk/client`    | `createOakContractsClient` only                                                |
 | `@oaknetwork/contracts-sdk/errors`    | Error classes and `parseContractError` only                                    |
 | `@oaknetwork/contracts-sdk/metrics`   | Platform, campaign, and treasury reporting helpers (not re-exported from root) |
+
 
 ## Multicall
 
@@ -990,20 +994,18 @@ See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture pri
 
 ### Code review checklist
 
-- [ ] `pnpm build` succeeds
-- [ ] `pnpm test` passes with >90% coverage
-- [ ] `pnpm lint` has no errors
-- [ ] Changeset created with `pnpm changeset`
-- [ ] Documentation updated if needed
+- `pnpm build` succeeds
+- `pnpm test` passes with >90% coverage
+- `pnpm lint` has no errors
+- Changeset created with `pnpm changeset`
+- Documentation updated if needed
 
 ---
 
 ## Documentation
 
-- [Full docs](https://oaknetwork.org/docs/contracts-sdk/overview) — oaknetwork.org/docs/sdk/overview
-- [Quickstart](https://oaknetwork.org/docs/contracts-sdk/quickstart) — oaknetwork.org/docs/sdk/quickstart
-- [Multicall](https://oaknetwork.org/docs/contracts-sdk/multicall) — batch reads into one RPC call
-- [Metrics](https://oaknetwork.org/docs/contracts-sdk/metrics) — pre-built aggregation reports
+- [Full docs](https://oaknetwork.org/docs/contracts-sdk/overview) — oaknetwork.org/docs/contracts-sdk/overview
+- [Quickstart](https://oaknetwork.org/docs/contracts-sdk/quickstart) — oaknetwork.org/docs/contracts-sdk/quickstart
 - [Monorepo README](../../README.md) — README.md
 - [Changelog](./CHANGELOG.md) — CHANGELOG.md
 
@@ -1027,4 +1029,4 @@ See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture pri
 - [Issues](https://github.com/oak-network/sdk/issues)
 - [npm](https://www.npmjs.com/package/@oaknetwork/contracts-sdk)
 
-Questions? [Open an issue](https://github.com/oak-network/sdk/issues) or contact **support@oaknetwork.org**
+Questions? [Open an issue](https://github.com/oak-network/sdk/issues) or contact **[support@oaknetwork.org](mailto:support@oaknetwork.org)**
