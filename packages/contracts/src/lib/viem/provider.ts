@@ -32,6 +32,7 @@ export function createJsonRpcProvider(
   return createPublicClient({
     chain,
     transport: http(rpcUrl, { timeout }),
+    batch: { multicall: true },
   }) as JsonRpcProvider;
 }
 
