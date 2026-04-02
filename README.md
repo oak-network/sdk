@@ -22,9 +22,10 @@ Primary SDK for Oak payments APIs (customers, payments, webhooks, transfers, ref
 
 TypeScript SDK for Oak smart contracts and contract integrations.
 
-- Package: `@oaknetwork/contracts`
+- Package: `@oaknetwork/contracts-sdk`
 - Folder: [`packages/contracts`](./packages/contracts)
-- Documentation: [oaknetwork.org](https://www.oaknetwork.org/)
+- Documentation: [oaknetwork.org/docs/contracts-sdk/overview](https://oaknetwork.org/docs/contracts-sdk/overview)
+- npm: [npmjs.com/package/@oaknetwork/contracts-sdk](https://www.npmjs.com/package/@oaknetwork/contracts-sdk)
 
 ## Monorepo quick start
 

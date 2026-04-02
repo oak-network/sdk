@@ -1,32 +1,15 @@
-# @oaknetwork/contracts
+---
 
 ## 1.0.0
-
 ### Major Changes
 
 ### Major Changes
+- Initial release of `@oaknetwork/contracts-sdk`
+  
+  Package renamed from `@oaknetwork/contracts` to `@oaknetwork/contracts-sdk`.
+'@oaknetwork/contracts-sdk': major
+---
 
-- Added contract for sdk
+Initial release of `@oaknetwork/contracts-sdk`
 
-## 0.1.0
-
-### Minor Changes
-
-### Minor Changes
-
-- testing changeset for releases
-
-## 1.0.0
-
-### Major Changes
-
-### Major Changes
-
-- project setup
-
-### Minor Changes
-
-### Minor Changes
-
-- update changeset
-- Fix release CI
+Package renamed from `@oaknetwork/contracts` to `@oaknetwork/contracts-sdk`.

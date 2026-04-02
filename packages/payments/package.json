@@ -4,8 +4,16 @@
   "description": "A fully-typed TypeScript SDK for the Oak Network payment API.",
   "keywords": [
     "sdk",
-    "oaknetwork"
+    "oaknetwork",
+    "oak",
+    "typescript",
+    "payments",
+    "api"
   ],
+  "homepage": "https://www.oaknetwork.org/docs/sdk/overview",
+  "bugs": {
+    "url": "https://github.com/oak-network/sdk/issues"
+  },
   "publishConfig": {
     "access": "public"
   },
