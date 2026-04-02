@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { PaymentData, LineItem, ExternalFees } from "../../types/structs";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for PaymentTreasury. */
@@ -151,7 +152,50 @@ export interface PaymentTreasurySimulate {
 }
 
 /** Event helpers for PaymentTreasury. */
-export interface PaymentTreasuryEvents {}
+export interface PaymentTreasuryEvents {
+  /** Returns decoded PaymentCreated event logs. */
+  getPaymentCreatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PaymentCancelled event logs. */
+  getPaymentCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PaymentConfirmed event logs. */
+  getPaymentConfirmedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PaymentBatchConfirmed event logs. */
+  getPaymentBatchConfirmedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PaymentBatchCreated event logs. */
+  getPaymentBatchCreatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded FeesDisbursed event logs. */
+  getFeesDisbursedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded WithdrawalWithFeeSuccessful event logs. */
+  getWithdrawalWithFeeSuccessfulLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded RefundClaimed event logs. */
+  getRefundClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded NonGoalLineItemsClaimed event logs. */
+  getNonGoalLineItemsClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded ExpiredFundsClaimed event logs. */
+  getExpiredFundsClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Decodes a raw log entry against all known PaymentTreasury events. */
+  decodeLog(log: RawLog): DecodedEventLog;
+  /** Watches for PaymentCreated events in real time. Returns an unwatch function. */
+  watchPaymentCreated(onLogs: EventWatchHandler): () => void;
+  /** Watches for PaymentConfirmed events in real time. Returns an unwatch function. */
+  watchPaymentConfirmed(onLogs: EventWatchHandler): () => void;
+  /** Watches for PaymentCancelled events in real time. Returns an unwatch function. */
+  watchPaymentCancelled(onLogs: EventWatchHandler): () => void;
+  /** Watches for PaymentBatchConfirmed events in real time. Returns an unwatch function. */
+  watchPaymentBatchConfirmed(onLogs: EventWatchHandler): () => void;
+  /** Watches for PaymentBatchCreated events in real time. Returns an unwatch function. */
+  watchPaymentBatchCreated(onLogs: EventWatchHandler): () => void;
+  /** Watches for RefundClaimed events in real time. Returns an unwatch function. */
+  watchRefundClaimed(onLogs: EventWatchHandler): () => void;
+  /** Watches for FeesDisbursed events in real time. Returns an unwatch function. */
+  watchFeesDisbursed(onLogs: EventWatchHandler): () => void;
+  /** Watches for WithdrawalWithFeeSuccessful events in real time. Returns an unwatch function. */
+  watchWithdrawalWithFeeSuccessful(onLogs: EventWatchHandler): () => void;
+  /** Watches for NonGoalLineItemsClaimed events in real time. Returns an unwatch function. */
+  watchNonGoalLineItemsClaimed(onLogs: EventWatchHandler): () => void;
+  /** Watches for ExpiredFundsClaimed events in real time. Returns an unwatch function. */
+  watchExpiredFundsClaimed(onLogs: EventWatchHandler): () => void;
+}
 
 /**
  * Full PaymentTreasury entity (reads, writes, simulate, events).

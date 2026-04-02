@@ -1,6 +1,7 @@
 import type { Address, Hex } from "../../lib";
 import type { TieredReward, CampaignData } from "../../types/structs";
 import type { KeepWhatsRaisedConfig, KeepWhatsRaisedFeeKeys, KeepWhatsRaisedFeeValues } from "../../types/params";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for KeepWhatsRaised treasury. */
@@ -210,7 +211,82 @@ export interface KeepWhatsRaisedSimulate {
 }
 
 /** Event helpers for KeepWhatsRaised. */
-export interface KeepWhatsRaisedEvents {}
+export interface KeepWhatsRaisedEvents {
+  /** Returns decoded Receipt event logs (pledge events). */
+  getReceiptLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded RefundClaimed event logs. */
+  getRefundClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded WithdrawalWithFeeSuccessful event logs. */
+  getWithdrawalWithFeeSuccessfulLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded WithdrawalApproved event logs. */
+  getWithdrawalApprovedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded FeesDisbursed event logs. */
+  getFeesDisbursedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded TreasuryConfigured event logs. */
+  getTreasuryConfiguredLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded RewardsAdded event logs. */
+  getRewardsAddedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded RewardRemoved event logs. */
+  getRewardRemovedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded TipClaimed event logs. */
+  getTipClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded FundClaimed event logs. */
+  getFundClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded KeepWhatsRaisedDeadlineUpdated event logs. */
+  getDeadlineUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded KeepWhatsRaisedGoalAmountUpdated event logs. */
+  getGoalAmountUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded KeepWhatsRaisedPaymentGatewayFeeSet event logs. */
+  getPaymentGatewayFeeSetLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Paused event logs. */
+  getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Unpaused event logs. */
+  getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Transfer event logs. */
+  getTransferLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Approval event logs. */
+  getApprovalLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded ApprovalForAll event logs. */
+  getApprovalForAllLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Decodes a raw log entry against all known KeepWhatsRaised events. */
+  decodeLog(log: RawLog): DecodedEventLog;
+  /** Watches for Receipt events in real time. Returns an unwatch function. */
+  watchReceipt(onLogs: EventWatchHandler): () => void;
+  /** Watches for RefundClaimed events in real time. Returns an unwatch function. */
+  watchRefundClaimed(onLogs: EventWatchHandler): () => void;
+  /** Watches for WithdrawalWithFeeSuccessful events in real time. Returns an unwatch function. */
+  watchWithdrawalWithFeeSuccessful(onLogs: EventWatchHandler): () => void;
+  /** Watches for FeesDisbursed events in real time. Returns an unwatch function. */
+  watchFeesDisbursed(onLogs: EventWatchHandler): () => void;
+  /** Watches for WithdrawalApproved events in real time. Returns an unwatch function. */
+  watchWithdrawalApproved(onLogs: EventWatchHandler): () => void;
+  /** Watches for TreasuryConfigured events in real time. Returns an unwatch function. */
+  watchTreasuryConfigured(onLogs: EventWatchHandler): () => void;
+  /** Watches for RewardsAdded events in real time. Returns an unwatch function. */
+  watchRewardsAdded(onLogs: EventWatchHandler): () => void;
+  /** Watches for RewardRemoved events in real time. Returns an unwatch function. */
+  watchRewardRemoved(onLogs: EventWatchHandler): () => void;
+  /** Watches for TipClaimed events in real time. Returns an unwatch function. */
+  watchTipClaimed(onLogs: EventWatchHandler): () => void;
+  /** Watches for FundClaimed events in real time. Returns an unwatch function. */
+  watchFundClaimed(onLogs: EventWatchHandler): () => void;
+  /** Watches for KeepWhatsRaisedDeadlineUpdated events in real time. Returns an unwatch function. */
+  watchDeadlineUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for KeepWhatsRaisedGoalAmountUpdated events in real time. Returns an unwatch function. */
+  watchGoalAmountUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for KeepWhatsRaisedPaymentGatewayFeeSet events in real time. Returns an unwatch function. */
+  watchPaymentGatewayFeeSet(onLogs: EventWatchHandler): () => void;
+  /** Watches for Paused events in real time. Returns an unwatch function. */
+  watchPaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Unpaused events in real time. Returns an unwatch function. */
+  watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Transfer events in real time. Returns an unwatch function. */
+  watchTransfer(onLogs: EventWatchHandler): () => void;
+  /** Watches for Approval events in real time. Returns an unwatch function. */
+  watchApproval(onLogs: EventWatchHandler): () => void;
+  /** Watches for ApprovalForAll events in real time. Returns an unwatch function. */
+  watchApprovalForAll(onLogs: EventWatchHandler): () => void;
+}
 
 /** Full KeepWhatsRaised treasury entity (reads, writes, simulate, events). */
 export type KeepWhatsRaisedTreasuryEntity = KeepWhatsRaisedReads &

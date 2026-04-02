@@ -56,7 +56,9 @@ describe("AllOrNothing — simulate (may throw)", () => {
 });
 
 describe("AllOrNothing — events", () => {
-  it("events is an empty object", () => {
-    expect(aon.events).toEqual({});
+  it("events exposes event helpers", () => {
+    expect(typeof aon.events.getReceiptLogs).toBe("function");
+    expect(typeof aon.events.decodeLog).toBe("function");
+    expect(typeof aon.events.watchReceipt).toBe("function");
   });
 });

@@ -126,7 +126,9 @@ describe("CampaignInfoFactory — simulate (may throw)", () => {
 });
 
 describe("CampaignInfoFactory — events", () => {
-  it("events is an empty object", () => {
-    expect(cif.events).toEqual({});
+  it("events exposes event helpers", () => {
+    expect(typeof cif.events.getCampaignCreatedLogs).toBe("function");
+    expect(typeof cif.events.decodeLog).toBe("function");
+    expect(typeof cif.events.watchCampaignCreated).toBe("function");
   });
 });

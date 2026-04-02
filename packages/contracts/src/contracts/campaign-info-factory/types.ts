@@ -1,5 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { CreateCampaignParams } from "../../types/params";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for a CampaignInfoFactory contract instance. */
@@ -41,7 +42,22 @@ export interface CampaignInfoFactorySimulate {
 }
 
 /** Event helpers for a CampaignInfoFactory contract instance. */
-export interface CampaignInfoFactoryEvents {}
+export interface CampaignInfoFactoryEvents {
+  /** Returns decoded CampaignInfoFactoryCampaignCreated event logs. */
+  getCampaignCreatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded CampaignInfoFactoryCampaignInitialized event logs. */
+  getCampaignInitializedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded OwnershipTransferred event logs. */
+  getOwnershipTransferredLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Decodes a raw log entry against all known CampaignInfoFactory events. */
+  decodeLog(log: RawLog): DecodedEventLog;
+  /** Watches for CampaignInfoFactoryCampaignCreated events in real time. Returns an unwatch function. */
+  watchCampaignCreated(onLogs: EventWatchHandler): () => void;
+  /** Watches for CampaignInfoFactoryCampaignInitialized events in real time. Returns an unwatch function. */
+  watchCampaignInitialized(onLogs: EventWatchHandler): () => void;
+  /** Watches for OwnershipTransferred events in real time. Returns an unwatch function. */
+  watchOwnershipTransferred(onLogs: EventWatchHandler): () => void;
+}
 
 /** Full CampaignInfoFactory entity combining reads, writes, simulate, and events. */
 export type CampaignInfoFactoryEntity = CampaignInfoFactoryReads & CampaignInfoFactoryWrites & {
