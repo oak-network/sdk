@@ -1,6 +1,6 @@
 /**
  * @file metrics/index.ts
- * Public surface for the `@oaknetwork/contracts/metrics` sub-path export.
+ * Public surface for the `@oaknetwork/contracts-sdk/metrics` sub-path export.
  *
  * - platform.ts — protocol-level statistics from GlobalParams.
  * - campaign.ts — campaign-level financial aggregation from CampaignInfo.

@@ -461,24 +461,6 @@ await ir.addItemsBatch(itemIds, items);
 
 ---
 
-## Multicall
-
-Batch multiple entity read calls into a single RPC round-trip via the on-chain Multicall3 contract. Pass an array of lazy closures — the same entity read methods you'd normally `await` individually.
-
-### Standalone utility
-
-```typescript
-import { multicall } from "@oaknetwork/contracts";
-
-const gp = oak.globalParams("0x...");
-
-const [platformCount, feePercent, admin] = await multicall([
-  () => gp.getNumberOfListedPlatforms(),
-  () => gp.getProtocolFeePercent(),
-  () => gp.getProtocolAdminAddress(),
-]);
-```
-
 ### Client convenience method
 
 ```typescript
@@ -495,8 +477,8 @@ const [count, fee] = await oak.multicall([
 Reads from different entities are batched into one RPC call automatically:
 
 ```typescript
-const gp  = oak.globalParams("0x...");
-const ci  = oak.campaignInfo("0x...");
+const gp = oak.globalParams("0x...");
+const ci = oak.campaignInfo("0x...");
 const aon = oak.allOrNothingTreasury("0x...");
 
 const [platformCount, goalAmount, raisedAmount] = await oak.multicall([
@@ -514,14 +496,14 @@ const [platformCount, goalAmount, raisedAmount] = await oak.multicall([
 
 ## Metrics
 
-Pre-built aggregation functions that combine multiple on-chain reads into meaningful reports. Import from `@oaknetwork/contracts/metrics`.
+Pre-built aggregation functions that combine multiple on-chain reads into meaningful reports. Import from `@oaknetwork/contracts-sdk/metrics`.
 
 ### Platform Stats
 
 Protocol-level statistics from GlobalParams:
 
 ```typescript
-import { getPlatformStats } from "@oaknetwork/contracts/metrics";
+import { getPlatformStats } from "@oaknetwork/contracts-sdk/metrics";
 
 const stats = await getPlatformStats({
   globalParamsAddress: "0x...",
@@ -537,7 +519,7 @@ console.log(`Protocol fee: ${stats.protocolFeePercent} bps`);
 Financial aggregation from a deployed CampaignInfo contract:
 
 ```typescript
-import { getCampaignSummary } from "@oaknetwork/contracts/metrics";
+import { getCampaignSummary } from "@oaknetwork/contracts-sdk/metrics";
 
 const summary = await getCampaignSummary({
   campaignInfoAddress: "0x...",
@@ -555,7 +537,7 @@ console.log(`Refunded: ${summary.totalRefunded}`);
 Per-treasury financial report for any treasury type:
 
 ```typescript
-import { getTreasuryReport } from "@oaknetwork/contracts/metrics";
+import { getTreasuryReport } from "@oaknetwork/contracts-sdk/metrics";
 
 const report = await getTreasuryReport({
   treasuryAddress: "0x...",
@@ -570,6 +552,7 @@ console.log(`Cancelled: ${report.cancelled}`);
 ```
 
 > For complete metrics documentation, see: [Metrics](https://oaknetwork.org/docs/contracts-sdk/metrics).
+
 ## Events
 
 Every contract entity exposes an `events` property with three capabilities:
@@ -590,7 +573,7 @@ const logs = await gp.events.getPlatformEnlistedLogs();
 
 for (const log of logs) {
   console.log(log.eventName); // "PlatformEnlisted"
-  console.log(log.args);      // { platformHash: "0x...", adminAddress: "0x...", ... }
+  console.log(log.args); // { platformHash: "0x...", adminAddress: "0x...", ... }
 }
 
 // Filter by block range
@@ -801,7 +784,7 @@ const unwatch = ir.events.watchItemAdded(handler);
 
 ### Types
 
-All event methods use shared types from `@oaknetwork/contracts`:
+All event methods use shared types from `@oaknetwork/contracts-sdk`:
 
 ```typescript
 import type {
@@ -809,12 +792,12 @@ import type {
   EventFilterOptions,
   EventWatchHandler,
   RawLog,
-} from "@oaknetwork/contracts";
+} from "@oaknetwork/contracts-sdk";
 
 // EventFilterOptions — optional block range for get*Logs
 interface EventFilterOptions {
   fromBlock?: bigint; // defaults to 0n (genesis) if omitted
-  toBlock?: bigint;   // defaults to latest block if omitted
+  toBlock?: bigint; // defaults to latest block if omitted
 }
 
 // DecodedEventLog — returned by get*Logs and decodeLog
@@ -932,14 +915,32 @@ For complete guidelines on utility functions, please refer to the following link
 
 ## Exported Entry Points
 
-| Entry point                       | Contents                                    |
-| --------------------------------- | ------------------------------------------- |
-| `@oaknetwork/contracts-sdk`           | Everything — client, types, utils, errors   |
-| `@oaknetwork/contracts-sdk/utils`     | Utility functions only (no client)          |
-| `@oaknetwork/contracts-sdk/contracts` | Contract entity factories only              |
-| `@oaknetwork/contracts-sdk/client`    | `createOakContractsClient` only             |
-| `@oaknetwork/contracts-sdk/errors`    | Error classes and `parseContractError` only |
+| Entry point                           | Contents                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------ |
+| `@oaknetwork/contracts-sdk`           | Everything — client, types, utils, errors                                      |
+| `@oaknetwork/contracts-sdk/utils`     | Utility functions only (no client)                                             |
+| `@oaknetwork/contracts-sdk/contracts` | Contract entity factories only                                                 |
+| `@oaknetwork/contracts-sdk/client`    | `createOakContractsClient` only                                                |
+| `@oaknetwork/contracts-sdk/errors`    | Error classes and `parseContractError` only                                    |
 | `@oaknetwork/contracts-sdk/metrics`   | Platform, campaign, and treasury reporting helpers (not re-exported from root) |
+
+## Multicall
+
+Batch multiple entity read calls into a single RPC round-trip via the on-chain Multicall3 contract. Pass an array of lazy closures — the same entity read methods you'd normally `await` individually.
+
+### Standalone utility
+
+```typescript
+import { multicall } from "@oaknetwork/contracts-sdk";
+
+const gp = oak.globalParams("0x...");
+
+const [platformCount, feePercent, admin] = await multicall([
+  () => gp.getNumberOfListedPlatforms(),
+  () => gp.getProtocolFeePercent(),
+  () => gp.getProtocolAdminAddress(),
+]);
+```
 
 ---
 
