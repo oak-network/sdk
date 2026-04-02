@@ -1,6 +1,8 @@
 /**
  * Cross-contract type definitions only — no logic, no client dependencies.
- * structs.ts holds on-chain struct mirrors; params.ts holds SDK-level input types.
+ *
+ * - structs.ts  — on-chain struct mirrors (e.g. reward tuples, item tuples).
+ * - params.ts   — SDK-level input types used by write/simulate methods.
  */
 export * from "./structs";
 export * from "./params";
