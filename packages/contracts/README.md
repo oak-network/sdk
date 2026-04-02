@@ -461,6 +461,118 @@ await ir.addItemsBatch(itemIds, items);
 
 ---
 
+## Multicall
+
+Batch multiple entity read calls into a single RPC round-trip via the on-chain Multicall3 contract. Pass an array of lazy closures — the same entity read methods you'd normally `await` individually.
+
+### Standalone utility
+
+```typescript
+import { multicall } from "@oaknetwork/contracts";
+
+const gp = oak.globalParams("0x...");
+
+const [platformCount, feePercent, admin] = await multicall([
+  () => gp.getNumberOfListedPlatforms(),
+  () => gp.getProtocolFeePercent(),
+  () => gp.getProtocolAdminAddress(),
+]);
+```
+
+### Client convenience method
+
+```typescript
+const gp = oak.globalParams("0x...");
+
+const [count, fee] = await oak.multicall([
+  () => gp.getNumberOfListedPlatforms(),
+  () => gp.getProtocolFeePercent(),
+]);
+```
+
+### Cross-contract batching
+
+Reads from different entities are batched into one RPC call automatically:
+
+```typescript
+const gp  = oak.globalParams("0x...");
+const ci  = oak.campaignInfo("0x...");
+const aon = oak.allOrNothingTreasury("0x...");
+
+const [platformCount, goalAmount, raisedAmount] = await oak.multicall([
+  () => gp.getNumberOfListedPlatforms(),
+  () => ci.getGoalAmount(),
+  () => aon.getRaisedAmount(),
+]);
+```
+
+> Under the hood, the SDK enables viem's `batch.multicall` transport option. All `readContract` calls dispatched within the same tick are automatically aggregated into a single Multicall3 on-chain call — no raw ABI descriptors needed.
+
+> For complete multicall documentation, see: [Multicall](https://oaknetwork.org/docs/contracts-sdk/multicall).
+
+---
+
+## Metrics
+
+Pre-built aggregation functions that combine multiple on-chain reads into meaningful reports. Import from `@oaknetwork/contracts/metrics`.
+
+### Platform Stats
+
+Protocol-level statistics from GlobalParams:
+
+```typescript
+import { getPlatformStats } from "@oaknetwork/contracts/metrics";
+
+const stats = await getPlatformStats({
+  globalParamsAddress: "0x...",
+  publicClient: oak.publicClient,
+});
+
+console.log(`${stats.platformCount} platforms enlisted`);
+console.log(`Protocol fee: ${stats.protocolFeePercent} bps`);
+```
+
+### Campaign Summary
+
+Financial aggregation from a deployed CampaignInfo contract:
+
+```typescript
+import { getCampaignSummary } from "@oaknetwork/contracts/metrics";
+
+const summary = await getCampaignSummary({
+  campaignInfoAddress: "0x...",
+  publicClient: oak.publicClient,
+});
+
+console.log(`Total raised: ${summary.totalRaised}`);
+console.log(`Goal: ${summary.goalAmount}`);
+console.log(`Goal reached: ${summary.goalReached}`);
+console.log(`Refunded: ${summary.totalRefunded}`);
+```
+
+### Treasury Report
+
+Per-treasury financial report for any treasury type:
+
+```typescript
+import { getTreasuryReport } from "@oaknetwork/contracts/metrics";
+
+const report = await getTreasuryReport({
+  treasuryAddress: "0x...",
+  treasuryType: "all-or-nothing", // or "keep-whats-raised" | "payment-treasury"
+  publicClient: oak.publicClient,
+});
+
+console.log(`Raised: ${report.raisedAmount}`);
+console.log(`Refunded: ${report.refundedAmount}`);
+console.log(`Fee: ${report.platformFeePercent} bps`);
+console.log(`Cancelled: ${report.cancelled}`);
+```
+
+> For complete metrics documentation, see: [Metrics](https://oaknetwork.org/docs/contracts-sdk/metrics).
+
+---
+
 ## Error Handling
 
 Contract calls can revert with on-chain errors. The SDK decodes raw revert data into typed error classes with decoded arguments and human-readable recovery hints.
@@ -519,6 +631,7 @@ import {
   getCurrentTimestamp,
   addDays,
   getChainFromId,
+  multicall,
   createJsonRpcProvider,
   createWallet,
   createBrowserProvider,
@@ -555,13 +668,14 @@ For complete guidelines on utility functions, please refer to the following link
 
 ## Exported Entry Points
 
-| Entry point                       | Contents                                    |
-| --------------------------------- | ------------------------------------------- |
-| `@oaknetwork/contracts`           | Everything — client, types, utils, errors   |
-| `@oaknetwork/contracts/utils`     | Utility functions only (no client)          |
-| `@oaknetwork/contracts/contracts` | Contract entity factories only              |
-| `@oaknetwork/contracts/client`    | `createOakContractsClient` only             |
-| `@oaknetwork/contracts/errors`    | Error classes and `parseContractError` only |
+| Entry point                       | Contents                                                      |
+| --------------------------------- | ------------------------------------------------------------- |
+| `@oaknetwork/contracts`           | Everything — client, types, utils, errors, multicall          |
+| `@oaknetwork/contracts/utils`     | Utility functions and `multicall` (no client)                 |
+| `@oaknetwork/contracts/contracts` | Contract entity factories only                                |
+| `@oaknetwork/contracts/client`    | `createOakContractsClient` only                               |
+| `@oaknetwork/contracts/errors`    | Error classes and `parseContractError` only                   |
+| `@oaknetwork/contracts/metrics`   | `getPlatformStats`, `getCampaignSummary`, `getTreasuryReport` |
 
 ---
 
@@ -623,6 +737,8 @@ See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture pri
 
 - [Full docs](https://oaknetwork.org/docs/contracts-sdk/overview) — oaknetwork.org/docs/sdk/overview
 - [Quickstart](https://oaknetwork.org/docs/contracts-sdk/quickstart) — oaknetwork.org/docs/sdk/quickstart
+- [Multicall](https://oaknetwork.org/docs/contracts-sdk/multicall) — batch reads into one RPC call
+- [Metrics](https://oaknetwork.org/docs/contracts-sdk/metrics) — pre-built aggregation reports
 - [Monorepo README](../../README.md) — README.md
 - [Changelog](./CHANGELOG.md) — CHANGELOG.md
 
