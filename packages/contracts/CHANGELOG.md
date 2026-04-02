@@ -1,5 +1,12 @@
 ---
 
+## 1.1.0
+### Minor Changes
+
+### Minor Changes
+- Add multicall utility and metrics aggregation module
+- Add comprehensive event log handling across all contract entities
+
 ## 1.0.0
 ### Major Changes
 
