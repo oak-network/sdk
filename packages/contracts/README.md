@@ -530,12 +530,12 @@ Every contract entity exposes an `events` property with three capabilities:
 
 ### Fetching historical logs
 
-Each event has a `get*Logs()` method that returns all matching logs from the entire chain history. You can optionally pass `{ fromBlock, toBlock }` to narrow the search range.
+Each event has a `get*Logs()` method. Without options, it queries only the **latest block**. Pass `{ fromBlock, toBlock }` to search a specific range.
 
 ```typescript
 const gp = oak.globalParams("0x...");
 
-// All PlatformEnlisted events ever emitted by this contract
+// Latest block only (safe default)
 const logs = await gp.events.getPlatformEnlistedLogs();
 
 for (const log of logs) {
@@ -545,10 +545,12 @@ for (const log of logs) {
 
 // Filter by block range
 const recentLogs = await gp.events.getPlatformEnlistedLogs({
-  fromBlock: 1_000_000n,
-  toBlock: 2_000_000n,
+  fromBlock: 48_792_800n,
+  toBlock:   48_802_800n,
 });
 ```
+
+> **RPC block range limits:** Public RPCs (e.g. Celo Forno, Infura free tier) typically restrict `eth_getLogs` to a maximum of 2,000–10,000 blocks per request. Requesting a larger range will result in an HTTP error or timeout. For historical scans across large ranges, either split into smaller batches or use a dedicated archive/indexing node with higher limits.
 
 ### Decoding raw logs
 
