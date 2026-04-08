@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { CAMPAIGN_INFO_FACTORY_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode, toSimulationResult } from "../../errors";
 import type { CampaignInfoFactorySimulate } from "./types";
 import type { CreateCampaignParams } from "../../types/params";
 import type { CallSignerOptions } from "../../client/types";
@@ -25,9 +25,9 @@ export function createCampaignInfoFactorySimulate(
   const contract = { address, abi: CAMPAIGN_INFO_FACTORY_ABI } as const;
 
   return {
-    async createCampaign(params: CreateCampaignParams, options?: CallSignerOptions): Promise<void> {
+    async createCampaign(params: CreateCampaignParams, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -52,10 +52,11 @@ export function createCampaignInfoFactorySimulate(
           ],
         }),
       );
+      return toSimulationResult(response);
     },
-    async updateImplementation(newImplementation: Address, options?: CallSignerOptions): Promise<void> {
+    async updateImplementation(newImplementation: Address, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -64,10 +65,11 @@ export function createCampaignInfoFactorySimulate(
           args: [newImplementation],
         }),
       );
+      return toSimulationResult(response);
     },
-    async transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<void> {
+    async transferOwnership(newOwner: Address, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -76,10 +78,11 @@ export function createCampaignInfoFactorySimulate(
           args: [newOwner],
         }),
       );
+      return toSimulationResult(response);
     },
-    async renounceOwnership(options?: CallSignerOptions): Promise<void> {
+    async renounceOwnership(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -88,6 +91,7 @@ export function createCampaignInfoFactorySimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
   };
 }

@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { ITEM_REGISTRY_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode, toSimulationResult } from "../../errors";
 import type { ItemRegistrySimulate } from "./types";
 import type { Item } from "../../types/structs";
 import type { CallSignerOptions } from "../../client/types";
@@ -25,9 +25,9 @@ export function createItemRegistrySimulate(
   const contract = { address, abi: ITEM_REGISTRY_ABI } as const;
 
   return {
-    async addItem(itemId: Hex, item: Item, options?: CallSignerOptions): Promise<void> {
+    async addItem(itemId: Hex, item: Item, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -46,10 +46,11 @@ export function createItemRegistrySimulate(
           ],
         }),
       );
+      return toSimulationResult(response);
     },
-    async addItemsBatch(itemIds: readonly Hex[], items: readonly Item[], options?: CallSignerOptions): Promise<void> {
+    async addItemsBatch(itemIds: readonly Hex[], items: readonly Item[], options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -68,6 +69,7 @@ export function createItemRegistrySimulate(
           ],
         }),
       );
+      return toSimulationResult(response);
     },
   };
 }

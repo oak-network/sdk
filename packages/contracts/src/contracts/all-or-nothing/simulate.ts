@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { ALL_OR_NOTHING_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode, toSimulationResult } from "../../errors";
 import type { AllOrNothingSimulate } from "./types";
 import type { TieredReward } from "../../types/structs";
 import type { CallSignerOptions } from "../../client/types";
@@ -25,9 +25,9 @@ export function createAllOrNothingSimulate(
   const contract = { address, abi: ALL_OR_NOTHING_ABI } as const;
 
   return {
-    async pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void> {
+    async pauseTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -36,10 +36,11 @@ export function createAllOrNothingSimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
-    async unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void> {
+    async unpauseTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -48,10 +49,11 @@ export function createAllOrNothingSimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
-    async cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<void> {
+    async cancelTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -60,10 +62,11 @@ export function createAllOrNothingSimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
-    async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<void> {
+    async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -72,10 +75,11 @@ export function createAllOrNothingSimulate(
           args: [[...rewardNames], [...rewards]],
         }),
       );
+      return toSimulationResult(response);
     },
-    async removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<void> {
+    async removeReward(rewardName: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -84,10 +88,11 @@ export function createAllOrNothingSimulate(
           args: [rewardName],
         }),
       );
+      return toSimulationResult(response);
     },
-    async pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions): Promise<void> {
+    async pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -96,10 +101,11 @@ export function createAllOrNothingSimulate(
           args: [backer, pledgeToken, shippingFee, [...rewardNames]],
         }),
       );
+      return toSimulationResult(response);
     },
-    async pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint, options?: CallSignerOptions): Promise<void> {
+    async pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -108,10 +114,11 @@ export function createAllOrNothingSimulate(
           args: [backer, pledgeToken, pledgeAmount],
         }),
       );
+      return toSimulationResult(response);
     },
-    async claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+    async claimRefund(tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -120,10 +127,11 @@ export function createAllOrNothingSimulate(
           args: [tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
-    async disburseFees(options?: CallSignerOptions): Promise<void> {
+    async disburseFees(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -132,10 +140,11 @@ export function createAllOrNothingSimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
-    async withdraw(options?: CallSignerOptions): Promise<void> {
+    async withdraw(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -144,10 +153,11 @@ export function createAllOrNothingSimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
-    async burn(tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+    async burn(tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -156,10 +166,11 @@ export function createAllOrNothingSimulate(
           args: [tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
-    async approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+    async approve(to: Address, tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -168,10 +179,11 @@ export function createAllOrNothingSimulate(
           args: [to, tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
-    async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<void> {
+    async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -180,10 +192,11 @@ export function createAllOrNothingSimulate(
           args: [operator, approved],
         }),
       );
+      return toSimulationResult(response);
     },
-    async safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+    async safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -192,10 +205,11 @@ export function createAllOrNothingSimulate(
           args: [from, to, tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
-    async transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+    async transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -204,6 +218,7 @@ export function createAllOrNothingSimulate(
           args: [from, to, tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
   };
 }

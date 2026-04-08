@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { CAMPAIGN_INFO_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode, toSimulationResult } from "../../errors";
 import type { CampaignInfoSimulate } from "./types";
 import type { CallSignerOptions } from "../../client/types";
 
@@ -24,9 +24,9 @@ export function createCampaignInfoSimulate(
   const contract = { address, abi: CAMPAIGN_INFO_ABI } as const;
 
   return {
-    async updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<void> {
+    async updateDeadline(deadline: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -35,10 +35,11 @@ export function createCampaignInfoSimulate(
           args: [deadline],
         }),
       );
+      return toSimulationResult(response);
     },
-    async updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<void> {
+    async updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -47,10 +48,11 @@ export function createCampaignInfoSimulate(
           args: [goalAmount],
         }),
       );
+      return toSimulationResult(response);
     },
-    async updateLaunchTime(launchTime: bigint, options?: CallSignerOptions): Promise<void> {
+    async updateLaunchTime(launchTime: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -59,10 +61,11 @@ export function createCampaignInfoSimulate(
           args: [launchTime],
         }),
       );
+      return toSimulationResult(response);
     },
-    async updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[], options?: CallSignerOptions): Promise<void> {
+    async updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[], options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -71,10 +74,11 @@ export function createCampaignInfoSimulate(
           args: [platformHash, selection, [...platformDataKey], [...platformDataValue]],
         }),
       );
+      return toSimulationResult(response);
     },
-    async setImageURI(newImageURI: string, options?: CallSignerOptions): Promise<void> {
+    async setImageURI(newImageURI: string, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -83,10 +87,11 @@ export function createCampaignInfoSimulate(
           args: [newImageURI],
         }),
       );
+      return toSimulationResult(response);
     },
-    async updateContractURI(newContractURI: string, options?: CallSignerOptions): Promise<void> {
+    async updateContractURI(newContractURI: string, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -95,10 +100,11 @@ export function createCampaignInfoSimulate(
           args: [newContractURI],
         }),
       );
+      return toSimulationResult(response);
     },
-    async mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint, options?: CallSignerOptions): Promise<void> {
+    async mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -107,10 +113,11 @@ export function createCampaignInfoSimulate(
           args: [backer, reward, tokenAddress, amount, shippingFee, tipAmount],
         }),
       );
+      return toSimulationResult(response);
     },
-    async burn(tokenId: bigint, options?: CallSignerOptions): Promise<void> {
+    async burn(tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -119,10 +126,11 @@ export function createCampaignInfoSimulate(
           args: [tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
-    async pauseCampaign(message: Hex, options?: CallSignerOptions): Promise<void> {
+    async pauseCampaign(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -131,10 +139,11 @@ export function createCampaignInfoSimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
-    async unpauseCampaign(message: Hex, options?: CallSignerOptions): Promise<void> {
+    async unpauseCampaign(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -143,10 +152,11 @@ export function createCampaignInfoSimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
-    async cancelCampaign(message: Hex, options?: CallSignerOptions): Promise<void> {
+    async cancelCampaign(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -155,10 +165,11 @@ export function createCampaignInfoSimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
-    async setPlatformInfo(platformBytes: Hex, platformTreasuryAddress: Address, options?: CallSignerOptions): Promise<void> {
+    async setPlatformInfo(platformBytes: Hex, platformTreasuryAddress: Address, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -167,10 +178,11 @@ export function createCampaignInfoSimulate(
           args: [platformBytes, platformTreasuryAddress],
         }),
       );
+      return toSimulationResult(response);
     },
-    async transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<void> {
+    async transferOwnership(newOwner: Address, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -179,10 +191,11 @@ export function createCampaignInfoSimulate(
           args: [newOwner],
         }),
       );
+      return toSimulationResult(response);
     },
-    async renounceOwnership(options?: CallSignerOptions): Promise<void> {
+    async renounceOwnership(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -191,6 +204,7 @@ export function createCampaignInfoSimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
   };
 }

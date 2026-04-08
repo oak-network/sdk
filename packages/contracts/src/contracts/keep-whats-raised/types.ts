@@ -1,7 +1,7 @@
 import type { Address, Hex } from "../../lib";
 import type { TieredReward, CampaignData } from "../../types/structs";
 import type { KeepWhatsRaisedConfig, KeepWhatsRaisedFeeKeys, KeepWhatsRaisedFeeValues } from "../../types/params";
-import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for KeepWhatsRaised treasury. */
@@ -134,29 +134,29 @@ export interface KeepWhatsRaisedWrites {
 
 /** Simulate counterparts for KeepWhatsRaised write methods. */
 export interface KeepWhatsRaisedSimulate {
-  /** Simulates pauseTreasury; throws a typed error on revert. */
-  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates unpauseTreasury; throws a typed error on revert. */
-  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates cancelTreasury; throws a typed error on revert. */
-  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates configureTreasury; throws a typed error on revert. */
+  /** Simulates pauseTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates unpauseTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates cancelTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates configureTreasury; returns a SimulationResult on success, throws a typed error on revert. */
   configureTreasury(
     config: KeepWhatsRaisedConfig,
     campaignData: CampaignData,
     feeKeys: KeepWhatsRaisedFeeKeys,
     feeValues: KeepWhatsRaisedFeeValues,
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates addRewards; throws a typed error on revert. */
-  addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<void>;
-  /** Simulates removeReward; throws a typed error on revert. */
-  removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates approveWithdrawal; throws a typed error on revert. */
-  approveWithdrawal(options?: CallSignerOptions): Promise<void>;
-  /** Simulates setPaymentGatewayFee; throws a typed error on revert. */
-  setPaymentGatewayFee(pledgeId: Hex, fee: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates setFeeAndPledge; throws a typed error on revert. */
+  ): Promise<SimulationResult>;
+  /** Simulates addRewards; returns a SimulationResult on success, throws a typed error on revert. */
+  addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates removeReward; returns a SimulationResult on success, throws a typed error on revert. */
+  removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates approveWithdrawal; returns a SimulationResult on success, throws a typed error on revert. */
+  approveWithdrawal(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setPaymentGatewayFee; returns a SimulationResult on success, throws a typed error on revert. */
+  setPaymentGatewayFee(pledgeId: Hex, fee: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setFeeAndPledge; returns a SimulationResult on success, throws a typed error on revert. */
   setFeeAndPledge(
     pledgeId: Hex,
     backer: Address,
@@ -167,8 +167,8 @@ export interface KeepWhatsRaisedSimulate {
     reward: readonly Hex[],
     isPledgeForAReward: boolean,
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates pledgeForAReward; throws a typed error on revert. */
+  ): Promise<SimulationResult>;
+  /** Simulates pledgeForAReward; returns a SimulationResult on success, throws a typed error on revert. */
   pledgeForAReward(
     pledgeId: Hex,
     backer: Address,
@@ -176,8 +176,8 @@ export interface KeepWhatsRaisedSimulate {
     tip: bigint,
     rewardNames: readonly Hex[],
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates pledgeWithoutAReward; throws a typed error on revert. */
+  ): Promise<SimulationResult>;
+  /** Simulates pledgeWithoutAReward; returns a SimulationResult on success, throws a typed error on revert. */
   pledgeWithoutAReward(
     pledgeId: Hex,
     backer: Address,
@@ -185,29 +185,29 @@ export interface KeepWhatsRaisedSimulate {
     pledgeAmount: bigint,
     tip: bigint,
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates claimRefund; throws a typed error on revert. */
-  claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates claimTip; throws a typed error on revert. */
-  claimTip(options?: CallSignerOptions): Promise<void>;
-  /** Simulates claimFund; throws a typed error on revert. */
-  claimFund(options?: CallSignerOptions): Promise<void>;
-  /** Simulates disburseFees; throws a typed error on revert. */
-  disburseFees(options?: CallSignerOptions): Promise<void>;
-  /** Simulates withdraw; throws a typed error on revert. */
-  withdraw(token: Address, amount: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateDeadline; throws a typed error on revert. */
-  updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateGoalAmount; throws a typed error on revert. */
-  updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates approve; throws a typed error on revert. */
-  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates setApprovalForAll; throws a typed error on revert. */
-  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<void>;
-  /** Simulates safeTransferFrom; throws a typed error on revert. */
-  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates transferFrom; throws a typed error on revert. */
-  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
+  ): Promise<SimulationResult>;
+  /** Simulates claimRefund; returns a SimulationResult on success, throws a typed error on revert. */
+  claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates claimTip; returns a SimulationResult on success, throws a typed error on revert. */
+  claimTip(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates claimFund; returns a SimulationResult on success, throws a typed error on revert. */
+  claimFund(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates disburseFees; returns a SimulationResult on success, throws a typed error on revert. */
+  disburseFees(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates withdraw; returns a SimulationResult on success, throws a typed error on revert. */
+  withdraw(token: Address, amount: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateDeadline; returns a SimulationResult on success, throws a typed error on revert. */
+  updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateGoalAmount; returns a SimulationResult on success, throws a typed error on revert. */
+  updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates approve; returns a SimulationResult on success, throws a typed error on revert. */
+  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setApprovalForAll; returns a SimulationResult on success, throws a typed error on revert. */
+  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates safeTransferFrom; returns a SimulationResult on success, throws a typed error on revert. */
+  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates transferFrom; returns a SimulationResult on success, throws a typed error on revert. */
+  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for KeepWhatsRaised. */
