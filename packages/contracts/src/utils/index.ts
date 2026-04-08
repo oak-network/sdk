@@ -8,3 +8,5 @@ export { keccak256, id } from "./hash";
 export { getCurrentTimestamp, addDays } from "./time";
 export { getChainFromId } from "./chain";
 export { multicall } from "./multicall";
+export { prepareContractWrite, toPreparedTransaction } from "./prepare";
+export type { PrepareWriteOptions, PreparedTransaction } from "./prepare";
