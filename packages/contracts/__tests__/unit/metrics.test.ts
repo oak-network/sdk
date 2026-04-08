@@ -288,7 +288,7 @@ describe("toPreparedTransaction", () => {
     expect(prepared.gas).toBe(21000n);
   });
 
-  it("defaults value and gas to 0n when undefined", () => {
+  it("defaults value to 0n and preserves undefined gas", () => {
     const simResult: SimulationResult = {
       result: undefined,
       request: {
@@ -299,6 +299,6 @@ describe("toPreparedTransaction", () => {
 
     const prepared = toPreparedTransaction(simResult);
     expect(prepared.value).toBe(0n);
-    expect(prepared.gas).toBe(0n);
+    expect(prepared.gas).toBeUndefined();
   });
 });

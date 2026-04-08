@@ -36,8 +36,8 @@ export interface PreparedTransaction {
   data: Hex;
   /** Native token value to send (wei). */
   value: bigint;
-  /** Estimated gas limit. */
-  gas: bigint;
+  /** Estimated gas limit. Undefined when the source did not include a gas estimate — callers should estimate separately before submitting. */
+  gas?: bigint;
 }
 
 /**
@@ -106,6 +106,6 @@ export function toPreparedTransaction(result: SimulationResult): PreparedTransac
     to: result.request.to,
     data: result.request.data,
     value: result.request.value ?? 0n,
-    gas: result.request.gas ?? 0n,
+    gas: result.request.gas,
   };
 }
