@@ -10,6 +10,8 @@ import { keccak256, toHex } from "viem";
 const ADDR = "0x0000000000000000000000000000000000000001" as Address;
 const B32 = ("0x" + "00".repeat(32)) as `0x${string}`;
 
+const MOCK_ABI = [{ name: "mock", type: "function" as const, stateMutability: "nonpayable" as const, inputs: [], outputs: [] }] as const;
+
 type WatchContractEventArgs = { onLogs: (logs: unknown[]) => void };
 
 function mockPublicClient(): PublicClient {
@@ -17,7 +19,7 @@ function mockPublicClient(): PublicClient {
     readContract: jest.fn().mockResolvedValue(0n),
     simulateContract: jest.fn().mockResolvedValue({
       result: undefined,
-      request: { to: ADDR, data: "0x00" as `0x${string}`, value: 0n, gas: 21000n },
+      request: { address: ADDR, abi: MOCK_ABI, functionName: "mock", args: [], value: 0n, gas: 21000n },
     }),
     getContractEvents: jest.fn().mockResolvedValue([]),
     watchContractEvent: jest.fn().mockImplementation((_args: WatchContractEventArgs) => () => {}),

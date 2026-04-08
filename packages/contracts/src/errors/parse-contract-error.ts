@@ -1,4 +1,5 @@
 import type { Address, Hex } from "../lib";
+import { encodeFunctionData } from "../lib";
 import { isHex } from "../utils";
 import type { ContractErrorBase } from "./base";
 import type { SimulationResult } from "../types/events";
@@ -98,16 +99,30 @@ export async function simulateWithErrorDecode<T = unknown>(operation: () => Prom
 /**
  * Converts the raw viem simulateContract response into the SDK's SimulationResult shape.
  *
+ * viem's simulateContract returns `{ result, request }` where `request` contains
+ * `address`, `abi`, `functionName`, `args` (a write-request shape for walletClient.writeContract),
+ * not raw `to`/`data` fields. This function encodes the calldata from those fields.
+ *
  * @param response - Raw response from publicClient.simulateContract
  * @returns SimulationResult with the contract return value and prepared transaction params
  */
 export function toSimulationResult<T>(response: { result: T; request: Record<string, unknown> }): SimulationResult<T> {
   const req = response.request;
+  const abi = req["abi"] as readonly unknown[];
+  const functionName = req["functionName"] as string;
+  const args = req["args"] as readonly unknown[] | undefined;
+
+  const data = encodeFunctionData({
+    abi,
+    functionName,
+    args: args as unknown[],
+  });
+
   return {
     result: response.result,
     request: {
-      to: req["to"] as Address,
-      data: req["data"] as Hex,
+      to: req["address"] as Address,
+      data,
       value: req["value"] as bigint | undefined,
       gas: req["gas"] as bigint | undefined,
     },

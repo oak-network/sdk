@@ -172,21 +172,37 @@ describe("simulateWithErrorDecode", () => {
 });
 
 describe("toSimulationResult", () => {
-  it("maps viem simulate response to SimulationResult", () => {
+  const TEST_ABI = [
+    {
+      name: "transfer",
+      type: "function" as const,
+      stateMutability: "nonpayable" as const,
+      inputs: [
+        { name: "to", type: "address" },
+        { name: "amount", type: "uint256" },
+      ],
+      outputs: [{ name: "", type: "bool" }],
+    },
+  ] as const;
+
+  it("maps viem simulate response to SimulationResult with encoded calldata", () => {
     const response = {
-      result: 42n,
+      result: true,
       request: {
-        to: "0x0000000000000000000000000000000000000001",
-        data: "0xdeadbeef",
-        value: 100n,
+        address: "0x0000000000000000000000000000000000000001",
+        abi: TEST_ABI,
+        functionName: "transfer",
+        args: ["0x0000000000000000000000000000000000000002", 100n],
+        value: 0n,
         gas: 21000n,
       },
     };
     const mapped = toSimulationResult(response);
-    expect(mapped.result).toBe(42n);
+    expect(mapped.result).toBe(true);
     expect(mapped.request.to).toBe("0x0000000000000000000000000000000000000001");
-    expect(mapped.request.data).toBe("0xdeadbeef");
-    expect(mapped.request.value).toBe(100n);
+    expect(mapped.request.data).toMatch(/^0x/);
+    expect(mapped.request.data.length).toBeGreaterThan(10);
+    expect(mapped.request.value).toBe(0n);
     expect(mapped.request.gas).toBe(21000n);
   });
 
@@ -194,12 +210,16 @@ describe("toSimulationResult", () => {
     const response = {
       result: undefined,
       request: {
-        to: "0x0000000000000000000000000000000000000001",
-        data: "0x00",
+        address: "0x0000000000000000000000000000000000000001",
+        abi: TEST_ABI,
+        functionName: "transfer",
+        args: ["0x0000000000000000000000000000000000000002", 1n],
       },
     };
     const mapped = toSimulationResult(response);
     expect(mapped.result).toBeUndefined();
+    expect(mapped.request.to).toBe("0x0000000000000000000000000000000000000001");
+    expect(mapped.request.data).toMatch(/^0x/);
     expect(mapped.request.value).toBeUndefined();
     expect(mapped.request.gas).toBeUndefined();
   });
