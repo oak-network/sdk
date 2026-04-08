@@ -171,6 +171,27 @@ When a write or simulate method is called, the signer is resolved in this order:
 
 > For a detailed step-by-step guide, please refer to the complete [Client Configuration](https://oaknetwork.org/docs/contracts-sdk/client) documentation.
 
+### Transaction Receipts
+
+The client provides two methods for fetching transaction receipts:
+
+```typescript
+// Wait for a pending transaction to be mined (blocking)
+const receipt = await oak.waitForReceipt(txHash);
+console.log(`Mined in block ${receipt.blockNumber}, gas used: ${receipt.gasUsed}`);
+
+// Look up a receipt for an already-mined transaction (non-blocking)
+// Returns null if the transaction hasn't been mined yet
+const receipt = await oak.getReceipt(txHash);
+if (receipt) {
+  console.log(`Block: ${receipt.blockNumber}`);
+}
+```
+
+Use `waitForReceipt` when you've just sent a transaction and need to block until it's confirmed. Use `getReceipt` when you already have a tx hash (e.g. from a webhook, indexer, or previous session) and want to fetch the receipt without waiting.
+
+---
+
 ## Contract Entities
 
 ### GlobalParams
@@ -759,6 +780,7 @@ import type {
   EventFilterOptions,
   EventWatchHandler,
   RawLog,
+  SimulationResult,
 } from "@oaknetwork/contracts-sdk";
 
 // EventFilterOptions — optional block range for get*Logs
@@ -781,6 +803,17 @@ interface RawLog {
 
 // EventWatchHandler — callback for watch* methods
 type EventWatchHandler = (logs: readonly DecodedEventLog[]) => void;
+
+// SimulationResult — returned by entity simulate methods
+interface SimulationResult<T = unknown> {
+  result: T;
+  request: {
+    to: Address;
+    data: Hex;
+    value?: bigint;
+    gas?: bigint;
+  };
+}
 ```
 
 > For complete details on contract events, please visit the following link: [Events](https://oaknetwork.org/docs/contracts-sdk/events).
@@ -827,6 +860,76 @@ try {
 
 ---
 
+## Simulation & Transaction Preparation
+
+Every entity exposes a `simulate` namespace that dry-runs write calls against the current chain state. Simulate methods now return a `SimulationResult` containing both the predicted return value and prepared transaction parameters — useful for gas estimation, account-abstraction (ERC-4337), or Safe multisig batching.
+
+### SimulationResult
+
+```typescript
+import type { SimulationResult } from "@oaknetwork/contracts-sdk";
+
+const gp = oak.globalParams("0x...");
+
+// Simulate a write — returns SimulationResult instead of void
+const sim = await gp.simulate.enlistPlatform(hash, adminAddr, fee, adapter);
+
+console.log(sim.result);       // Contract return value (void for most writes)
+console.log(sim.request.to);   // Target contract address
+console.log(sim.request.data); // ABI-encoded calldata
+console.log(sim.request.gas);  // Estimated gas limit
+console.log(sim.request.value); // Native token value (wei)
+```
+
+If the simulation reverts, a typed SDK error is thrown — the same as before.
+
+### Preparing Transactions Without Sending
+
+For flows where you need raw transaction parameters without sending (e.g. account-abstraction UserOps, Safe multisig, or custom signing), use `prepareContractWrite` or extract params from a simulation result with `toPreparedTransaction`:
+
+```typescript
+import {
+  prepareContractWrite,
+  toPreparedTransaction,
+  GLOBAL_PARAMS_ABI,
+} from "@oaknetwork/contracts-sdk";
+
+// Option 1: Prepare directly from ABI + function name
+const tx = await prepareContractWrite(oak.publicClient, {
+  address: "0x...",
+  abi: GLOBAL_PARAMS_ABI,
+  functionName: "enlistPlatform",
+  args: [platformHash, adminAddress, feePercent, adapterAddress],
+  account: "0xMyWallet...",
+  chain: oak.config.chain,
+});
+// tx = { to, data, value, gas }
+
+// Option 2: Extract from an existing SimulationResult
+const sim = await gp.simulate.enlistPlatform(hash, admin, fee, adapter);
+const prepared = toPreparedTransaction(sim);
+// prepared = { to, data, value, gas }
+```
+
+### Exported ABI Constants
+
+All contract ABIs are now exported for use with `prepareContractWrite`, custom viem calls, or third-party tools:
+
+```typescript
+import {
+  GLOBAL_PARAMS_ABI,
+  CAMPAIGN_INFO_FACTORY_ABI,
+  CAMPAIGN_INFO_ABI,
+  TREASURY_FACTORY_ABI,
+  PAYMENT_TREASURY_ABI,
+  ALL_OR_NOTHING_ABI,
+  KEEP_WHATS_RAISED_ABI,
+  ITEM_REGISTRY_ABI,
+} from "@oaknetwork/contracts-sdk";
+```
+
+---
+
 ## Utility Functions
 
 The SDK exports pure utility functions and constants that have no client dependency. Import them from @oaknetwork/contracts-sdk or @oaknetwork/contracts-sdk/utils.
@@ -837,6 +940,9 @@ import {
   id,
   toHex,
   stringToHex,
+  encodeFunctionData,
+  decodeFunctionResult,
+  decodeEventLog,
   parseEther,
   formatEther,
   parseUnits,
@@ -846,6 +952,8 @@ import {
   addDays,
   getChainFromId,
   multicall,
+  prepareContractWrite,
+  toPreparedTransaction,
   createJsonRpcProvider,
   createWallet,
   createBrowserProvider,
@@ -884,11 +992,11 @@ For complete guidelines on utility functions, please refer to the following link
 
 | Entry point                           | Contents                                                                       |
 | ------------------------------------- | ------------------------------------------------------------------------------ |
-| `@oaknetwork/contracts-sdk`           | Everything — client, types, utils, errors                                      |
-| `@oaknetwork/contracts-sdk/utils`     | Utility functions only (no client)                                             |
-| `@oaknetwork/contracts-sdk/contracts` | Contract entity factories only                                                 |
+| `@oaknetwork/contracts-sdk`           | Everything — client, types, utils, errors, ABI constants                       |
+| `@oaknetwork/contracts-sdk/utils`     | Utility functions + `prepareContractWrite` / `toPreparedTransaction`           |
+| `@oaknetwork/contracts-sdk/contracts` | Contract entity factories + ABI constants                                      |
 | `@oaknetwork/contracts-sdk/client`    | `createOakContractsClient` only                                                |
-| `@oaknetwork/contracts-sdk/errors`    | Error classes and `parseContractError` only                                    |
+| `@oaknetwork/contracts-sdk/errors`    | Error classes, `parseContractError`, and `toSimulationResult`                  |
 | `@oaknetwork/contracts-sdk/metrics`   | Platform, campaign, and treasury reporting helpers (not re-exported from root) |
 
 ## Multicall
