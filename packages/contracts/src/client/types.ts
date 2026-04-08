@@ -130,6 +130,15 @@ export interface OakContractsClient {
    */
   waitForReceipt(txHash: Hex): Promise<TransactionReceipt>;
   /**
+   * Fetches the receipt for an already-mined transaction without waiting.
+   * Use this when you already have a tx hash (e.g. from a webhook, indexer,
+   * or previous session) and don't need to block until mining completes.
+   *
+   * @param txHash - Transaction hash to look up
+   * @returns TransactionReceipt, or null if the transaction is not yet mined
+   */
+  getReceipt(txHash: Hex): Promise<TransactionReceipt | null>;
+  /**
    * Batches multiple entity read calls into a single RPC round-trip via the
    * on-chain Multicall3 contract. Accepts an array of lazy read closures —
    * the same calls you would normally `await` individually.

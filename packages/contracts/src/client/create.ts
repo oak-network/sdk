@@ -58,12 +58,29 @@ export function createOakContractsClient(
     };
   }
 
+  async function getReceipt(txHash: Hex): Promise<TransactionReceipt | null> {
+    try {
+      const receipt = await publicClient.getTransactionReceipt({ hash: txHash });
+      return {
+        blockNumber: receipt.blockNumber,
+        gasUsed: receipt.gasUsed,
+        logs: receipt.logs.map((log) => ({
+          topics: log.topics as readonly Hex[],
+          data: log.data,
+        })),
+      };
+    } catch {
+      return null;
+    }
+  }
+
   return {
     config: publicConfig,
     options,
     publicClient,
     walletClient,
     waitForReceipt,
+    getReceipt,
 
     multicall<T extends readonly (() => Promise<unknown>)[]>(
       calls: [...T],
