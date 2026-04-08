@@ -1,6 +1,7 @@
-import type { Hex } from "../lib";
+import type { Address, Hex } from "../lib";
 import { isHex } from "../utils";
 import type { ContractErrorBase } from "./base";
+import type { SimulationResult } from "../types/events";
 import { parseGlobalParamsError } from "./parse/global-params";
 import { parseCampaignInfoFactoryError } from "./parse/campaign-info-factory";
 import { parseCampaignInfoError } from "./parse/campaign-info";
@@ -74,15 +75,16 @@ export function getRevertData(error: unknown): string | null {
 
 /**
  * Wraps a simulateContract call, catches reverts, decodes them via parseContractError,
- * and re-throws as a typed SDK error. Consumers catch the same error class whether
- * they are simulating or transacting.
+ * and re-throws as a typed SDK error. On success, returns the raw simulation response
+ * from viem (`{ result, request }`).
  *
  * @param operation - Async function that calls simulateContract
+ * @returns The raw viem simulation response
  * @throws Typed ContractErrorBase subclass on revert, or the original error if not decodable
  */
-export async function simulateWithErrorDecode(operation: () => Promise<unknown>): Promise<void> {
+export async function simulateWithErrorDecode<T = unknown>(operation: () => Promise<T>): Promise<T> {
   try {
-    await operation();
+    return await operation();
   } catch (error: unknown) {
     const revertData = getRevertData(error);
     const parsed = parseContractError(revertData ?? "");
@@ -91,4 +93,23 @@ export async function simulateWithErrorDecode(operation: () => Promise<unknown>)
     }
     throw error;
   }
+}
+
+/**
+ * Converts the raw viem simulateContract response into the SDK's SimulationResult shape.
+ *
+ * @param response - Raw response from publicClient.simulateContract
+ * @returns SimulationResult with the contract return value and prepared transaction params
+ */
+export function toSimulationResult<T>(response: { result: T; request: Record<string, unknown> }): SimulationResult<T> {
+  const req = response.request;
+  return {
+    result: response.result,
+    request: {
+      to: req["to"] as Address,
+      data: req["data"] as Hex,
+      value: req["value"] as bigint | undefined,
+      gas: req["gas"] as bigint | undefined,
+    },
+  };
 }

@@ -3,6 +3,7 @@ export {
   parseContractError,
   getRevertData,
   simulateWithErrorDecode,
+  toSimulationResult,
 } from "./parse-contract-error";
 
 export {
