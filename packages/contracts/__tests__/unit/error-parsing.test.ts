@@ -5,6 +5,7 @@ import {
   parseContractError,
   getRevertData,
   simulateWithErrorDecode,
+  toSimulationResult,
 } from "../../src/errors/parse-contract-error";
 import { parseGlobalParamsError } from "../../src/errors/parse/global-params";
 import { parseCampaignInfoFactoryError } from "../../src/errors/parse/campaign-info-factory";
@@ -150,8 +151,8 @@ describe("getRevertData", () => {
 });
 
 describe("simulateWithErrorDecode", () => {
-  it("does not throw on success", async () => {
-    await expect(simulateWithErrorDecode(async () => "ok")).resolves.toBeUndefined();
+  it("returns the operation result on success", async () => {
+    await expect(simulateWithErrorDecode(async () => "ok")).resolves.toBe("ok");
   });
 
   it("throws typed error when revert data is parseable", async () => {
@@ -167,6 +168,40 @@ describe("simulateWithErrorDecode", () => {
   it("rethrows original error when not parseable", async () => {
     const err = new Error("something else");
     await expect(simulateWithErrorDecode(async () => { throw err; })).rejects.toBe(err);
+  });
+});
+
+describe("toSimulationResult", () => {
+  it("maps viem simulate response to SimulationResult", () => {
+    const response = {
+      result: 42n,
+      request: {
+        to: "0x0000000000000000000000000000000000000001",
+        data: "0xdeadbeef",
+        value: 100n,
+        gas: 21000n,
+      },
+    };
+    const mapped = toSimulationResult(response);
+    expect(mapped.result).toBe(42n);
+    expect(mapped.request.to).toBe("0x0000000000000000000000000000000000000001");
+    expect(mapped.request.data).toBe("0xdeadbeef");
+    expect(mapped.request.value).toBe(100n);
+    expect(mapped.request.gas).toBe(21000n);
+  });
+
+  it("handles undefined value and gas", () => {
+    const response = {
+      result: undefined,
+      request: {
+        to: "0x0000000000000000000000000000000000000001",
+        data: "0x00",
+      },
+    };
+    const mapped = toSimulationResult(response);
+    expect(mapped.result).toBeUndefined();
+    expect(mapped.request.value).toBeUndefined();
+    expect(mapped.request.gas).toBeUndefined();
   });
 });
 

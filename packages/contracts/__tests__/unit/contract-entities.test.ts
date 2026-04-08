@@ -15,7 +15,10 @@ type WatchContractEventArgs = { onLogs: (logs: unknown[]) => void };
 function mockPublicClient(): PublicClient {
   return {
     readContract: jest.fn().mockResolvedValue(0n),
-    simulateContract: jest.fn().mockResolvedValue({ result: undefined }),
+    simulateContract: jest.fn().mockResolvedValue({
+      result: undefined,
+      request: { to: ADDR, data: "0x00" as `0x${string}`, value: 0n, gas: 21000n },
+    }),
     getContractEvents: jest.fn().mockResolvedValue([]),
     watchContractEvent: jest.fn().mockImplementation((_args: WatchContractEventArgs) => () => {}),
   } as unknown as PublicClient;
