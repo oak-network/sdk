@@ -50,7 +50,15 @@ console.log("Awaiting Protocol Admin approval before it can be used.");
 //   const keepWhatsRaisedImpl = process.env.KEEP_WHATS_RAISED_IMPL! as `0x${string}`;
 //   await treasuryFactory.registerTreasuryImplementation(platformHash, 1n, keepWhatsRaisedImpl);
 //
+//   // PaymentTreasury — standard, no time restrictions:
 //   const paymentTreasuryImpl = process.env.PAYMENT_TREASURY_IMPL! as `0x${string}`;
 //   await treasuryFactory.registerTreasuryImplementation(platformHash, 2n, paymentTreasuryImpl);
+//
+//   // TimeConstrainedPaymentTreasury — enforces launch time + deadline on-chain:
+//   // Use this instead of PaymentTreasury for limited-time sales, flash deals,
+//   // or seasonal storefronts. The SDK interface is identical for both variants;
+//   // time constraints are enforced transparently by the contract.
+//   const timeConstrainedImpl = process.env.TIME_CONSTRAINED_PAYMENT_TREASURY_IMPL! as `0x${string}`;
+//   await treasuryFactory.registerTreasuryImplementation(platformHash, 3n, timeConstrainedImpl);
 //
 // Each slot requires a separate Protocol Admin approval.

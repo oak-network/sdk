@@ -38,7 +38,10 @@ Each platform maintains its own mapping of implementation ID to treasury contrac
 | --- | --- | --- |
 | `0n` | AllOrNothing | Crowdfunding — backers get a full refund if the goal is not met |
 | `1n` | KeepWhatsRaised | Crowdfunding — the creator keeps whatever is raised, even if the goal is not met |
-| `2n` | PaymentTreasury | E-commerce — structured payments with line items, confirmations, and refunds |
+| `2n` | PaymentTreasury | E-commerce — structured payments with no time restrictions |
+| `3n` | TimeConstrainedPaymentTreasury | E-commerce — same as PaymentTreasury but enforces launch time and deadline on-chain (flash deals, seasonal storefronts) |
+
+> **PaymentTreasury vs. TimeConstrainedPaymentTreasury:** Both share the same SDK interface — `oak.paymentTreasury(address)`. The only difference is at registration time: you register a different implementation contract address. The time constraints are enforced transparently by the smart contract. See the [Payment Treasury README](../03-campaign-payment-treasury/README.md) for details.
 
 ## Optional Configuration (Step 6)
 
