@@ -30,57 +30,60 @@
 import { createOakContractsClient, keccak256, toHex, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
 
 // ============================================================
-// A. Off-chain payment refund (Platform Admin)
+// A. Crypto payment refund (NFT Owner / Buyer)
 // ============================================================
 //
-// For payments created via `createPayment` — no NFT was minted.
-// The platform admin cancels and directs the refund.
+// Steps 2–3 processed order-12345 as a crypto payment, which minted
+// an NFT to Sam. To claim a refund, Sam (the NFT owner) calls
+// `claimRefundSelf`. The contract verifies NFT ownership, burns the
+// NFT, and sends the refundable amount back to Sam's wallet.
 
-const oak = createOakContractsClient({
+const samOak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
   rpcUrl: process.env.RPC_URL!,
-  privateKey: process.env.PLATFORM_PRIVATE_KEY! as `0x${string}`,
+  privateKey: process.env.SAM_PRIVATE_KEY! as `0x${string}`,
 });
 
-const paymentTreasury = oak.paymentTreasury(
+const samTreasury = samOak.paymentTreasury(
   process.env.PAYMENT_TREASURY_ADDRESS! as `0x${string}`,
 );
 
 const paymentId = keccak256(toHex("order-12345"));
 
-// Step 1: Cancel the payment
-const cancelTxHash = await paymentTreasury.cancelPayment(paymentId);
-await oak.waitForReceipt(cancelTxHash);
-console.log("Payment cancelled");
-
-// Step 2: Direct the refund to the buyer's address (platform admin only)
-const refundTxHash = await paymentTreasury.claimRefund(
-  paymentId,
-  process.env.SAM_ADDRESS! as `0x${string}`,
-);
-await oak.waitForReceipt(refundTxHash);
-console.log("Refund sent to Sam's address");
+const selfRefundTxHash = await samTreasury.claimRefundSelf(paymentId);
+await samOak.waitForReceipt(selfRefundTxHash);
+console.log("NFT burned + refund claimed by Sam");
 
 // ============================================================
-// B. On-chain crypto payment refund (NFT Owner)
+// B. Off-chain payment refund (Platform Admin) — Alternative
 // ============================================================
 //
-// For payments made via `processCryptoPayment` — an NFT was minted
-// to the buyer. The buyer (current NFT owner) claims the refund
-// themselves. The contract burns the NFT and sends tokens to the
-// NFT owner.
+// For payments created via `createPayment` only (no NFT minted),
+// the platform admin cancels the payment and directs the refund
+// to a specific address. This path does NOT apply to crypto
+// payments — use `claimRefundSelf` above instead.
 
-// const samOak = createOakContractsClient({
+// const oak = createOakContractsClient({
 //   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
 //   rpcUrl: process.env.RPC_URL!,
-//   privateKey: process.env.SAM_PRIVATE_KEY! as `0x${string}`,
+//   privateKey: process.env.PLATFORM_PRIVATE_KEY! as `0x${string}`,
 // });
 //
-// const samTreasury = samOak.paymentTreasury(
+// const paymentTreasury = oak.paymentTreasury(
 //   process.env.PAYMENT_TREASURY_ADDRESS! as `0x${string}`,
 // );
 //
-// const cryptoPaymentId = keccak256(toHex("crypto-order-67890"));
-// const selfRefundTxHash = await samTreasury.claimRefundSelf(cryptoPaymentId);
-// await samOak.waitForReceipt(selfRefundTxHash);
-// console.log("NFT burned + refund claimed by Sam");
+// const offchainPaymentId = keccak256(toHex("offchain-order-67890"));
+//
+// // Step 1: Cancel the payment
+// const cancelTxHash = await paymentTreasury.cancelPayment(offchainPaymentId);
+// await oak.waitForReceipt(cancelTxHash);
+// console.log("Payment cancelled");
+//
+// // Step 2: Direct the refund to the buyer's address
+// const refundTxHash = await paymentTreasury.claimRefund(
+//   offchainPaymentId,
+//   process.env.SAM_ADDRESS! as `0x${string}`,
+// );
+// await oak.waitForReceipt(refundTxHash);
+// console.log("Refund sent to Sam's address");
