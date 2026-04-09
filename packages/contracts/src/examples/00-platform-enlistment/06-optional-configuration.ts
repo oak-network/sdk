@@ -268,7 +268,9 @@ async function protocolAdminExamples(): Promise<void> {
   });
 
   const globalParams = oak.globalParams(process.env.GLOBAL_PARAMS_ADDRESS! as `0x${string}`);
-  const platformHash = keccak256(toHex("NOVAPAY"));
+
+  // platformHash is used in the commented examples below (delist, update admin, etc.)
+  // const platformHash = keccak256(toHex("NOVAPAY"));
 
   // --- Currency management ---
   //

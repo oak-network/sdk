@@ -11,7 +11,6 @@
 
 import {
   createOakContractsClient,
-  keccak256,
   toHex,
   CHAIN_IDS,
   parseContractError,
