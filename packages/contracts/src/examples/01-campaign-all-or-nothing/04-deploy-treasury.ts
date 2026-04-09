@@ -40,5 +40,5 @@ const logs = await treasuryFactory.events.getTreasuryDeployedLogs({
   fromBlock: BigInt(deployReceipt.blockNumber),
 });
 
-const treasuryAddress = logs[0]?.args?.treasury;
+const treasuryAddress = logs[0]?.args?.treasuryAddress;
 console.log("All-or-Nothing treasury deployed at:", treasuryAddress);

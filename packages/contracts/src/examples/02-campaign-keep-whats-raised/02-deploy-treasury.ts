@@ -38,5 +38,5 @@ const deployLogs = await treasuryFactory.events.getTreasuryDeployedLogs({
   fromBlock: BigInt(deployReceipt.blockNumber),
 });
 
-const treasuryAddress = deployLogs[0]?.args?.treasury;
+const treasuryAddress = deployLogs[0]?.args?.treasuryAddress;
 console.log("KWR Treasury at:", treasuryAddress);
