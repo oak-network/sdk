@@ -34,9 +34,25 @@ const deployTxHash = await treasuryFactory.deploy(
 
 const deployReceipt = await oak.waitForReceipt(deployTxHash);
 
-const deployLogs = await treasuryFactory.events.getTreasuryDeployedLogs({
-  fromBlock: BigInt(deployReceipt.blockNumber),
-});
+// Decode the TreasuryDeployed event directly from the receipt.
+// Using receipt.logs guarantees we only see events from our transaction,
+// avoiding ambiguity when multiple deploys land in the same block.
+let treasuryAddress: `0x${string}` | undefined;
 
-const treasuryAddress = deployLogs[0]?.args?.treasuryAddress;
+for (const log of deployReceipt.logs) {
+  try {
+    const decoded = treasuryFactory.events.decodeLog({
+      topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
+      data: log.data as `0x${string}`,
+    });
+
+    if (decoded.eventName === "TreasuryFactoryTreasuryDeployed") {
+      treasuryAddress = decoded.args?.treasuryAddress as `0x${string}`;
+      break;
+    }
+  } catch {
+    // Log belongs to a different contract — skip
+  }
+}
+
 console.log("KWR Treasury at:", treasuryAddress);
