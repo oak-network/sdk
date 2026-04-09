@@ -28,7 +28,7 @@ console.log("Deadline:", new Date(Number(deadline) * 1000).toISOString());
 try {
   await campaign.updateGoalAmount(2_000_000_000n);
 } catch (error) {
-  if ((error as Error).message === "No signer configured.") {
+  if ((error as Error).message.startsWith("No signer configured")) {
     console.error("Connect your wallet to perform this action.");
   }
 }
