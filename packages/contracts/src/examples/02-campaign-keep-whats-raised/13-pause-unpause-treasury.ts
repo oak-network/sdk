@@ -31,4 +31,4 @@ console.log("Treasury paused:", await treasury.paused()); // true
 const unpauseReason = keccak256(toHex("review-cleared"));
 const unpauseTxHash = await treasury.unpauseTreasury(unpauseReason);
 await platformOak.waitForReceipt(unpauseTxHash);
-console.log("Treasury paused:", await treasury.paused()); // false
+console.log("Treasury resumed, paused:", await treasury.paused()); // false

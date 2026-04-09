@@ -52,13 +52,13 @@ console.log("Approval events:", approvalLogs.length);
 // 3. Confirm enlistment event was emitted
 const enlistmentLogs = await globalParams.events.getPlatformEnlistedLogs();
 const novaPayLog = enlistmentLogs.find(
-  (log) => log.args?.platformHash === platformHash,
+  (log) => log.args?.platformBytes === platformHash,
 );
 
 if (novaPayLog) {
   console.log("\n=== Enlistment Confirmed ===");
   console.log("Event:", novaPayLog.eventName);
-  console.log("Platform hash:", novaPayLog.args?.platformHash);
+  console.log("Platform hash:", novaPayLog.args?.platformBytes);
   console.log("NovaPay is fully onboarded and ready to launch campaigns.");
 } else {
   console.error("Enlistment event not found — check the transaction.");

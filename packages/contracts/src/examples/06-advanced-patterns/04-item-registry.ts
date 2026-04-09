@@ -36,7 +36,8 @@ const txHash = await itemRegistry.addItem(vaseItemId, vaseItem);
 await oak.waitForReceipt(txHash);
 console.log("Vase registered in the item registry");
 
-// Read back the item
+// Read back the item — the owner address must match the account that
+// signed the addItem call (i.e., the address derived from PRIVATE_KEY)
 const storedItem = await itemRegistry.getItem(
   process.env.CREATOR_ADDRESS! as `0x${string}`,
   vaseItemId,

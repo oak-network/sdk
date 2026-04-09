@@ -1,5 +1,5 @@
 /**
- * Step 2: Look Up the Campaign Address (Creator)
+ * Step 2: Look Up the Campaign Address (Anyone)
  *
  * After creating the campaign in Step 1, Maya needs to find the address
  * of the deployed CampaignInfo contract. She uses the same identifier hash
@@ -15,7 +15,6 @@ import { createOakContractsClient, keccak256, toHex, CHAIN_IDS } from "@oaknetwo
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
   rpcUrl: process.env.RPC_URL!,
-  privateKey: process.env.MAYA_PRIVATE_KEY! as `0x${string}`,
 });
 
 const factory = oak.campaignInfoFactory(

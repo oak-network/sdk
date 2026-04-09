@@ -48,10 +48,14 @@ const unwatchPlatforms = gp.events.watchPlatformEnlisted((logs) => {
   }
 });
 
-// Clean up when the dashboard unmounts
-function cleanup() {
+// Clean up when the dashboard unmounts — call this on page
+// navigation or component teardown to stop WebSocket subscriptions
+export function cleanup() {
   unwatchCampaigns();
   unwatchPledges();
   unwatchPlatforms();
   console.log("All watchers stopped");
 }
+
+// To stop watchers after a timeout (for testing):
+// setTimeout(() => cleanup(), 60_000);

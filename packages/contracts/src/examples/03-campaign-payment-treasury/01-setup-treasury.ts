@@ -1,5 +1,5 @@
 /**
- * Step 1: Connect to the Payment Treasury (Platform Admin)
+ * Step 1: Connect to the Payment Treasury (Anyone)
  *
  * CeloMarket's backend connects to its deployed PaymentTreasury contract
  * and reads back the platform configuration — the platform hash it belongs
@@ -12,7 +12,6 @@ import { createOakContractsClient, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
   rpcUrl: process.env.RPC_URL!,
-  privateKey: process.env.PLATFORM_PRIVATE_KEY! as `0x${string}`,
 });
 
 const paymentTreasury = oak.paymentTreasury(

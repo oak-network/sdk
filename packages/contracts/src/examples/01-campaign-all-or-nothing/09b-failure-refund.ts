@@ -32,7 +32,7 @@ const alexOak = createOakContractsClient({
 const treasuryAddress = process.env.ALL_OR_NOTHING_ADDRESS! as `0x${string}`;
 const treasury = alexOak.allOrNothingTreasury(treasuryAddress);
 
-const tokenId = 0n; // Alex's pledge NFT token ID (received when pledging)
+const tokenId = BigInt(process.env.ALEX_PLEDGE_TOKEN_ID ?? "0"); // NFT token ID from the pledge receipt event
 const refundTxHash = await treasury.claimRefund(tokenId);
 const refundReceipt = await alexOak.waitForReceipt(refundTxHash);
 console.log(`Refund claimed at block ${refundReceipt.blockNumber}`);

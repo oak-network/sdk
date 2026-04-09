@@ -28,7 +28,7 @@ const backerOak = createOakContractsClient({
 const treasuryAddress = process.env.KEEP_WHATS_RAISED_ADDRESS! as `0x${string}`;
 const treasury = backerOak.keepWhatsRaisedTreasury(treasuryAddress);
 
-const tokenId = 0n; // backer's pledge NFT token ID
+const tokenId = BigInt(process.env.BACKER_PLEDGE_TOKEN_ID ?? "0"); // NFT token ID from the pledge receipt event
 const refundTxHash = await treasury.claimRefund(tokenId);
 const refundReceipt = await backerOak.waitForReceipt(refundTxHash);
 console.log(`Refund claimed at block ${refundReceipt.blockNumber}`);

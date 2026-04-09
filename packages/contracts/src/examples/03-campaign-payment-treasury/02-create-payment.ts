@@ -40,7 +40,7 @@ const expiration = BigInt(Math.floor(Date.now() / 1000)) + 86400n; // 24 hours
 
 const lineItems: LineItem[] = [
   {
-    typeId: keccak256(toHex("pledge")),    // product price
+    typeId: keccak256(toHex("product")),    // product price
     amount: 120_000_000n,                   // $120
   },
   {
@@ -85,7 +85,7 @@ console.log("Payment created for order #12345");
 //   [paymentToken, paymentToken],
 //   [totalAmount, 85_000_000n],
 //   [expiration, expiration],
-//   [lineItems, [{ typeId: keccak256(toHex("pledge")), amount: 85_000_000n }]],
+//   [lineItems, [{ typeId: keccak256(toHex("product")), amount: 85_000_000n }]],
 //   [externalFees, []],
 // );
 // await oak.waitForReceipt(batchTxHash);

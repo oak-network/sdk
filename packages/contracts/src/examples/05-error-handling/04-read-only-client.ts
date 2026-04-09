@@ -6,7 +6,7 @@
  * an RPC call. Build your UI to handle this gracefully.
  */
 
-import { createOakContractsClient, keccak256, toHex, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
+import { createOakContractsClient, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
 
 const readOnlyOak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,

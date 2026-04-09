@@ -73,6 +73,7 @@ async function setupLineItemTypes(): Promise<void> {
     true,   // canRefund        (must be true when countsTowardGoal is true)
     false,  // instantTransfer  (must be false when countsTowardGoal is true)
   );
+  await oak.waitForReceipt(tx1);
   console.log("Line item type 'product' set:", tx1);
 
   // "shipping" line item type
@@ -86,6 +87,7 @@ async function setupLineItemTypes(): Promise<void> {
     false,  // canRefund
     true,   // instantTransfer
   );
+  await oak.waitForReceipt(tx2);
   console.log("Line item type 'shipping' set:", tx2);
 
   // Verify
@@ -275,8 +277,8 @@ async function protocolAdminExamples(): Promise<void> {
   // and the protocol resolves it to a list of accepted token addresses.
 
   const usdCurrency = toHex("USD", { size: 32 });
-  const cusdToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
 
+  // const cusdToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
   // const addTokenTx = await globalParams.addTokenToCurrency(usdCurrency, cusdToken);
   // await oak.waitForReceipt(addTokenTx);
   // console.log("cUSD added as accepted token for USD");

@@ -27,6 +27,7 @@ const platformHash = keccak256(toHex("NOVAPAY"));
 
 // Approve the AllOrNothing implementation at slot 0
 const txHash = await treasuryFactory.approveTreasuryImplementation(platformHash, 0n);
+await oak.waitForReceipt(txHash);
 console.log("AllOrNothing approved (slot 0):", txHash);
 console.log("NovaPay can now deploy AllOrNothing treasuries.");
 

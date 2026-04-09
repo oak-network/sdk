@@ -26,13 +26,15 @@ const someTxHash = "0x..." as `0x${string}`;
 const receipt = await oak.waitForReceipt(someTxHash);
 
 for (const log of receipt.logs) {
-  const decoded = factory.events.decodeLog({
-    topics: log.topics,
-    data: log.data,
-  });
+  try {
+    const decoded = factory.events.decodeLog({
+      topics: log.topics,
+      data: log.data,
+    });
 
-  if (decoded) {
     console.log(`Event: ${decoded.eventName}`);
     console.log(`Args:`, decoded.args);
+  } catch {
+    // Log belongs to a different contract — skip silently
   }
 }

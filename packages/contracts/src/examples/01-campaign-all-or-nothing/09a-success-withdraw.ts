@@ -29,6 +29,6 @@ const withdrawTxHash = await treasury.withdraw();
 const withdrawReceipt = await oak.waitForReceipt(withdrawTxHash);
 console.log(`Funds withdrawn at block ${withdrawReceipt.blockNumber}`);
 
-// Verify the treasury is empty
+// Verify withdrawal is complete
 const remaining = await treasury.getRaisedAmount();
-console.log("Remaining in treasury:", remaining); // 0n
+console.log("Raised amount (accounting total):", remaining);

@@ -38,13 +38,11 @@ try {
   if (error instanceof CampaignInfoUnauthorizedError) {
     console.error("You are not the campaign owner.");
     console.error("Hint:", error.recoveryHint);
-    // return;
-  }
+  } else {
+    // Pattern 2: Parse unknown revert data
+    const revertData = getRevertData(error);
+    const parsed = revertData ? parseContractError(revertData) : null;
 
-  // Pattern 2: Parse unknown revert data
-  const revertData = getRevertData(error);
-  if (revertData) {
-    const parsed = parseContractError(revertData);
     if (parsed) {
       console.error(`Contract error: ${parsed.name}`);
       console.error("Arguments:", parsed.args);
@@ -53,10 +51,9 @@ try {
       if (hint) {
         console.error("Recovery hint:", hint);
       }
-      // return;
+    } else {
+      // Unknown error — only reached when the error is not a typed contract revert
+      console.error("Unknown error:", (error as Error).message);
     }
   }
-
-  // Unknown error
-  console.error("Unknown error:", (error as Error).message);
 }

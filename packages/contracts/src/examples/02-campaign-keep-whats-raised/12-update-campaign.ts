@@ -29,9 +29,9 @@ const oak = createOakContractsClient({
 const treasuryAddress = process.env.KEEP_WHATS_RAISED_ADDRESS! as `0x${string}`;
 const treasury = oak.keepWhatsRaisedTreasury(treasuryAddress);
 
-// Extend the deadline by 30 more days
+// Extend the deadline to 90 days from now
 const now = getCurrentTimestamp();
-const newDeadline = addDays(now, 90); // extend to 90 days total
+const newDeadline = addDays(now, 90);
 const deadlineTxHash = await treasury.updateDeadline(newDeadline);
 await oak.waitForReceipt(deadlineTxHash);
 console.log("Deadline extended to 90 days");

@@ -48,17 +48,26 @@ await oak.waitForReceipt(pledgeTxHash);
 console.log("Pledged for Early Bird reward");
 
 // --- Pledge without a reward — pure support ---
+// Uses a separate client for the supporter's wallet so that
+// msg.sender matches the backer address for token transfers.
+
+const supporterOak = createOakContractsClient({
+  chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+  rpcUrl: process.env.RPC_URL!,
+  privateKey: process.env.SUPPORTER_PRIVATE_KEY! as `0x${string}`,
+});
+const supporterTreasury = supporterOak.keepWhatsRaisedTreasury(treasuryAddress);
 
 const supportPledgeId = keccak256(toHex("pledge-002"));
 const supporterAddress = process.env.SUPPORTER_ADDRESS! as `0x${string}`;
-const noRewardTxHash = await treasury.pledgeWithoutAReward(
+const noRewardTxHash = await supporterTreasury.pledgeWithoutAReward(
   supportPledgeId,
   supporterAddress,
   pledgeToken,
   50_000_000n,   // $50 pledge amount
   0n,            // no tip
 );
-await oak.waitForReceipt(noRewardTxHash);
+await supporterOak.waitForReceipt(noRewardTxHash);
 console.log("Pledged without reward");
 
 // --- Set fee and pledge in one call (Platform Admin only) ---

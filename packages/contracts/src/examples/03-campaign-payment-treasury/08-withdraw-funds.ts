@@ -2,12 +2,12 @@
  * Step 8: Withdraw Confirmed Funds (Platform Admin or Creator)
  *
  * After fees have been disbursed (Step 7), the platform admin or the
- * campaign owner withdraws all available confirmed funds from the
+ * campaign owner withdraws all remaining confirmed funds from the
  * treasury. The funds are transferred to the campaign owner's wallet.
  *
- * `withdraw()` takes no parameters — it calculates protocol and
- * platform fees on the available balance, deducts them, and transfers
- * the remainder to the campaign owner.
+ * `withdraw()` takes no parameters — it transfers the entire remaining
+ * balance to the campaign owner. Fees must already have been disbursed
+ * via `disburseFees()` before calling this method.
  *
  * After withdrawal, the treasury's available balance drops to zero
  * (until new payments are confirmed).

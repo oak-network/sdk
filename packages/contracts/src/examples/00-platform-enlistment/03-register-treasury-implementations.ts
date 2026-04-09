@@ -39,6 +39,7 @@ const txHash = await treasuryFactory.registerTreasuryImplementation(
   0n, // slot 0
   allOrNothingImpl,
 );
+await oak.waitForReceipt(txHash);
 console.log("AllOrNothing registered at slot 0:", txHash);
 console.log("Awaiting Protocol Admin approval before it can be used.");
 

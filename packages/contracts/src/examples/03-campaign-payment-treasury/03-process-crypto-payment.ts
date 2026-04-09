@@ -33,7 +33,7 @@ const paymentToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
 const totalAmount = 135_000_000n;
 
 const lineItems: LineItem[] = [
-  { typeId: keccak256(toHex("pledge")), amount: 120_000_000n },
+  { typeId: keccak256(toHex("product")), amount: 120_000_000n },
   { typeId: keccak256(toHex("shipping")), amount: 15_000_000n },
 ];
 

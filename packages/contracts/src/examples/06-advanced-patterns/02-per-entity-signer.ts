@@ -26,10 +26,6 @@ const userSigner = createWallet(userPrivateKey, process.env.RPC_URL!, oak.config
 const treasuryAddress = process.env.ALL_OR_NOTHING_ADDRESS! as `0x${string}`;
 const treasury = oak.allOrNothingTreasury(treasuryAddress, { signer: userSigner });
 
-// All writes automatically use userSigner
-const backerAddr = process.env.USER_ADDRESS! as `0x${string}`;
-const pledgeToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
-
 // Reads — no signer needed
 const raised = await treasury.getRaisedAmount();
 console.log("Raised:", raised);

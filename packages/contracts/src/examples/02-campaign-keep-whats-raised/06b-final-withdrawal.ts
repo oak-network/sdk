@@ -17,7 +17,7 @@
  *     that window, `withdraw` is no longer available (use `claimFund`
  *     instead once the withdrawal delay has fully elapsed)
  *
- * Call `disburseFees()` (Step 7) before this step so that protocol
+ * Call `disburseFees()` (Step 8) before this step so that protocol
  * and platform fees have already been transferred out.
  */
 

@@ -42,6 +42,9 @@ const approvalStatus = await platformTreasury.getWithdrawalApprovalStatus();
 console.log("Withdrawal approved:", approvalStatus); // true
 
 // --- Step B: Creator withdraws after the delay period ---
+// The on-chain withdrawal delay (set during treasury configuration)
+// must have elapsed since approval before this call can succeed.
+// If the delay has not passed, the transaction will revert.
 
 const creatorOak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
