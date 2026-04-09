@@ -29,8 +29,11 @@ const creatorSigner = createWallet(
 const treasuryAddress = process.env.ALL_OR_NOTHING_ADDRESS! as `0x${string}`;
 const treasury = oak.allOrNothingTreasury(treasuryAddress);
 
-// Admin disburses fees
-await treasury.disburseFees({ signer: adminSigner });
+// Admin disburses fees — wait for mining before withdrawing,
+// because withdraw reverts if fees have not been disbursed yet
+const feeTxHash = await treasury.disburseFees({ signer: adminSigner });
+await oak.waitForReceipt(feeTxHash);
 
-// Creator withdraws funds
-await treasury.withdraw({ signer: creatorSigner });
+// Creator withdraws funds (safe now — fees are confirmed on-chain)
+const withdrawTxHash = await treasury.withdraw({ signer: creatorSigner });
+await oak.waitForReceipt(withdrawTxHash);
