@@ -439,6 +439,7 @@ describe("PaymentTreasury entity", () => {
     it("getExpectedAmount", async () => { await entity.getExpectedAmount(); });
     it("getPaymentData", async () => { await entity.getPaymentData(B32); });
     it("cancelled", async () => { await entity.cancelled(); });
+    it("paused", async () => { await entity.paused(); });
   });
 
   describe("writes", () => {
@@ -488,6 +489,8 @@ describe("PaymentTreasury entity", () => {
     it("getRefundClaimedLogs", async () => { await entity.events.getRefundClaimedLogs(); });
     it("getNonGoalLineItemsClaimedLogs", async () => { await entity.events.getNonGoalLineItemsClaimedLogs(); });
     it("getExpiredFundsClaimedLogs", async () => { await entity.events.getExpiredFundsClaimedLogs(); });
+    it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
+    it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
     it("watchPaymentCreated", () => { entity.events.watchPaymentCreated(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
     it("watchPaymentConfirmed", () => { entity.events.watchPaymentConfirmed(() => {}); });
     it("watchPaymentCancelled", () => { entity.events.watchPaymentCancelled(() => {}); });
@@ -498,6 +501,8 @@ describe("PaymentTreasury entity", () => {
     it("watchWithdrawalWithFeeSuccessful", () => { entity.events.watchWithdrawalWithFeeSuccessful(() => {}); });
     it("watchNonGoalLineItemsClaimed", () => { entity.events.watchNonGoalLineItemsClaimed(() => {}); });
     it("watchExpiredFundsClaimed", () => { entity.events.watchExpiredFundsClaimed(() => {}); });
+    it("watchPaused", () => { entity.events.watchPaused(() => {}); });
+    it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
     it("decodeLog decodes a PaymentCancelled event", () => {
       const sig = keccak256(toHex("PaymentCancelled(bytes32)"));
       const result = entity.events.decodeLog({ topics: [sig, B32], data: "0x" as `0x${string}` });
