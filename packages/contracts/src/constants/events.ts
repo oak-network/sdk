@@ -103,12 +103,14 @@ export const PAYMENT_TREASURY_EVENTS = {
   ExpiredFundsClaimed: "ExpiredFundsClaimed",
   FeesDisbursed: "FeesDisbursed",
   NonGoalLineItemsClaimed: "NonGoalLineItemsClaimed",
+  Paused: "Paused",
   PaymentBatchConfirmed: "PaymentBatchConfirmed",
   PaymentBatchCreated: "PaymentBatchCreated",
   PaymentCancelled: "PaymentCancelled",
   PaymentConfirmed: "PaymentConfirmed",
   PaymentCreated: "PaymentCreated",
   RefundClaimed: "RefundClaimed",
+  Unpaused: "Unpaused",
   WithdrawalWithFeeSuccessful: "WithdrawalWithFeeSuccessful",
 } as const;
 

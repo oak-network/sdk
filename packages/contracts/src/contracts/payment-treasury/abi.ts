@@ -453,6 +453,31 @@ export const PAYMENT_TREASURY_ABI = [
     type: "function",
   },
   {
+    anonymous: false,
+    inputs: [
+      { indexed: false, internalType: "address", name: "account", type: "address" },
+      { indexed: false, internalType: "bytes32", name: "message", type: "bytes32" },
+    ],
+    name: "Paused",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: false, internalType: "address", name: "account", type: "address" },
+      { indexed: false, internalType: "bytes32", name: "message", type: "bytes32" },
+    ],
+    name: "Unpaused",
+    type: "event",
+  },
+  {
+    inputs: [],
+    name: "paused",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [{ internalType: "bytes32", name: "message", type: "bytes32" }],
     name: "cancelTreasury",
     outputs: [],
