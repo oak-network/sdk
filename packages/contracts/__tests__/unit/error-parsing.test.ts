@@ -676,6 +676,27 @@ describe("parsePaymentTreasuryError", () => {
     expect(parsePaymentTreasuryError(data)!.name).toBe("PaymentTreasuryClaimWindowNotReached");
   });
 
+  it("falls through to shared error for PausedError", () => {
+    const data = encode("PausedError");
+    const err = parsePaymentTreasuryError(data);
+    expect(err).not.toBeNull();
+    expect(err!.name).toBe("PausedError");
+  });
+
+  it("falls through to shared error for CancelledError", () => {
+    const data = encode("CancelledError");
+    const err = parsePaymentTreasuryError(data);
+    expect(err).not.toBeNull();
+    expect(err!.name).toBe("CancelledError");
+  });
+
+  it("falls through to shared error for CannotCancel", () => {
+    const data = encode("CannotCancel");
+    const err = parsePaymentTreasuryError(data);
+    expect(err).not.toBeNull();
+    expect(err!.name).toBe("CannotCancel");
+  });
+
   it("returns null for unrecognized data", () => {
     expect(parsePaymentTreasuryError("0x12345678")).toBeNull();
   });
