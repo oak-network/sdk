@@ -100,9 +100,16 @@ import {
 import {
   AccessCheckerUnauthorizedError,
   AdminAccessCheckerUnauthorizedError,
+  CannotCancelError,
+  CancelledErrorError,
   CurrentTimeIsGreaterError,
   CurrentTimeIsLessError,
   CurrentTimeIsNotWithinRangeError,
+  NotCancelledErrorError,
+  NotPausedErrorError,
+  PausedErrorError,
+  PledgeNFTInvalidJsonStringError,
+  PledgeNFTUnAuthorizedError,
   TreasuryCampaignInfoIsPausedError,
   TreasuryFeeNotDisbursedError,
   TreasuryTransferFailedError,
@@ -165,6 +172,41 @@ describe("Shared errors", () => {
   it("TreasuryTransferFailedError", () => {
     const e = new TreasuryTransferFailedError();
     assertError(e, "TreasuryTransferFailed");
+  });
+
+  it("PausedErrorError", () => {
+    const e = new PausedErrorError();
+    assertError(e, "PausedError");
+  });
+
+  it("NotPausedErrorError", () => {
+    const e = new NotPausedErrorError();
+    assertError(e, "NotPausedError");
+  });
+
+  it("CancelledErrorError", () => {
+    const e = new CancelledErrorError();
+    assertError(e, "CancelledError");
+  });
+
+  it("NotCancelledErrorError", () => {
+    const e = new NotCancelledErrorError();
+    assertError(e, "NotCancelledError");
+  });
+
+  it("CannotCancelError", () => {
+    const e = new CannotCancelError();
+    assertError(e, "CannotCancel");
+  });
+
+  it("PledgeNFTUnAuthorizedError", () => {
+    const e = new PledgeNFTUnAuthorizedError();
+    assertError(e, "PledgeNFTUnAuthorized");
+  });
+
+  it("PledgeNFTInvalidJsonStringError", () => {
+    const e = new PledgeNFTInvalidJsonStringError();
+    assertError(e, "PledgeNFTInvalidJsonString");
   });
 });
 

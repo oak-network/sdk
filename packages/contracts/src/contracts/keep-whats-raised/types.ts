@@ -242,6 +242,8 @@ export interface KeepWhatsRaisedEvents {
   getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Unpaused event logs. */
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Cancelled event logs. */
+  getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Transfer event logs. */
   getTransferLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Approval event logs. */
@@ -280,6 +282,8 @@ export interface KeepWhatsRaisedEvents {
   watchPaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Unpaused events in real time. Returns an unwatch function. */
   watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Cancelled events in real time. Returns an unwatch function. */
+  watchCancelled(onLogs: EventWatchHandler): () => void;
   /** Watches for Transfer events in real time. Returns an unwatch function. */
   watchTransfer(onLogs: EventWatchHandler): () => void;
   /** Watches for Approval events in real time. Returns an unwatch function. */

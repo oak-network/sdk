@@ -56,6 +56,9 @@ export function createGlobalParamsReads(
     async getFromRegistry(key: Hex) {
       return publicClient.readContract({ ...contract, functionName: "getFromRegistry", args: [key] });
     },
+    async paused() {
+      return publicClient.readContract({ ...contract, functionName: "paused" });
+    },
     async owner() {
       return publicClient.readContract({ ...contract, functionName: "owner" });
     },

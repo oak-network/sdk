@@ -24,7 +24,7 @@ import {
   PaymentTreasuryUnAuthorizedError,
 } from "../contracts/payment-treasury";
 import type { ErrorAbiEntry } from "./shared";
-import { tryDecodeContractError } from "./shared";
+import { toSharedContractError, tryDecodeContractError } from "./shared";
 
 /**
  * Maps a decoded PaymentTreasury error name and args to a typed SDK error instance.
@@ -97,12 +97,17 @@ function toPaymentTreasuryError(name: string, args: Record<string, unknown>): Co
       });
     case PaymentTreasuryErrorNames.NoFundsToClaim:
       return new PaymentTreasuryNoFundsToClaimError();
-    /* istanbul ignore next -- defensive fallback; all ABI errors are handled above */
-    default:
-      return new (class extends Error implements ContractErrorBase {
-        readonly name = name;
-        readonly args = args;
-      })(`${name}(${JSON.stringify(args)})`);
+    default: {
+      const shared = toSharedContractError(name, args);
+      /* istanbul ignore next -- defensive fallback; all shared errors are recognised */
+      if (!shared) {
+        return new (class extends Error implements ContractErrorBase {
+          readonly name = name;
+          readonly args = args;
+        })(`${name}(${JSON.stringify(args)})`);
+      }
+      return shared;
+    }
   }
 }
 

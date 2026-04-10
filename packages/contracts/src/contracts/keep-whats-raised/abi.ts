@@ -275,6 +275,20 @@ export const KEEP_WHATS_RAISED_ABI = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "address", name: "account", type: "address" },
+      { indexed: false, internalType: "bytes32", name: "reason", type: "bytes32" },
+    ],
+    name: "Cancelled",
+    type: "event",
+  },
+  { inputs: [], name: "PausedError", type: "error" },
+  { inputs: [], name: "NotPausedError", type: "error" },
+  { inputs: [], name: "CancelledError", type: "error" },
+  { inputs: [], name: "NotCancelledError", type: "error" },
+  { inputs: [], name: "CannotCancel", type: "error" },
+  {
     inputs: [
       { internalType: "bytes32", name: "_platformHash", type: "bytes32" },
       { internalType: "address", name: "_infoAddress", type: "address" },

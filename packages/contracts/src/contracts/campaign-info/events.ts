@@ -73,6 +73,18 @@ export function createCampaignInfoEvents(
     async getUnpausedLogs(options) {
       return fetchEventLogs(publicClient, address, "Unpaused", options);
     },
+    async getCancelledLogs(options) {
+      return fetchEventLogs(publicClient, address, "Cancelled", options);
+    },
+    async getPledgeNFTMintedLogs(options) {
+      return fetchEventLogs(publicClient, address, "PledgeNFTMinted", options);
+    },
+    async getImageURIUpdatedLogs(options) {
+      return fetchEventLogs(publicClient, address, "ImageURIUpdated", options);
+    },
+    async getContractURIUpdatedLogs(options) {
+      return fetchEventLogs(publicClient, address, "ContractURIUpdated", options);
+    },
     decodeLog(log) {
       return decode({ topics: [...log.topics] as Hex[], data: log.data });
     },
@@ -99,6 +111,18 @@ export function createCampaignInfoEvents(
     },
     watchUnpaused(onLogs) {
       return createWatcher(publicClient, address, "Unpaused", onLogs);
+    },
+    watchCancelled(onLogs) {
+      return createWatcher(publicClient, address, "Cancelled", onLogs);
+    },
+    watchPledgeNFTMinted(onLogs) {
+      return createWatcher(publicClient, address, "PledgeNFTMinted", onLogs);
+    },
+    watchImageURIUpdated(onLogs) {
+      return createWatcher(publicClient, address, "ImageURIUpdated", onLogs);
+    },
+    watchContractURIUpdated(onLogs) {
+      return createWatcher(publicClient, address, "ContractURIUpdated", onLogs);
     },
   };
 }

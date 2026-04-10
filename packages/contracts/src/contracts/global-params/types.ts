@@ -31,6 +31,8 @@ export interface GlobalParamsReads {
   getTokensForCurrency(currency: Hex): Promise<readonly Address[]>;
   /** Returns a value from the global data registry by key. */
   getFromRegistry(key: Hex): Promise<Hex>;
+  /** Returns true if the contract is currently paused. */
+  paused(): Promise<boolean>;
   /** Returns the contract owner address. */
   owner(): Promise<Address>;
 }
@@ -137,6 +139,12 @@ export interface GlobalParamsEvents {
   getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Unpaused event logs. */
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded DataAddedToRegistry event logs. */
+  getDataAddedToRegistryLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformLineItemTypeSet event logs. */
+  getPlatformLineItemTypeSetLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformLineItemTypeRemoved event logs. */
+  getPlatformLineItemTypeRemovedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known GlobalParams events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for PlatformEnlisted events in real time. Returns an unwatch function. */
@@ -167,6 +175,12 @@ export interface GlobalParamsEvents {
   watchPaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Unpaused events in real time. Returns an unwatch function. */
   watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for DataAddedToRegistry events in real time. Returns an unwatch function. */
+  watchDataAddedToRegistry(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformLineItemTypeSet events in real time. Returns an unwatch function. */
+  watchPlatformLineItemTypeSet(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformLineItemTypeRemoved events in real time. Returns an unwatch function. */
+  watchPlatformLineItemTypeRemoved(onLogs: EventWatchHandler): () => void;
 }
 
 /** Full GlobalParams entity combining reads, writes, simulate, and events. */

@@ -4,9 +4,16 @@ import type { ContractErrorBase } from "../base";
 export const SharedErrorNames = {
   AccessCheckerUnauthorized: "AccessCheckerUnauthorized",
   AdminAccessCheckerUnauthorized: "AdminAccessCheckerUnauthorized",
+  CannotCancel: "CannotCancel",
+  CancelledError: "CancelledError",
   CurrentTimeIsGreater: "CurrentTimeIsGreater",
   CurrentTimeIsLess: "CurrentTimeIsLess",
   CurrentTimeIsNotWithinRange: "CurrentTimeIsNotWithinRange",
+  NotCancelledError: "NotCancelledError",
+  NotPausedError: "NotPausedError",
+  PausedError: "PausedError",
+  PledgeNFTInvalidJsonString: "PledgeNFTInvalidJsonString",
+  PledgeNFTUnAuthorized: "PledgeNFTUnAuthorized",
   TreasuryCampaignInfoIsPaused: "TreasuryCampaignInfoIsPaused",
   TreasuryFeeNotDisbursed: "TreasuryFeeNotDisbursed",
   TreasuryTransferFailed: "TreasuryTransferFailed",
@@ -114,13 +121,104 @@ export class TreasuryTransferFailedError extends Error implements ContractErrorB
   }
 }
 
+/** Thrown when an operation is attempted while the contract is paused. */
+export class PausedErrorError extends Error implements ContractErrorBase {
+  readonly name = SharedErrorNames.PausedError;
+  readonly args: Record<string, unknown> = {};
+  readonly recoveryHint = "The contract is currently paused. Wait for it to be unpaused.";
+
+  constructor() {
+    super(`${SharedErrorNames.PausedError}()`);
+    Object.setPrototypeOf(this, PausedErrorError.prototype);
+  }
+}
+
+/** Thrown when an operation requires the contract to be paused but it is not. */
+export class NotPausedErrorError extends Error implements ContractErrorBase {
+  readonly name = SharedErrorNames.NotPausedError;
+  readonly args: Record<string, unknown> = {};
+  readonly recoveryHint = "The contract is not paused. This operation can only be performed when paused.";
+
+  constructor() {
+    super(`${SharedErrorNames.NotPausedError}()`);
+    Object.setPrototypeOf(this, NotPausedErrorError.prototype);
+  }
+}
+
+/** Thrown when an operation is attempted after the contract has been cancelled. */
+export class CancelledErrorError extends Error implements ContractErrorBase {
+  readonly name = SharedErrorNames.CancelledError;
+  readonly args: Record<string, unknown> = {};
+  readonly recoveryHint = "The contract has been cancelled. This operation is no longer available.";
+
+  constructor() {
+    super(`${SharedErrorNames.CancelledError}()`);
+    Object.setPrototypeOf(this, CancelledErrorError.prototype);
+  }
+}
+
+/** Thrown when an operation requires the contract to be cancelled but it is not. */
+export class NotCancelledErrorError extends Error implements ContractErrorBase {
+  readonly name = SharedErrorNames.NotCancelledError;
+  readonly args: Record<string, unknown> = {};
+  readonly recoveryHint = "The contract has not been cancelled. This operation requires cancellation first.";
+
+  constructor() {
+    super(`${SharedErrorNames.NotCancelledError}()`);
+    Object.setPrototypeOf(this, NotCancelledErrorError.prototype);
+  }
+}
+
+/** Thrown when attempting to cancel a contract that is already cancelled. */
+export class CannotCancelError extends Error implements ContractErrorBase {
+  readonly name = SharedErrorNames.CannotCancel;
+  readonly args: Record<string, unknown> = {};
+  readonly recoveryHint = "The contract is already cancelled and cannot be cancelled again.";
+
+  constructor() {
+    super(`${SharedErrorNames.CannotCancel}()`);
+    Object.setPrototypeOf(this, CannotCancelError.prototype);
+  }
+}
+
+/** Thrown when an unauthorized PledgeNFT operation is attempted. */
+export class PledgeNFTUnAuthorizedError extends Error implements ContractErrorBase {
+  readonly name = SharedErrorNames.PledgeNFTUnAuthorized;
+  readonly args: Record<string, unknown> = {};
+  readonly recoveryHint = "Caller is not authorized for this PledgeNFT operation.";
+
+  constructor() {
+    super(`${SharedErrorNames.PledgeNFTUnAuthorized}()`);
+    Object.setPrototypeOf(this, PledgeNFTUnAuthorizedError.prototype);
+  }
+}
+
+/** Thrown when a string contains invalid characters for on-chain JSON embedding. */
+export class PledgeNFTInvalidJsonStringError extends Error implements ContractErrorBase {
+  readonly name = SharedErrorNames.PledgeNFTInvalidJsonString;
+  readonly args: Record<string, unknown> = {};
+  readonly recoveryHint = "The string contains invalid characters (quotes, backslashes, control characters, or non-ASCII). Use only printable ASCII.";
+
+  constructor() {
+    super(`${SharedErrorNames.PledgeNFTInvalidJsonString}()`);
+    Object.setPrototypeOf(this, PledgeNFTInvalidJsonStringError.prototype);
+  }
+}
+
 /** Union of all typed errors shared across multiple contract types. */
 export type SharedError =
   | AccessCheckerUnauthorizedError
   | AdminAccessCheckerUnauthorizedError
+  | CannotCancelError
+  | CancelledErrorError
   | CurrentTimeIsGreaterError
   | CurrentTimeIsLessError
   | CurrentTimeIsNotWithinRangeError
+  | NotCancelledErrorError
+  | NotPausedErrorError
+  | PausedErrorError
+  | PledgeNFTInvalidJsonStringError
+  | PledgeNFTUnAuthorizedError
   | TreasuryCampaignInfoIsPausedError
   | TreasuryFeeNotDisbursedError
   | TreasuryTransferFailedError;

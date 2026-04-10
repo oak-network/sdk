@@ -48,5 +48,8 @@ export function createPaymentTreasuryReads(
     async cancelled() {
       return publicClient.readContract({ ...contract, functionName: "cancelled" });
     },
+    async paused() {
+      return publicClient.readContract({ ...contract, functionName: "paused" });
+    },
   };
 }

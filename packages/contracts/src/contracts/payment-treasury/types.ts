@@ -23,6 +23,8 @@ export interface PaymentTreasuryReads {
   getPaymentData(paymentId: Hex): Promise<PaymentData>;
   /** Returns true if the treasury has been cancelled. */
   cancelled(): Promise<boolean>;
+  /** Returns true if the treasury is currently paused. */
+  paused(): Promise<boolean>;
 }
 
 /** Write methods for PaymentTreasury. */
@@ -173,6 +175,12 @@ export interface PaymentTreasuryEvents {
   getNonGoalLineItemsClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded ExpiredFundsClaimed event logs. */
   getExpiredFundsClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Paused event logs. */
+  getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Unpaused event logs. */
+  getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Cancelled event logs. */
+  getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known PaymentTreasury events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for PaymentCreated events in real time. Returns an unwatch function. */
@@ -195,6 +203,12 @@ export interface PaymentTreasuryEvents {
   watchNonGoalLineItemsClaimed(onLogs: EventWatchHandler): () => void;
   /** Watches for ExpiredFundsClaimed events in real time. Returns an unwatch function. */
   watchExpiredFundsClaimed(onLogs: EventWatchHandler): () => void;
+  /** Watches for Paused events in real time. Returns an unwatch function. */
+  watchPaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Unpaused events in real time. Returns an unwatch function. */
+  watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Cancelled events in real time. Returns an unwatch function. */
+  watchCancelled(onLogs: EventWatchHandler): () => void;
 }
 
 /**

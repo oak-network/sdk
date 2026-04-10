@@ -155,6 +155,38 @@ export const GLOBAL_PARAMS_ABI = [
   },
   {
     anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "bytes32", name: "platformBytes", type: "bytes32" },
+      { indexed: true, internalType: "bytes32", name: "typeId", type: "bytes32" },
+      { indexed: false, internalType: "string", name: "label", type: "string" },
+      { indexed: false, internalType: "bool", name: "countsTowardGoal", type: "bool" },
+      { indexed: false, internalType: "bool", name: "applyProtocolFee", type: "bool" },
+      { indexed: false, internalType: "bool", name: "canRefund", type: "bool" },
+      { indexed: false, internalType: "bool", name: "instantTransfer", type: "bool" },
+    ],
+    name: "PlatformLineItemTypeSet",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "bytes32", name: "platformBytes", type: "bytes32" },
+      { indexed: true, internalType: "bytes32", name: "typeId", type: "bytes32" },
+    ],
+    name: "PlatformLineItemTypeRemoved",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "bytes32", name: "key", type: "bytes32" },
+      { indexed: false, internalType: "bytes32", name: "value", type: "bytes32" },
+    ],
+    name: "DataAddedToRegistry",
+    type: "event",
+  },
+  {
+    anonymous: false,
     inputs: [{ indexed: false, internalType: "address", name: "account", type: "address" }],
     name: "Unpaused",
     type: "event",

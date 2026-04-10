@@ -102,6 +102,41 @@ describe("toSharedContractError", () => {
     expect(e!.name).toBe("TreasuryTransferFailed");
   });
 
+  it("maps PausedError", () => {
+    const e = toSharedContractError("PausedError", {});
+    expect(e!.name).toBe("PausedError");
+  });
+
+  it("maps NotPausedError", () => {
+    const e = toSharedContractError("NotPausedError", {});
+    expect(e!.name).toBe("NotPausedError");
+  });
+
+  it("maps CancelledError", () => {
+    const e = toSharedContractError("CancelledError", {});
+    expect(e!.name).toBe("CancelledError");
+  });
+
+  it("maps NotCancelledError", () => {
+    const e = toSharedContractError("NotCancelledError", {});
+    expect(e!.name).toBe("NotCancelledError");
+  });
+
+  it("maps CannotCancel", () => {
+    const e = toSharedContractError("CannotCancel", {});
+    expect(e!.name).toBe("CannotCancel");
+  });
+
+  it("maps PledgeNFTUnAuthorized", () => {
+    const e = toSharedContractError("PledgeNFTUnAuthorized", {});
+    expect(e!.name).toBe("PledgeNFTUnAuthorized");
+  });
+
+  it("maps PledgeNFTInvalidJsonString", () => {
+    const e = toSharedContractError("PledgeNFTInvalidJsonString", {});
+    expect(e!.name).toBe("PledgeNFTInvalidJsonString");
+  });
+
   it("returns null for unknown error names", () => {
     expect(toSharedContractError("SomethingElse", {})).toBeNull();
   });
@@ -639,6 +674,27 @@ describe("parsePaymentTreasuryError", () => {
   it("parses PaymentTreasuryClaimWindowNotReached", () => {
     const data = encode("PaymentTreasuryClaimWindowNotReached", [9999n]);
     expect(parsePaymentTreasuryError(data)!.name).toBe("PaymentTreasuryClaimWindowNotReached");
+  });
+
+  it("falls through to shared error for PausedError", () => {
+    const data = encode("PausedError");
+    const err = parsePaymentTreasuryError(data);
+    expect(err).not.toBeNull();
+    expect(err!.name).toBe("PausedError");
+  });
+
+  it("falls through to shared error for CancelledError", () => {
+    const data = encode("CancelledError");
+    const err = parsePaymentTreasuryError(data);
+    expect(err).not.toBeNull();
+    expect(err!.name).toBe("CancelledError");
+  });
+
+  it("falls through to shared error for CannotCancel", () => {
+    const data = encode("CannotCancel");
+    const err = parsePaymentTreasuryError(data);
+    expect(err).not.toBeNull();
+    expect(err!.name).toBe("CannotCancel");
   });
 
   it("returns null for unrecognized data", () => {
