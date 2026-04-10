@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { KEEP_WHATS_RAISED_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode, toSimulationResult } from "../../errors";
 import type { KeepWhatsRaisedSimulate } from "./types";
 import type { CallSignerOptions } from "../../client/types";
 import type { TieredReward, CampaignData } from "../../types/structs";
@@ -32,7 +32,7 @@ export function createKeepWhatsRaisedSimulate(
   return {
     async pauseTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -41,10 +41,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
     async unpauseTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -53,10 +54,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
     async cancelTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -65,6 +67,7 @@ export function createKeepWhatsRaisedSimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
     async configureTreasury(
       config: KeepWhatsRaisedConfig,
@@ -74,7 +77,7 @@ export function createKeepWhatsRaisedSimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -107,10 +110,11 @@ export function createKeepWhatsRaisedSimulate(
           ],
         }),
       );
+      return toSimulationResult(response);
     },
     async addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -128,10 +132,11 @@ export function createKeepWhatsRaisedSimulate(
           ],
         }),
       );
+      return toSimulationResult(response);
     },
     async removeReward(rewardName: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -140,10 +145,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [rewardName],
         }),
       );
+      return toSimulationResult(response);
     },
     async approveWithdrawal(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -152,10 +158,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
     async setPaymentGatewayFee(pledgeId: Hex, fee: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -164,6 +171,7 @@ export function createKeepWhatsRaisedSimulate(
           args: [pledgeId, fee],
         }),
       );
+      return toSimulationResult(response);
     },
     async setFeeAndPledge(
       pledgeId: Hex,
@@ -177,7 +185,7 @@ export function createKeepWhatsRaisedSimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -186,6 +194,7 @@ export function createKeepWhatsRaisedSimulate(
           args: [pledgeId, backer, pledgeToken, pledgeAmount, tip, fee, [...reward], isPledgeForAReward],
         }),
       );
+      return toSimulationResult(response);
     },
     async pledgeForAReward(
       pledgeId: Hex,
@@ -196,7 +205,7 @@ export function createKeepWhatsRaisedSimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -205,6 +214,7 @@ export function createKeepWhatsRaisedSimulate(
           args: [pledgeId, backer, pledgeToken, tip, [...rewardNames]],
         }),
       );
+      return toSimulationResult(response);
     },
     async pledgeWithoutAReward(
       pledgeId: Hex,
@@ -215,7 +225,7 @@ export function createKeepWhatsRaisedSimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -224,10 +234,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [pledgeId, backer, pledgeToken, pledgeAmount, tip],
         }),
       );
+      return toSimulationResult(response);
     },
     async claimRefund(tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -236,10 +247,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
     async claimTip(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -248,10 +260,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
     async claimFund(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -260,10 +273,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
     async disburseFees(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -272,10 +286,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
     async withdraw(token: Address, amount: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -284,10 +299,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [token, amount],
         }),
       );
+      return toSimulationResult(response);
     },
     async updateDeadline(deadline: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -296,10 +312,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [deadline],
         }),
       );
+      return toSimulationResult(response);
     },
     async updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -308,10 +325,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [goalAmount],
         }),
       );
+      return toSimulationResult(response);
     },
     async approve(to: Address, tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -320,10 +338,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [to, tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
     async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -332,10 +351,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [operator, approved],
         }),
       );
+      return toSimulationResult(response);
     },
     async safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -344,10 +364,11 @@ export function createKeepWhatsRaisedSimulate(
           args: [from, to, tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
     async transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -356,6 +377,7 @@ export function createKeepWhatsRaisedSimulate(
           args: [from, to, tokenId],
         }),
       );
+      return toSimulationResult(response);
     },
   };
 }

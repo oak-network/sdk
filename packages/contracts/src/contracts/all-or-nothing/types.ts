@@ -1,6 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { TieredReward } from "../../types/structs";
-import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for an AllOrNothing treasury contract instance. */
@@ -75,36 +75,36 @@ export interface AllOrNothingWrites {
 
 /** Simulate counterparts for AllOrNothing write methods. */
 export interface AllOrNothingSimulate {
-  /** Simulates pauseTreasury; throws a typed error on revert. */
-  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates unpauseTreasury; throws a typed error on revert. */
-  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates cancelTreasury; throws a typed error on revert. */
-  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates addRewards; throws a typed error on revert. */
-  addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<void>;
-  /** Simulates removeReward; throws a typed error on revert. */
-  removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates pledgeForAReward; throws a typed error on revert. */
-  pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions): Promise<void>;
-  /** Simulates pledgeWithoutAReward; throws a typed error on revert. */
-  pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates claimRefund; throws a typed error on revert. */
-  claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates disburseFees; throws a typed error on revert. */
-  disburseFees(options?: CallSignerOptions): Promise<void>;
-  /** Simulates withdraw; throws a typed error on revert. */
-  withdraw(options?: CallSignerOptions): Promise<void>;
-  /** Simulates burn; throws a typed error on revert. */
-  burn(tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates approve; throws a typed error on revert. */
-  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates setApprovalForAll; throws a typed error on revert. */
-  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<void>;
-  /** Simulates safeTransferFrom; throws a typed error on revert. */
-  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates transferFrom; throws a typed error on revert. */
-  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
+  /** Simulates pauseTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates unpauseTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates cancelTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates addRewards; returns a SimulationResult on success, throws a typed error on revert. */
+  addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates removeReward; returns a SimulationResult on success, throws a typed error on revert. */
+  removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates pledgeForAReward; returns a SimulationResult on success, throws a typed error on revert. */
+  pledgeForAReward(backer: Address, pledgeToken: Address, shippingFee: bigint, rewardNames: readonly Hex[], options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates pledgeWithoutAReward; returns a SimulationResult on success, throws a typed error on revert. */
+  pledgeWithoutAReward(backer: Address, pledgeToken: Address, pledgeAmount: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates claimRefund; returns a SimulationResult on success, throws a typed error on revert. */
+  claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates disburseFees; returns a SimulationResult on success, throws a typed error on revert. */
+  disburseFees(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates withdraw; returns a SimulationResult on success, throws a typed error on revert. */
+  withdraw(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates burn; returns a SimulationResult on success, throws a typed error on revert. */
+  burn(tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates approve; returns a SimulationResult on success, throws a typed error on revert. */
+  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setApprovalForAll; returns a SimulationResult on success, throws a typed error on revert. */
+  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates safeTransferFrom; returns a SimulationResult on success, throws a typed error on revert. */
+  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates transferFrom; returns a SimulationResult on success, throws a typed error on revert. */
+  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for an AllOrNothing treasury contract instance. */
@@ -125,6 +125,8 @@ export interface AllOrNothingEvents {
   getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Unpaused event logs. */
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Cancelled event logs. */
+  getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Transfer event logs. */
   getTransferLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded SuccessConditionNotFulfilled event logs. */
@@ -151,6 +153,8 @@ export interface AllOrNothingEvents {
   watchPaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Unpaused events in real time. Returns an unwatch function. */
   watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Cancelled events in real time. Returns an unwatch function. */
+  watchCancelled(onLogs: EventWatchHandler): () => void;
   /** Watches for Transfer events in real time. Returns an unwatch function. */
   watchTransfer(onLogs: EventWatchHandler): () => void;
   /** Watches for SuccessConditionNotFulfilled events in real time. Returns an unwatch function. */

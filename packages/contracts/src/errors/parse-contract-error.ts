@@ -1,6 +1,8 @@
-import type { Hex } from "../lib";
+import type { Address, Hex } from "../lib";
+import { encodeFunctionData } from "../lib";
 import { isHex } from "../utils";
 import type { ContractErrorBase } from "./base";
+import type { SimulationResult } from "../types/events";
 import { parseGlobalParamsError } from "./parse/global-params";
 import { parseCampaignInfoFactoryError } from "./parse/campaign-info-factory";
 import { parseCampaignInfoError } from "./parse/campaign-info";
@@ -74,15 +76,16 @@ export function getRevertData(error: unknown): string | null {
 
 /**
  * Wraps a simulateContract call, catches reverts, decodes them via parseContractError,
- * and re-throws as a typed SDK error. Consumers catch the same error class whether
- * they are simulating or transacting.
+ * and re-throws as a typed SDK error. On success, returns the raw simulation response
+ * from viem (`{ result, request }`).
  *
  * @param operation - Async function that calls simulateContract
+ * @returns The raw viem simulation response
  * @throws Typed ContractErrorBase subclass on revert, or the original error if not decodable
  */
-export async function simulateWithErrorDecode(operation: () => Promise<unknown>): Promise<void> {
+export async function simulateWithErrorDecode<T = unknown>(operation: () => Promise<T>): Promise<T> {
   try {
-    await operation();
+    return await operation();
   } catch (error: unknown) {
     const revertData = getRevertData(error);
     const parsed = parseContractError(revertData ?? "");
@@ -91,4 +94,37 @@ export async function simulateWithErrorDecode(operation: () => Promise<unknown>)
     }
     throw error;
   }
+}
+
+/**
+ * Converts the raw viem simulateContract response into the SDK's SimulationResult shape.
+ *
+ * viem's simulateContract returns `{ result, request }` where `request` contains
+ * `address`, `abi`, `functionName`, `args` (a write-request shape for walletClient.writeContract),
+ * not raw `to`/`data` fields. This function encodes the calldata from those fields.
+ *
+ * @param response - Raw response from publicClient.simulateContract
+ * @returns SimulationResult with the contract return value and prepared transaction params
+ */
+export function toSimulationResult<T>(response: { result: T; request: Record<string, unknown> }): SimulationResult<T> {
+  const req = response.request;
+  const abi = req["abi"] as readonly unknown[];
+  const functionName = req["functionName"] as string;
+  const args = req["args"] as readonly unknown[] | undefined;
+
+  const data = encodeFunctionData({
+    abi,
+    functionName,
+    args: args as unknown[],
+  });
+
+  return {
+    result: response.result,
+    request: {
+      to: req["address"] as Address,
+      data,
+      value: req["value"] as bigint | undefined,
+      gas: req["gas"] as bigint | undefined,
+    },
+  };
 }

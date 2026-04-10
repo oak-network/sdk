@@ -10,12 +10,17 @@ import { keccak256, toHex } from "viem";
 const ADDR = "0x0000000000000000000000000000000000000001" as Address;
 const B32 = ("0x" + "00".repeat(32)) as `0x${string}`;
 
+const MOCK_ABI = [{ name: "mock", type: "function" as const, stateMutability: "nonpayable" as const, inputs: [], outputs: [] }] as const;
+
 type WatchContractEventArgs = { onLogs: (logs: unknown[]) => void };
 
 function mockPublicClient(): PublicClient {
   return {
     readContract: jest.fn().mockResolvedValue(0n),
-    simulateContract: jest.fn().mockResolvedValue({ result: undefined }),
+    simulateContract: jest.fn().mockResolvedValue({
+      result: undefined,
+      request: { address: ADDR, abi: MOCK_ABI, functionName: "mock", args: [], value: 0n, gas: 21000n },
+    }),
     getContractEvents: jest.fn().mockResolvedValue([]),
     watchContractEvent: jest.fn().mockImplementation((_args: WatchContractEventArgs) => () => {}),
   } as unknown as PublicClient;
@@ -54,6 +59,7 @@ describe("GlobalParams entity", () => {
     it("getPlatformLineItemType", async () => { await entity.getPlatformLineItemType(B32, B32); });
     it("getTokensForCurrency", async () => { await entity.getTokensForCurrency(B32); });
     it("getFromRegistry", async () => { await entity.getFromRegistry(B32); });
+    it("paused", async () => { await entity.paused(); });
     it("owner", async () => { await entity.owner(); });
   });
 
@@ -116,6 +122,9 @@ describe("GlobalParams entity", () => {
     it("getOwnershipTransferredLogs", async () => { await entity.events.getOwnershipTransferredLogs(); });
     it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
     it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("getDataAddedToRegistryLogs", async () => { await entity.events.getDataAddedToRegistryLogs(); });
+    it("getPlatformLineItemTypeSetLogs", async () => { await entity.events.getPlatformLineItemTypeSetLogs(); });
+    it("getPlatformLineItemTypeRemovedLogs", async () => { await entity.events.getPlatformLineItemTypeRemovedLogs(); });
     it("watchPlatformEnlisted", () => { entity.events.watchPlatformEnlisted(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
     it("watchPlatformDelisted", () => { entity.events.watchPlatformDelisted(() => {}); });
     it("watchPlatformAdminAddressUpdated", () => { entity.events.watchPlatformAdminAddressUpdated(() => {}); });
@@ -130,6 +139,9 @@ describe("GlobalParams entity", () => {
     it("watchOwnershipTransferred", () => { entity.events.watchOwnershipTransferred(() => {}); });
     it("watchPaused", () => { entity.events.watchPaused(() => {}); });
     it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("watchDataAddedToRegistry", () => { entity.events.watchDataAddedToRegistry(() => {}); });
+    it("watchPlatformLineItemTypeSet", () => { entity.events.watchPlatformLineItemTypeSet(() => {}); });
+    it("watchPlatformLineItemTypeRemoved", () => { entity.events.watchPlatformLineItemTypeRemoved(() => {}); });
     it("decodeLog decodes a Paused event", () => {
       const pausedSig = keccak256(toHex("Paused(address)"));
       const result = entity.events.decodeLog({
@@ -323,6 +335,16 @@ describe("CampaignInfo entity", () => {
     it("cancelled", async () => { await entity.cancelled(); });
     it("owner", async () => { await entity.owner(); });
     it("paused", async () => { await entity.paused(); });
+    it("getPledgeCount", async () => { await entity.getPledgeCount(); });
+    it("getPledgeData", async () => { await entity.getPledgeData(0n); });
+    it("getImageURI", async () => { await entity.getImageURI(); });
+    it("contractURI", async () => { await entity.contractURI(); });
+    it("name", async () => { await entity.name(); });
+    it("symbol", async () => { await entity.symbol(); });
+    it("tokenURI", async () => { await entity.tokenURI(0n); });
+    it("ownerOf", async () => { await entity.ownerOf(0n); });
+    it("balanceOf", async () => { await entity.balanceOf(ADDR); });
+    it("supportsInterface", async () => { await entity.supportsInterface(B32.slice(0, 10) as `0x${string}`); });
   });
 
   describe("writes", () => {
@@ -368,6 +390,10 @@ describe("CampaignInfo entity", () => {
     it("getOwnershipTransferredLogs", async () => { await entity.events.getOwnershipTransferredLogs(); });
     it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
     it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("getCancelledLogs", async () => { await entity.events.getCancelledLogs(); });
+    it("getPledgeNFTMintedLogs", async () => { await entity.events.getPledgeNFTMintedLogs(); });
+    it("getImageURIUpdatedLogs", async () => { await entity.events.getImageURIUpdatedLogs(); });
+    it("getContractURIUpdatedLogs", async () => { await entity.events.getContractURIUpdatedLogs(); });
     it("watchDeadlineUpdated", () => { entity.events.watchDeadlineUpdated(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
     it("watchGoalAmountUpdated", () => { entity.events.watchGoalAmountUpdated(() => {}); });
     it("watchLaunchTimeUpdated", () => { entity.events.watchLaunchTimeUpdated(() => {}); });
@@ -376,6 +402,10 @@ describe("CampaignInfo entity", () => {
     it("watchOwnershipTransferred", () => { entity.events.watchOwnershipTransferred(() => {}); });
     it("watchPaused", () => { entity.events.watchPaused(() => {}); });
     it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("watchCancelled", () => { entity.events.watchCancelled(() => {}); });
+    it("watchPledgeNFTMinted", () => { entity.events.watchPledgeNFTMinted(() => {}); });
+    it("watchImageURIUpdated", () => { entity.events.watchImageURIUpdated(() => {}); });
+    it("watchContractURIUpdated", () => { entity.events.watchContractURIUpdated(() => {}); });
     it("decodeLog decodes a CampaignInfoDeadlineUpdated event", () => {
       const sig = keccak256(toHex("CampaignInfoDeadlineUpdated(uint256)"));
       const data = ("0x" + "0".repeat(63) + "1") as `0x${string}`;
@@ -427,6 +457,7 @@ describe("PaymentTreasury entity", () => {
     it("getExpectedAmount", async () => { await entity.getExpectedAmount(); });
     it("getPaymentData", async () => { await entity.getPaymentData(B32); });
     it("cancelled", async () => { await entity.cancelled(); });
+    it("paused", async () => { await entity.paused(); });
   });
 
   describe("writes", () => {
@@ -476,6 +507,9 @@ describe("PaymentTreasury entity", () => {
     it("getRefundClaimedLogs", async () => { await entity.events.getRefundClaimedLogs(); });
     it("getNonGoalLineItemsClaimedLogs", async () => { await entity.events.getNonGoalLineItemsClaimedLogs(); });
     it("getExpiredFundsClaimedLogs", async () => { await entity.events.getExpiredFundsClaimedLogs(); });
+    it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
+    it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("getCancelledLogs", async () => { await entity.events.getCancelledLogs(); });
     it("watchPaymentCreated", () => { entity.events.watchPaymentCreated(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
     it("watchPaymentConfirmed", () => { entity.events.watchPaymentConfirmed(() => {}); });
     it("watchPaymentCancelled", () => { entity.events.watchPaymentCancelled(() => {}); });
@@ -486,6 +520,9 @@ describe("PaymentTreasury entity", () => {
     it("watchWithdrawalWithFeeSuccessful", () => { entity.events.watchWithdrawalWithFeeSuccessful(() => {}); });
     it("watchNonGoalLineItemsClaimed", () => { entity.events.watchNonGoalLineItemsClaimed(() => {}); });
     it("watchExpiredFundsClaimed", () => { entity.events.watchExpiredFundsClaimed(() => {}); });
+    it("watchPaused", () => { entity.events.watchPaused(() => {}); });
+    it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("watchCancelled", () => { entity.events.watchCancelled(() => {}); });
     it("decodeLog decodes a PaymentCancelled event", () => {
       const sig = keccak256(toHex("PaymentCancelled(bytes32)"));
       const result = entity.events.decodeLog({ topics: [sig, B32], data: "0x" as `0x${string}` });
@@ -588,6 +625,7 @@ describe("AllOrNothing entity", () => {
     it("getRewardRemovedLogs", async () => { await entity.events.getRewardRemovedLogs(); });
     it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
     it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("getCancelledLogs", async () => { await entity.events.getCancelledLogs(); });
     it("getTransferLogs", async () => { await entity.events.getTransferLogs(); });
     it("getSuccessConditionNotFulfilledLogs", async () => { await entity.events.getSuccessConditionNotFulfilledLogs(); });
     it("getApprovalLogs", async () => { await entity.events.getApprovalLogs(); });
@@ -600,6 +638,7 @@ describe("AllOrNothing entity", () => {
     it("watchRewardRemoved", () => { entity.events.watchRewardRemoved(() => {}); });
     it("watchPaused", () => { entity.events.watchPaused(() => {}); });
     it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("watchCancelled", () => { entity.events.watchCancelled(() => {}); });
     it("watchTransfer", () => { entity.events.watchTransfer(() => {}); });
     it("watchSuccessConditionNotFulfilled", () => { entity.events.watchSuccessConditionNotFulfilled(() => {}); });
     it("watchApproval", () => { entity.events.watchApproval(() => {}); });
@@ -748,6 +787,7 @@ describe("KeepWhatsRaised entity", () => {
     it("getPaymentGatewayFeeSetLogs", async () => { await entity.events.getPaymentGatewayFeeSetLogs(); });
     it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
     it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("getCancelledLogs", async () => { await entity.events.getCancelledLogs(); });
     it("getTransferLogs", async () => { await entity.events.getTransferLogs(); });
     it("getApprovalLogs", async () => { await entity.events.getApprovalLogs(); });
     it("getApprovalForAllLogs", async () => { await entity.events.getApprovalForAllLogs(); });
@@ -766,6 +806,7 @@ describe("KeepWhatsRaised entity", () => {
     it("watchPaymentGatewayFeeSet", () => { entity.events.watchPaymentGatewayFeeSet(() => {}); });
     it("watchPaused", () => { entity.events.watchPaused(() => {}); });
     it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("watchCancelled", () => { entity.events.watchCancelled(() => {}); });
     it("watchTransfer", () => { entity.events.watchTransfer(() => {}); });
     it("watchApproval", () => { entity.events.watchApproval(() => {}); });
     it("watchApprovalForAll", () => { entity.events.watchApprovalForAll(() => {}); });

@@ -1,6 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { PaymentData, LineItem, ExternalFees } from "../../types/structs";
-import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for PaymentTreasury. */
@@ -23,6 +23,8 @@ export interface PaymentTreasuryReads {
   getPaymentData(paymentId: Hex): Promise<PaymentData>;
   /** Returns true if the treasury has been cancelled. */
   cancelled(): Promise<boolean>;
+  /** Returns true if the treasury is currently paused. */
+  paused(): Promise<boolean>;
 }
 
 /** Write methods for PaymentTreasury. */
@@ -90,7 +92,7 @@ export interface PaymentTreasuryWrites {
 
 /** Simulate counterparts for PaymentTreasury write methods. */
 export interface PaymentTreasurySimulate {
-  /** Simulates createPayment; throws a typed error on revert. */
+  /** Simulates createPayment; returns a SimulationResult on success, throws a typed error on revert. */
   createPayment(
     paymentId: Hex,
     buyerId: Hex,
@@ -101,8 +103,8 @@ export interface PaymentTreasurySimulate {
     lineItems: readonly LineItem[],
     externalFees: readonly ExternalFees[],
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates createPaymentBatch; throws a typed error on revert. */
+  ): Promise<SimulationResult>;
+  /** Simulates createPaymentBatch; returns a SimulationResult on success, throws a typed error on revert. */
   createPaymentBatch(
     paymentIds: readonly Hex[],
     buyerIds: readonly Hex[],
@@ -113,8 +115,8 @@ export interface PaymentTreasurySimulate {
     lineItemsArray: readonly (readonly LineItem[])[],
     externalFeesArray: readonly (readonly ExternalFees[])[],
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates processCryptoPayment; throws a typed error on revert. */
+  ): Promise<SimulationResult>;
+  /** Simulates processCryptoPayment; returns a SimulationResult on success, throws a typed error on revert. */
   processCryptoPayment(
     paymentId: Hex,
     itemId: Hex,
@@ -124,31 +126,31 @@ export interface PaymentTreasurySimulate {
     lineItems: readonly LineItem[],
     externalFees: readonly ExternalFees[],
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates cancelPayment; throws a typed error on revert. */
-  cancelPayment(paymentId: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates confirmPayment; throws a typed error on revert. */
-  confirmPayment(paymentId: Hex, buyerAddress: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates confirmPaymentBatch; throws a typed error on revert. */
-  confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[], options?: CallSignerOptions): Promise<void>;
-  /** Simulates disburseFees; throws a typed error on revert. */
-  disburseFees(options?: CallSignerOptions): Promise<void>;
-  /** Simulates withdraw; throws a typed error on revert. */
-  withdraw(options?: CallSignerOptions): Promise<void>;
-  /** Simulates claimRefund; throws a typed error on revert. */
-  claimRefund(paymentId: Hex, refundAddress: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates claimRefundSelf; throws a typed error on revert. */
-  claimRefundSelf(paymentId: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates claimExpiredFunds; throws a typed error on revert. */
-  claimExpiredFunds(options?: CallSignerOptions): Promise<void>;
-  /** Simulates claimNonGoalLineItems; throws a typed error on revert. */
-  claimNonGoalLineItems(token: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates pauseTreasury; throws a typed error on revert. */
-  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates unpauseTreasury; throws a typed error on revert. */
-  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates cancelTreasury; throws a typed error on revert. */
-  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
+  ): Promise<SimulationResult>;
+  /** Simulates cancelPayment; returns a SimulationResult on success, throws a typed error on revert. */
+  cancelPayment(paymentId: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates confirmPayment; returns a SimulationResult on success, throws a typed error on revert. */
+  confirmPayment(paymentId: Hex, buyerAddress: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates confirmPaymentBatch; returns a SimulationResult on success, throws a typed error on revert. */
+  confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[], options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates disburseFees; returns a SimulationResult on success, throws a typed error on revert. */
+  disburseFees(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates withdraw; returns a SimulationResult on success, throws a typed error on revert. */
+  withdraw(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates claimRefund; returns a SimulationResult on success, throws a typed error on revert. */
+  claimRefund(paymentId: Hex, refundAddress: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates claimRefundSelf; returns a SimulationResult on success, throws a typed error on revert. */
+  claimRefundSelf(paymentId: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates claimExpiredFunds; returns a SimulationResult on success, throws a typed error on revert. */
+  claimExpiredFunds(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates claimNonGoalLineItems; returns a SimulationResult on success, throws a typed error on revert. */
+  claimNonGoalLineItems(token: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates pauseTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates unpauseTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates cancelTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for PaymentTreasury. */
@@ -173,6 +175,12 @@ export interface PaymentTreasuryEvents {
   getNonGoalLineItemsClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded ExpiredFundsClaimed event logs. */
   getExpiredFundsClaimedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Paused event logs. */
+  getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Unpaused event logs. */
+  getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Cancelled event logs. */
+  getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known PaymentTreasury events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for PaymentCreated events in real time. Returns an unwatch function. */
@@ -195,6 +203,12 @@ export interface PaymentTreasuryEvents {
   watchNonGoalLineItemsClaimed(onLogs: EventWatchHandler): () => void;
   /** Watches for ExpiredFundsClaimed events in real time. Returns an unwatch function. */
   watchExpiredFundsClaimed(onLogs: EventWatchHandler): () => void;
+  /** Watches for Paused events in real time. Returns an unwatch function. */
+  watchPaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Unpaused events in real time. Returns an unwatch function. */
+  watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Cancelled events in real time. Returns an unwatch function. */
+  watchCancelled(onLogs: EventWatchHandler): () => void;
 }
 
 /**

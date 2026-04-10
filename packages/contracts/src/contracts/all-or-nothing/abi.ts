@@ -160,6 +160,20 @@ export const ALL_OR_NOTHING_ABI = [
   {
     anonymous: false,
     inputs: [
+      { indexed: true, internalType: "address", name: "account", type: "address" },
+      { indexed: false, internalType: "bytes32", name: "reason", type: "bytes32" },
+    ],
+    name: "Cancelled",
+    type: "event",
+  },
+  { inputs: [], name: "PausedError", type: "error" },
+  { inputs: [], name: "NotPausedError", type: "error" },
+  { inputs: [], name: "CancelledError", type: "error" },
+  { inputs: [], name: "NotCancelledError", type: "error" },
+  { inputs: [], name: "CannotCancel", type: "error" },
+  {
+    anonymous: false,
+    inputs: [
       { indexed: true, internalType: "address", name: "token", type: "address" },
       { indexed: false, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },

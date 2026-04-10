@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient } from "../../lib";
 import { CAMPAIGN_INFO_ABI } from "./abi";
 import type { CampaignInfoReads } from "./types";
-import type { LineItemTypeInfo, CampaignConfig } from "../../types/structs";
+import type { LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
 
 /**
  * Builds read methods for a CampaignInfo contract instance.
@@ -107,6 +107,37 @@ export function createCampaignInfoReads(
     },
     async paused() {
       return publicClient.readContract({ ...contract, functionName: "paused" });
+    },
+    async getPledgeCount() {
+      return publicClient.readContract({ ...contract, functionName: "getPledgeCount" });
+    },
+    async getPledgeData(tokenId: bigint): Promise<PledgeData> {
+      const result = await publicClient.readContract({ ...contract, functionName: "getPledgeData", args: [tokenId] });
+      return result as unknown as PledgeData;
+    },
+    async getImageURI() {
+      return publicClient.readContract({ ...contract, functionName: "getImageURI" });
+    },
+    async contractURI() {
+      return publicClient.readContract({ ...contract, functionName: "contractURI" });
+    },
+    async name() {
+      return publicClient.readContract({ ...contract, functionName: "name" });
+    },
+    async symbol() {
+      return publicClient.readContract({ ...contract, functionName: "symbol" });
+    },
+    async tokenURI(tokenId: bigint) {
+      return publicClient.readContract({ ...contract, functionName: "tokenURI", args: [tokenId] });
+    },
+    async ownerOf(tokenId: bigint) {
+      return publicClient.readContract({ ...contract, functionName: "ownerOf", args: [tokenId] });
+    },
+    async balanceOf(owner: Address) {
+      return publicClient.readContract({ ...contract, functionName: "balanceOf", args: [owner] });
+    },
+    async supportsInterface(interfaceId: Hex) {
+      return publicClient.readContract({ ...contract, functionName: "supportsInterface", args: [interfaceId] });
     },
   };
 }

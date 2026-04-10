@@ -152,6 +152,24 @@ export interface LineItemTypeInfo {
   instantTransfer: boolean;
 }
 
+/** PledgeNFT.PledgeData — on-chain pledge metadata stored per token ID. */
+export interface PledgeData {
+  /** Backer wallet address. */
+  backer: Address;
+  /** bytes32 reward identifier (ZERO_BYTES for no-reward pledges). */
+  reward: Hex;
+  /** Treasury contract that minted this NFT. */
+  treasury: Address;
+  /** ERC-20 token address used for the pledge. */
+  tokenAddress: Address;
+  /** Pledge amount in token units. */
+  amount: bigint;
+  /** Shipping fee in token units. */
+  shippingFee: bigint;
+  /** Tip amount in token units. */
+  tipAmount: bigint;
+}
+
 /** Return type for CampaignInfo.getCampaignConfig. */
 export interface CampaignConfig {
   /** Address of the TreasuryFactory used to deploy treasuries. */

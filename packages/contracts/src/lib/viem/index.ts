@@ -8,6 +8,8 @@ export {
   toHex,
   stringToHex,
   encodeAbiParameters,
+  encodeFunctionData,
+  decodeFunctionResult,
   decodeErrorResult,
   decodeEventLog,
   parseEther,

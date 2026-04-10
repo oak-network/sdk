@@ -5,6 +5,7 @@ import {
   parseContractError,
   getRevertData,
   simulateWithErrorDecode,
+  toSimulationResult,
 } from "../../src/errors/parse-contract-error";
 import { parseGlobalParamsError } from "../../src/errors/parse/global-params";
 import { parseCampaignInfoFactoryError } from "../../src/errors/parse/campaign-info-factory";
@@ -101,6 +102,41 @@ describe("toSharedContractError", () => {
     expect(e!.name).toBe("TreasuryTransferFailed");
   });
 
+  it("maps PausedError", () => {
+    const e = toSharedContractError("PausedError", {});
+    expect(e!.name).toBe("PausedError");
+  });
+
+  it("maps NotPausedError", () => {
+    const e = toSharedContractError("NotPausedError", {});
+    expect(e!.name).toBe("NotPausedError");
+  });
+
+  it("maps CancelledError", () => {
+    const e = toSharedContractError("CancelledError", {});
+    expect(e!.name).toBe("CancelledError");
+  });
+
+  it("maps NotCancelledError", () => {
+    const e = toSharedContractError("NotCancelledError", {});
+    expect(e!.name).toBe("NotCancelledError");
+  });
+
+  it("maps CannotCancel", () => {
+    const e = toSharedContractError("CannotCancel", {});
+    expect(e!.name).toBe("CannotCancel");
+  });
+
+  it("maps PledgeNFTUnAuthorized", () => {
+    const e = toSharedContractError("PledgeNFTUnAuthorized", {});
+    expect(e!.name).toBe("PledgeNFTUnAuthorized");
+  });
+
+  it("maps PledgeNFTInvalidJsonString", () => {
+    const e = toSharedContractError("PledgeNFTInvalidJsonString", {});
+    expect(e!.name).toBe("PledgeNFTInvalidJsonString");
+  });
+
   it("returns null for unknown error names", () => {
     expect(toSharedContractError("SomethingElse", {})).toBeNull();
   });
@@ -150,8 +186,8 @@ describe("getRevertData", () => {
 });
 
 describe("simulateWithErrorDecode", () => {
-  it("does not throw on success", async () => {
-    await expect(simulateWithErrorDecode(async () => "ok")).resolves.toBeUndefined();
+  it("returns the operation result on success", async () => {
+    await expect(simulateWithErrorDecode(async () => "ok")).resolves.toBe("ok");
   });
 
   it("throws typed error when revert data is parseable", async () => {
@@ -167,6 +203,60 @@ describe("simulateWithErrorDecode", () => {
   it("rethrows original error when not parseable", async () => {
     const err = new Error("something else");
     await expect(simulateWithErrorDecode(async () => { throw err; })).rejects.toBe(err);
+  });
+});
+
+describe("toSimulationResult", () => {
+  const TEST_ABI = [
+    {
+      name: "transfer",
+      type: "function" as const,
+      stateMutability: "nonpayable" as const,
+      inputs: [
+        { name: "to", type: "address" },
+        { name: "amount", type: "uint256" },
+      ],
+      outputs: [{ name: "", type: "bool" }],
+    },
+  ] as const;
+
+  it("maps viem simulate response to SimulationResult with encoded calldata", () => {
+    const response = {
+      result: true,
+      request: {
+        address: "0x0000000000000000000000000000000000000001",
+        abi: TEST_ABI,
+        functionName: "transfer",
+        args: ["0x0000000000000000000000000000000000000002", 100n],
+        value: 0n,
+        gas: 21000n,
+      },
+    };
+    const mapped = toSimulationResult(response);
+    expect(mapped.result).toBe(true);
+    expect(mapped.request.to).toBe("0x0000000000000000000000000000000000000001");
+    expect(mapped.request.data).toMatch(/^0x/);
+    expect(mapped.request.data.length).toBeGreaterThan(10);
+    expect(mapped.request.value).toBe(0n);
+    expect(mapped.request.gas).toBe(21000n);
+  });
+
+  it("handles undefined value and gas", () => {
+    const response = {
+      result: undefined,
+      request: {
+        address: "0x0000000000000000000000000000000000000001",
+        abi: TEST_ABI,
+        functionName: "transfer",
+        args: ["0x0000000000000000000000000000000000000002", 1n],
+      },
+    };
+    const mapped = toSimulationResult(response);
+    expect(mapped.result).toBeUndefined();
+    expect(mapped.request.to).toBe("0x0000000000000000000000000000000000000001");
+    expect(mapped.request.data).toMatch(/^0x/);
+    expect(mapped.request.value).toBeUndefined();
+    expect(mapped.request.gas).toBeUndefined();
   });
 });
 
@@ -584,6 +674,27 @@ describe("parsePaymentTreasuryError", () => {
   it("parses PaymentTreasuryClaimWindowNotReached", () => {
     const data = encode("PaymentTreasuryClaimWindowNotReached", [9999n]);
     expect(parsePaymentTreasuryError(data)!.name).toBe("PaymentTreasuryClaimWindowNotReached");
+  });
+
+  it("falls through to shared error for PausedError", () => {
+    const data = encode("PausedError");
+    const err = parsePaymentTreasuryError(data);
+    expect(err).not.toBeNull();
+    expect(err!.name).toBe("PausedError");
+  });
+
+  it("falls through to shared error for CancelledError", () => {
+    const data = encode("CancelledError");
+    const err = parsePaymentTreasuryError(data);
+    expect(err).not.toBeNull();
+    expect(err!.name).toBe("CancelledError");
+  });
+
+  it("falls through to shared error for CannotCancel", () => {
+    const data = encode("CannotCancel");
+    const err = parsePaymentTreasuryError(data);
+    expect(err).not.toBeNull();
+    expect(err!.name).toBe("CannotCancel");
   });
 
   it("returns null for unrecognized data", () => {

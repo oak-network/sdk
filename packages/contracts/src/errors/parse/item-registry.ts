@@ -6,7 +6,7 @@ import {
   ItemRegistryMismatchedArraysLengthError,
 } from "../contracts/item-registry";
 import type { ErrorAbiEntry } from "./shared";
-import { tryDecodeContractError } from "./shared";
+import { toSharedContractError, tryDecodeContractError } from "./shared";
 
 /**
  * Maps a decoded ItemRegistry error name and args to a typed SDK error instance.
@@ -18,12 +18,17 @@ function toItemRegistryError(name: string, args: Record<string, unknown>): Contr
   switch (name) {
     case ItemRegistryErrorNames.MismatchedArraysLength:
       return new ItemRegistryMismatchedArraysLengthError();
-    /* istanbul ignore next -- defensive fallback; all ABI errors are handled above */
-    default:
-      return new (class extends Error implements ContractErrorBase {
-        readonly name = name;
-        readonly args = args;
-      })(`${name}(${JSON.stringify(args)})`);
+    /* istanbul ignore next -- defensive fallback; ItemRegistry ABI has no shared error selectors */
+    default: {
+      const shared = toSharedContractError(name, args);
+      if (!shared) {
+        return new (class extends Error implements ContractErrorBase {
+          readonly name = name;
+          readonly args = args;
+        })(`${name}(${JSON.stringify(args)})`);
+      }
+      return shared;
+    }
   }
 }
 

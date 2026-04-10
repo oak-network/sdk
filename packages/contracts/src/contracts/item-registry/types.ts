@@ -1,6 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { Item } from "../../types/structs";
-import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for ItemRegistry. */
@@ -19,10 +19,10 @@ export interface ItemRegistryWrites {
 
 /** Simulate counterparts for ItemRegistry write methods. */
 export interface ItemRegistrySimulate {
-  /** Simulates addItem; throws a typed error on revert. */
-  addItem(itemId: Hex, item: Item, options?: CallSignerOptions): Promise<void>;
-  /** Simulates addItemsBatch; throws a typed error on revert. */
-  addItemsBatch(itemIds: readonly Hex[], items: readonly Item[], options?: CallSignerOptions): Promise<void>;
+  /** Simulates addItem; returns a SimulationResult on success, throws a typed error on revert. */
+  addItem(itemId: Hex, item: Item, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates addItemsBatch; returns a SimulationResult on success, throws a typed error on revert. */
+  addItemsBatch(itemIds: readonly Hex[], items: readonly Item[], options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for ItemRegistry. */

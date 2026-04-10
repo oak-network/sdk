@@ -1,6 +1,6 @@
 import type { Address, Hex } from "../../lib";
-import type { LineItemTypeInfo, CampaignConfig } from "../../types/structs";
-import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
+import type { LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for a CampaignInfo contract instance. */
@@ -65,6 +65,26 @@ export interface CampaignInfoReads {
   owner(): Promise<Address>;
   /** Returns true if the campaign is paused. */
   paused(): Promise<boolean>;
+  /** Returns the current total number of pledge NFTs minted. */
+  getPledgeCount(): Promise<bigint>;
+  /** Returns the pledge data struct for a given token ID. */
+  getPledgeData(tokenId: bigint): Promise<PledgeData>;
+  /** Returns the NFT image URI. */
+  getImageURI(): Promise<string>;
+  /** Returns the contract-level metadata URI. */
+  contractURI(): Promise<string>;
+  /** Returns the NFT collection name. */
+  name(): Promise<string>;
+  /** Returns the NFT collection symbol. */
+  symbol(): Promise<string>;
+  /** Returns the token URI with on-chain metadata for a given token ID. */
+  tokenURI(tokenId: bigint): Promise<string>;
+  /** Returns the owner address of a given token ID. */
+  ownerOf(tokenId: bigint): Promise<Address>;
+  /** Returns the number of tokens held by an owner. */
+  balanceOf(owner: Address): Promise<bigint>;
+  /** Returns true if the contract supports the given ERC-165 interface ID. */
+  supportsInterface(interfaceId: Hex): Promise<boolean>;
 }
 
 /** Write methods for a CampaignInfo contract instance. */
@@ -101,34 +121,34 @@ export interface CampaignInfoWrites {
 
 /** Simulate counterparts for CampaignInfo write methods. */
 export interface CampaignInfoSimulate {
-  /** Simulates updateDeadline; throws a typed error on revert. */
-  updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateGoalAmount; throws a typed error on revert. */
-  updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateLaunchTime; throws a typed error on revert. */
-  updateLaunchTime(launchTime: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateSelectedPlatform; throws a typed error on revert. */
-  updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[], options?: CallSignerOptions): Promise<void>;
-  /** Simulates setImageURI; throws a typed error on revert. */
-  setImageURI(newImageURI: string, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateContractURI; throws a typed error on revert. */
-  updateContractURI(newContractURI: string, options?: CallSignerOptions): Promise<void>;
-  /** Simulates mintNFTForPledge; throws a typed error on revert. */
-  mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates burn; throws a typed error on revert. */
-  burn(tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates pauseCampaign; throws a typed error on revert. */
-  pauseCampaign(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates unpauseCampaign; throws a typed error on revert. */
-  unpauseCampaign(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates cancelCampaign; throws a typed error on revert. */
-  cancelCampaign(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates setPlatformInfo; throws a typed error on revert. */
-  setPlatformInfo(platformBytes: Hex, platformTreasuryAddress: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates transferOwnership; throws a typed error on revert. */
-  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates renounceOwnership; throws a typed error on revert. */
-  renounceOwnership(options?: CallSignerOptions): Promise<void>;
+  /** Simulates updateDeadline; returns a SimulationResult on success, throws a typed error on revert. */
+  updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateGoalAmount; returns a SimulationResult on success, throws a typed error on revert. */
+  updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateLaunchTime; returns a SimulationResult on success, throws a typed error on revert. */
+  updateLaunchTime(launchTime: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateSelectedPlatform; returns a SimulationResult on success, throws a typed error on revert. */
+  updateSelectedPlatform(platformHash: Hex, selection: boolean, platformDataKey: readonly Hex[], platformDataValue: readonly Hex[], options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setImageURI; returns a SimulationResult on success, throws a typed error on revert. */
+  setImageURI(newImageURI: string, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateContractURI; returns a SimulationResult on success, throws a typed error on revert. */
+  updateContractURI(newContractURI: string, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates mintNFTForPledge; returns a SimulationResult on success, throws a typed error on revert. */
+  mintNFTForPledge(backer: Address, reward: Hex, tokenAddress: Address, amount: bigint, shippingFee: bigint, tipAmount: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates burn; returns a SimulationResult on success, throws a typed error on revert. */
+  burn(tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates pauseCampaign; returns a SimulationResult on success, throws a typed error on revert. */
+  pauseCampaign(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates unpauseCampaign; returns a SimulationResult on success, throws a typed error on revert. */
+  unpauseCampaign(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates cancelCampaign; returns a SimulationResult on success, throws a typed error on revert. */
+  cancelCampaign(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setPlatformInfo; returns a SimulationResult on success, throws a typed error on revert. */
+  setPlatformInfo(platformBytes: Hex, platformTreasuryAddress: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates transferOwnership; returns a SimulationResult on success, throws a typed error on revert. */
+  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates renounceOwnership; returns a SimulationResult on success, throws a typed error on revert. */
+  renounceOwnership(options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for a CampaignInfo contract instance. */
@@ -149,6 +169,14 @@ export interface CampaignInfoEvents {
   getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Unpaused event logs. */
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Cancelled event logs. */
+  getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PledgeNFTMinted event logs. */
+  getPledgeNFTMintedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded ImageURIUpdated event logs. */
+  getImageURIUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded ContractURIUpdated event logs. */
+  getContractURIUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known CampaignInfo events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for CampaignInfoDeadlineUpdated events in real time. Returns an unwatch function. */
@@ -167,6 +195,14 @@ export interface CampaignInfoEvents {
   watchPaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Unpaused events in real time. Returns an unwatch function. */
   watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Cancelled events in real time. Returns an unwatch function. */
+  watchCancelled(onLogs: EventWatchHandler): () => void;
+  /** Watches for PledgeNFTMinted events in real time. Returns an unwatch function. */
+  watchPledgeNFTMinted(onLogs: EventWatchHandler): () => void;
+  /** Watches for ImageURIUpdated events in real time. Returns an unwatch function. */
+  watchImageURIUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for ContractURIUpdated events in real time. Returns an unwatch function. */
+  watchContractURIUpdated(onLogs: EventWatchHandler): () => void;
 }
 
 /** Full CampaignInfo entity combining reads, writes, simulate, and events. */

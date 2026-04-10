@@ -8,8 +8,10 @@ export type {
   Address,
   Chain,
   Hex,
+  Log,
   PublicClient,
   WalletClient,
+  EIP1193Provider,
 } from "./lib";
 export type { Wallet } from "./lib";
 
@@ -20,6 +22,9 @@ export {
   custom,
   stringToHex,
   toHex,
+  encodeFunctionData,
+  decodeFunctionResult,
+  decodeEventLog,
   parseEther,
   formatEther,
   parseUnits,
