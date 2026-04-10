@@ -10,7 +10,7 @@
  * discover the treasury contract address.
  */
 
-import { createOakContractsClient, keccak256, toHex, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
+import { createOakContractsClient, keccak256, toHex, CHAIN_IDS, TREASURY_FACTORY_EVENTS } from "@oaknetwork/contracts-sdk";
 
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
@@ -46,7 +46,7 @@ for (const log of deployReceipt.logs) {
       data: log.data as `0x${string}`,
     });
 
-    if (decoded.eventName === "TreasuryFactoryTreasuryDeployed") {
+    if (decoded.eventName === TREASURY_FACTORY_EVENTS.TreasuryDeployed) {
       treasuryAddress = decoded.args?.treasuryAddress as `0x${string}`;
       break;
     }
