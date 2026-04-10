@@ -59,6 +59,7 @@ describe("GlobalParams entity", () => {
     it("getPlatformLineItemType", async () => { await entity.getPlatformLineItemType(B32, B32); });
     it("getTokensForCurrency", async () => { await entity.getTokensForCurrency(B32); });
     it("getFromRegistry", async () => { await entity.getFromRegistry(B32); });
+    it("paused", async () => { await entity.paused(); });
     it("owner", async () => { await entity.owner(); });
   });
 
@@ -121,6 +122,9 @@ describe("GlobalParams entity", () => {
     it("getOwnershipTransferredLogs", async () => { await entity.events.getOwnershipTransferredLogs(); });
     it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
     it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
+    it("getDataAddedToRegistryLogs", async () => { await entity.events.getDataAddedToRegistryLogs(); });
+    it("getPlatformLineItemTypeSetLogs", async () => { await entity.events.getPlatformLineItemTypeSetLogs(); });
+    it("getPlatformLineItemTypeRemovedLogs", async () => { await entity.events.getPlatformLineItemTypeRemovedLogs(); });
     it("watchPlatformEnlisted", () => { entity.events.watchPlatformEnlisted(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
     it("watchPlatformDelisted", () => { entity.events.watchPlatformDelisted(() => {}); });
     it("watchPlatformAdminAddressUpdated", () => { entity.events.watchPlatformAdminAddressUpdated(() => {}); });
@@ -135,6 +139,9 @@ describe("GlobalParams entity", () => {
     it("watchOwnershipTransferred", () => { entity.events.watchOwnershipTransferred(() => {}); });
     it("watchPaused", () => { entity.events.watchPaused(() => {}); });
     it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
+    it("watchDataAddedToRegistry", () => { entity.events.watchDataAddedToRegistry(() => {}); });
+    it("watchPlatformLineItemTypeSet", () => { entity.events.watchPlatformLineItemTypeSet(() => {}); });
+    it("watchPlatformLineItemTypeRemoved", () => { entity.events.watchPlatformLineItemTypeRemoved(() => {}); });
     it("decodeLog decodes a Paused event", () => {
       const pausedSig = keccak256(toHex("Paused(address)"));
       const result = entity.events.decodeLog({
