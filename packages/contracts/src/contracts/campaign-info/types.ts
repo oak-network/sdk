@@ -1,5 +1,5 @@
 import type { Address, Hex } from "../../lib";
-import type { LineItemTypeInfo, CampaignConfig } from "../../types/structs";
+import type { LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
 import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
@@ -65,6 +65,26 @@ export interface CampaignInfoReads {
   owner(): Promise<Address>;
   /** Returns true if the campaign is paused. */
   paused(): Promise<boolean>;
+  /** Returns the current total number of pledge NFTs minted. */
+  getPledgeCount(): Promise<bigint>;
+  /** Returns the pledge data struct for a given token ID. */
+  getPledgeData(tokenId: bigint): Promise<PledgeData>;
+  /** Returns the NFT image URI. */
+  getImageURI(): Promise<string>;
+  /** Returns the contract-level metadata URI. */
+  contractURI(): Promise<string>;
+  /** Returns the NFT collection name. */
+  name(): Promise<string>;
+  /** Returns the NFT collection symbol. */
+  symbol(): Promise<string>;
+  /** Returns the token URI with on-chain metadata for a given token ID. */
+  tokenURI(tokenId: bigint): Promise<string>;
+  /** Returns the owner address of a given token ID. */
+  ownerOf(tokenId: bigint): Promise<Address>;
+  /** Returns the number of tokens held by an owner. */
+  balanceOf(owner: Address): Promise<bigint>;
+  /** Returns true if the contract supports the given ERC-165 interface ID. */
+  supportsInterface(interfaceId: Hex): Promise<boolean>;
 }
 
 /** Write methods for a CampaignInfo contract instance. */
@@ -149,6 +169,14 @@ export interface CampaignInfoEvents {
   getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Unpaused event logs. */
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Cancelled event logs. */
+  getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PledgeNFTMinted event logs. */
+  getPledgeNFTMintedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded ImageURIUpdated event logs. */
+  getImageURIUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded ContractURIUpdated event logs. */
+  getContractURIUpdatedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known CampaignInfo events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for CampaignInfoDeadlineUpdated events in real time. Returns an unwatch function. */
@@ -167,6 +195,14 @@ export interface CampaignInfoEvents {
   watchPaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Unpaused events in real time. Returns an unwatch function. */
   watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Cancelled events in real time. Returns an unwatch function. */
+  watchCancelled(onLogs: EventWatchHandler): () => void;
+  /** Watches for PledgeNFTMinted events in real time. Returns an unwatch function. */
+  watchPledgeNFTMinted(onLogs: EventWatchHandler): () => void;
+  /** Watches for ImageURIUpdated events in real time. Returns an unwatch function. */
+  watchImageURIUpdated(onLogs: EventWatchHandler): () => void;
+  /** Watches for ContractURIUpdated events in real time. Returns an unwatch function. */
+  watchContractURIUpdated(onLogs: EventWatchHandler): () => void;
 }
 
 /** Full CampaignInfo entity combining reads, writes, simulate, and events. */

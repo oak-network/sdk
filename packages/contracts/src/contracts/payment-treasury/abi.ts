@@ -471,6 +471,20 @@ export const PAYMENT_TREASURY_ABI = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "address", name: "account", type: "address" },
+      { indexed: false, internalType: "bytes32", name: "reason", type: "bytes32" },
+    ],
+    name: "Cancelled",
+    type: "event",
+  },
+  { inputs: [], name: "PausedError", type: "error" },
+  { inputs: [], name: "NotPausedError", type: "error" },
+  { inputs: [], name: "CancelledError", type: "error" },
+  { inputs: [], name: "NotCancelledError", type: "error" },
+  { inputs: [], name: "CannotCancel", type: "error" },
+  {
     inputs: [],
     name: "paused",
     outputs: [{ internalType: "bool", name: "", type: "bool" }],

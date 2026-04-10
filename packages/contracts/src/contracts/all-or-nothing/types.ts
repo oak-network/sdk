@@ -125,6 +125,8 @@ export interface AllOrNothingEvents {
   getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Unpaused event logs. */
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Cancelled event logs. */
+  getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Transfer event logs. */
   getTransferLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded SuccessConditionNotFulfilled event logs. */
@@ -151,6 +153,8 @@ export interface AllOrNothingEvents {
   watchPaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Unpaused events in real time. Returns an unwatch function. */
   watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Cancelled events in real time. Returns an unwatch function. */
+  watchCancelled(onLogs: EventWatchHandler): () => void;
   /** Watches for Transfer events in real time. Returns an unwatch function. */
   watchTransfer(onLogs: EventWatchHandler): () => void;
   /** Watches for SuccessConditionNotFulfilled events in real time. Returns an unwatch function. */

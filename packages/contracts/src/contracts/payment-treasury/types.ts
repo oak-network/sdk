@@ -179,6 +179,8 @@ export interface PaymentTreasuryEvents {
   getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Unpaused event logs. */
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Cancelled event logs. */
+  getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known PaymentTreasury events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for PaymentCreated events in real time. Returns an unwatch function. */
@@ -205,6 +207,8 @@ export interface PaymentTreasuryEvents {
   watchPaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Unpaused events in real time. Returns an unwatch function. */
   watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for Cancelled events in real time. Returns an unwatch function. */
+  watchCancelled(onLogs: EventWatchHandler): () => void;
 }
 
 /**

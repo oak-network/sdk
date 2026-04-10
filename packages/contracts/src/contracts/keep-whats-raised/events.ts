@@ -94,6 +94,9 @@ export function createKeepWhatsRaisedEvents(
     async getUnpausedLogs(options) {
       return fetchEventLogs(publicClient, address, "Unpaused", options);
     },
+    async getCancelledLogs(options) {
+      return fetchEventLogs(publicClient, address, "Cancelled", options);
+    },
     async getTransferLogs(options) {
       return fetchEventLogs(publicClient, address, "Transfer", options);
     },
@@ -150,6 +153,9 @@ export function createKeepWhatsRaisedEvents(
     },
     watchUnpaused(onLogs) {
       return createWatcher(publicClient, address, "Unpaused", onLogs);
+    },
+    watchCancelled(onLogs) {
+      return createWatcher(publicClient, address, "Cancelled", onLogs);
     },
     watchTransfer(onLogs) {
       return createWatcher(publicClient, address, "Transfer", onLogs);

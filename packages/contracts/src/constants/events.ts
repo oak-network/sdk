@@ -42,13 +42,17 @@ export const CAMPAIGN_INFO_FACTORY_EVENTS = {
 
 /** Event names emitted by the CampaignInfo contract. */
 export const CAMPAIGN_INFO_EVENTS = {
+  Cancelled: "Cancelled",
+  ContractURIUpdated: "ContractURIUpdated",
   DeadlineUpdated: "CampaignInfoDeadlineUpdated",
   GoalAmountUpdated: "CampaignInfoGoalAmountUpdated",
+  ImageURIUpdated: "ImageURIUpdated",
   LaunchTimeUpdated: "CampaignInfoLaunchTimeUpdated",
-  PlatformInfoUpdated: "CampaignInfoPlatformInfoUpdated",
-  SelectedPlatformUpdated: "CampaignInfoSelectedPlatformUpdated",
   OwnershipTransferred: "OwnershipTransferred",
   Paused: "Paused",
+  PlatformInfoUpdated: "CampaignInfoPlatformInfoUpdated",
+  PledgeNFTMinted: "PledgeNFTMinted",
+  SelectedPlatformUpdated: "CampaignInfoSelectedPlatformUpdated",
   Unpaused: "Unpaused",
 } as const;
 
@@ -64,6 +68,7 @@ export const TREASURY_FACTORY_EVENTS = {
 export const ALL_OR_NOTHING_EVENTS = {
   Approval: "Approval",
   ApprovalForAll: "ApprovalForAll",
+  Cancelled: "Cancelled",
   FeesDisbursed: "FeesDisbursed",
   Paused: "Paused",
   Receipt: "Receipt",
@@ -80,6 +85,7 @@ export const ALL_OR_NOTHING_EVENTS = {
 export const KEEP_WHATS_RAISED_EVENTS = {
   Approval: "Approval",
   ApprovalForAll: "ApprovalForAll",
+  Cancelled: "Cancelled",
   DeadlineUpdated: "KeepWhatsRaisedDeadlineUpdated",
   FeesDisbursed: "FeesDisbursed",
   FundClaimed: "FundClaimed",
@@ -100,6 +106,7 @@ export const KEEP_WHATS_RAISED_EVENTS = {
 
 /** Event names emitted by the PaymentTreasury contract. */
 export const PAYMENT_TREASURY_EVENTS = {
+  Cancelled: "Cancelled",
   ExpiredFundsClaimed: "ExpiredFundsClaimed",
   FeesDisbursed: "FeesDisbursed",
   NonGoalLineItemsClaimed: "NonGoalLineItemsClaimed",

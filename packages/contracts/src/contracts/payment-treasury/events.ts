@@ -85,6 +85,9 @@ export function createPaymentTreasuryEvents(
     async getUnpausedLogs(options) {
       return fetchEventLogs(publicClient, address, "Unpaused", options);
     },
+    async getCancelledLogs(options) {
+      return fetchEventLogs(publicClient, address, "Cancelled", options);
+    },
     decodeLog(log) {
       return decode({ topics: [...log.topics] as Hex[], data: log.data });
     },
@@ -123,6 +126,9 @@ export function createPaymentTreasuryEvents(
     },
     watchUnpaused(onLogs) {
       return createWatcher(publicClient, address, "Unpaused", onLogs);
+    },
+    watchCancelled(onLogs) {
+      return createWatcher(publicClient, address, "Cancelled", onLogs);
     },
   };
 }
