@@ -239,6 +239,11 @@ export const CAMPAIGN_INFO_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  // The underscore-prefixed functions below are publicly callable on-chain despite
+  // the naming convention. The Solidity contract inherits from PausableCancellable
+  // which exposes them as external functions; the underscore distinguishes them from
+  // the parent's internal helpers. The SDK wraps them with clean names (e.g.
+  // cancelCampaign, pauseCampaign) in writes.ts and simulate.ts.
   {
     inputs: [{ internalType: "bytes32", name: "message", type: "bytes32" }],
     name: "_cancelCampaign",
