@@ -224,10 +224,10 @@ describe("toSimulationResult", () => {
     const response = {
       result: true,
       request: {
-        address: "0x0000000000000000000000000000000000000001",
+        address: "0x0000000000000000000000000000000000000001" as `0x${string}`,
         abi: TEST_ABI,
         functionName: "transfer",
-        args: ["0x0000000000000000000000000000000000000002", 100n],
+        args: ["0x0000000000000000000000000000000000000002", 100n] as const,
         value: 0n,
         gas: 21000n,
       },
@@ -245,10 +245,10 @@ describe("toSimulationResult", () => {
     const response = {
       result: undefined,
       request: {
-        address: "0x0000000000000000000000000000000000000001",
+        address: "0x0000000000000000000000000000000000000001" as `0x${string}`,
         abi: TEST_ABI,
         functionName: "transfer",
-        args: ["0x0000000000000000000000000000000000000002", 1n],
+        args: ["0x0000000000000000000000000000000000000002", 1n] as const,
       },
     };
     const mapped = toSimulationResult(response);
