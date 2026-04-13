@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient } from "../../lib";
 import { KEEP_WHATS_RAISED_ABI } from "./abi";
 import type { KeepWhatsRaisedReads } from "./types";
-import type { TieredReward } from "../../types/structs";
+import type { Bytes4, TieredReward } from "../../types/structs";
 
 /**
  * Builds read methods for a KeepWhatsRaised treasury contract instance.
@@ -115,7 +115,7 @@ export function createKeepWhatsRaisedReads(
         args: [owner, operator],
       });
     },
-    async supportsInterface(interfaceId: Hex) {
+    async supportsInterface(interfaceId: Bytes4) {
       return publicClient.readContract({
         ...contract,
         functionName: "supportsInterface",

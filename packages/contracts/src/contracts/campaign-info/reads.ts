@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient } from "../../lib";
 import { CAMPAIGN_INFO_ABI } from "./abi";
 import type { CampaignInfoReads } from "./types";
-import type { LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
+import type { Bytes4, LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
 
 /**
  * Builds read methods for a CampaignInfo contract instance.
@@ -136,7 +136,7 @@ export function createCampaignInfoReads(
     async balanceOf(owner: Address) {
       return publicClient.readContract({ ...contract, functionName: "balanceOf", args: [owner] });
     },
-    async supportsInterface(interfaceId: Hex) {
+    async supportsInterface(interfaceId: Bytes4) {
       return publicClient.readContract({ ...contract, functionName: "supportsInterface", args: [interfaceId] });
     },
   };

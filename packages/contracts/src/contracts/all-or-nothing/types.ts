@@ -1,5 +1,5 @@
 import type { Address, Hex } from "../../lib";
-import type { TieredReward } from "../../types/structs";
+import type { Bytes4, TieredReward } from "../../types/structs";
 import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
@@ -36,7 +36,7 @@ export interface AllOrNothingReads {
   /** Returns true if operator is approved for all tokens of owner. */
   isApprovedForAll(owner: Address, operator: Address): Promise<boolean>;
   /** Returns true if the contract implements the given ERC-165 interface. */
-  supportsInterface(interfaceId: Hex): Promise<boolean>;
+  supportsInterface(interfaceId: Bytes4): Promise<boolean>;
 }
 
 /** Write methods for an AllOrNothing treasury contract instance. */

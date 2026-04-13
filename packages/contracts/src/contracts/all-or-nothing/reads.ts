@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient } from "../../lib";
 import { ALL_OR_NOTHING_ABI } from "./abi";
 import type { AllOrNothingReads } from "./types";
-import type { TieredReward } from "../../types/structs";
+import type { Bytes4, TieredReward } from "../../types/structs";
 
 /**
  * Builds read methods for an AllOrNothing treasury contract instance.
@@ -62,7 +62,7 @@ export function createAllOrNothingReads(
     async isApprovedForAll(owner: Address, operator: Address) {
       return publicClient.readContract({ ...contract, functionName: "isApprovedForAll", args: [owner, operator] });
     },
-    async supportsInterface(interfaceId: Hex) {
+    async supportsInterface(interfaceId: Bytes4) {
       return publicClient.readContract({ ...contract, functionName: "supportsInterface", args: [interfaceId] });
     },
   };

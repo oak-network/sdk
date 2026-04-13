@@ -1,5 +1,5 @@
 import type { Address, Hex } from "../../lib";
-import type { TieredReward, CampaignData } from "../../types/structs";
+import type { Bytes4, TieredReward, CampaignData } from "../../types/structs";
 import type { KeepWhatsRaisedConfig, KeepWhatsRaisedFeeKeys, KeepWhatsRaisedFeeValues } from "../../types/params";
 import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
@@ -51,7 +51,7 @@ export interface KeepWhatsRaisedReads {
   /** Returns true if the operator is approved to manage all tokens of the given owner. */
   isApprovedForAll(owner: Address, operator: Address): Promise<boolean>;
   /** Returns true if the contract implements the given ERC-165 interface ID. */
-  supportsInterface(interfaceId: Hex): Promise<boolean>;
+  supportsInterface(interfaceId: Bytes4): Promise<boolean>;
 }
 
 /** Write methods for KeepWhatsRaised treasury. */

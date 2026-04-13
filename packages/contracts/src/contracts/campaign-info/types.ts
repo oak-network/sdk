@@ -1,5 +1,5 @@
 import type { Address, Hex } from "../../lib";
-import type { LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
+import type { Bytes4, LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
 import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
@@ -84,7 +84,7 @@ export interface CampaignInfoReads {
   /** Returns the number of tokens held by an owner. */
   balanceOf(owner: Address): Promise<bigint>;
   /** Returns true if the contract supports the given ERC-165 interface ID. */
-  supportsInterface(interfaceId: Hex): Promise<boolean>;
+  supportsInterface(interfaceId: Bytes4): Promise<boolean>;
 }
 
 /** Write methods for a CampaignInfo contract instance. */

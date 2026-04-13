@@ -3,7 +3,7 @@
  * All external imports are routed through lib/.
  */
 export { requireSigner, requireAccount } from "./account";
-export { isHex, toHex } from "./hex";
+export { isHex, isBytes4, toHex } from "./hex";
 export { keccak256, id } from "./hash";
 export { getCurrentTimestamp, addDays } from "./time";
 export { getChainFromId } from "./chain";
