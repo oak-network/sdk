@@ -75,37 +75,37 @@ export interface GlobalParamsWrites {
 
 /** Simulate counterparts for GlobalParams write methods. */
 export interface GlobalParamsSimulate {
-  /** Simulates enlistPlatform; returns a SimulationResult. */
+  /** Simulates enlistPlatform; returns a SimulationResult on success, throws a typed error on revert. */
   enlistPlatform(platformHash: Hex, platformAdminAddress: Address, platformFeePercent: bigint, platformAdapter: Address, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates delistPlatform; returns a SimulationResult. */
+  /** Simulates delistPlatform; returns a SimulationResult on success, throws a typed error on revert. */
   delistPlatform(platformBytes: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates updatePlatformAdminAddress; returns a SimulationResult. */
+  /** Simulates updatePlatformAdminAddress; returns a SimulationResult on success, throws a typed error on revert. */
   updatePlatformAdminAddress(platformBytes: Hex, platformAdminAddress: Address, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates updatePlatformClaimDelay; returns a SimulationResult. */
+  /** Simulates updatePlatformClaimDelay; returns a SimulationResult on success, throws a typed error on revert. */
   updatePlatformClaimDelay(platformBytes: Hex, claimDelay: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates updateProtocolAdminAddress; returns a SimulationResult. */
+  /** Simulates updateProtocolAdminAddress; returns a SimulationResult on success, throws a typed error on revert. */
   updateProtocolAdminAddress(protocolAdminAddress: Address, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates updateProtocolFeePercent; returns a SimulationResult. */
+  /** Simulates updateProtocolFeePercent; returns a SimulationResult on success, throws a typed error on revert. */
   updateProtocolFeePercent(protocolFeePercent: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates setPlatformAdapter; returns a SimulationResult. */
+  /** Simulates setPlatformAdapter; returns a SimulationResult on success, throws a typed error on revert. */
   setPlatformAdapter(platformBytes: Hex, platformAdapter: Address, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates setPlatformLineItemType; returns a SimulationResult. */
+  /** Simulates setPlatformLineItemType; returns a SimulationResult on success, throws a typed error on revert. */
   setPlatformLineItemType(platformHash: Hex, typeId: Hex, label: string, countsTowardGoal: boolean, applyProtocolFee: boolean, canRefund: boolean, instantTransfer: boolean, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates removePlatformLineItemType; returns a SimulationResult. */
+  /** Simulates removePlatformLineItemType; returns a SimulationResult on success, throws a typed error on revert. */
   removePlatformLineItemType(platformHash: Hex, typeId: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates addTokenToCurrency; returns a SimulationResult. */
+  /** Simulates addTokenToCurrency; returns a SimulationResult on success, throws a typed error on revert. */
   addTokenToCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates removeTokenFromCurrency; returns a SimulationResult. */
+  /** Simulates removeTokenFromCurrency; returns a SimulationResult on success, throws a typed error on revert. */
   removeTokenFromCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates addPlatformData; returns a SimulationResult. */
+  /** Simulates addPlatformData; returns a SimulationResult on success, throws a typed error on revert. */
   addPlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates removePlatformData; returns a SimulationResult. */
+  /** Simulates removePlatformData; returns a SimulationResult on success, throws a typed error on revert. */
   removePlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates addToRegistry; returns a SimulationResult. */
+  /** Simulates addToRegistry; returns a SimulationResult on success, throws a typed error on revert. */
   addToRegistry(key: Hex, value: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates transferOwnership; returns a SimulationResult. */
+  /** Simulates transferOwnership; returns a SimulationResult on success, throws a typed error on revert. */
   transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates renounceOwnership; returns a SimulationResult. */
+  /** Simulates renounceOwnership; returns a SimulationResult on success, throws a typed error on revert. */
   renounceOwnership(options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
