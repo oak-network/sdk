@@ -41,6 +41,26 @@ describe("prepareContractWrite", () => {
     expect(pub.estimateContractGas).toHaveBeenCalled();
   });
 
+  it("propagates error when gas estimation fails", async () => {
+    const revertError = new Error("execution reverted: insufficient balance");
+    const pub = {
+      estimateContractGas: jest.fn().mockRejectedValue(revertError),
+    } as unknown as PublicClient;
+
+    const mockChain = { id: 1, name: "test" } as Chain;
+
+    await expect(
+      prepareContractWrite(pub, {
+        address: ADDR,
+        abi: TEST_ABI,
+        functionName: "transfer",
+        args: [ADDR, 100n],
+        account: ADDR,
+        chain: mockChain,
+      }),
+    ).rejects.toThrow("execution reverted: insufficient balance");
+  });
+
   it("passes value through when provided", async () => {
     const pub = {
       estimateContractGas: jest.fn().mockResolvedValue(21000n),
