@@ -69,8 +69,11 @@ export function createOakContractsClient(
           data: log.data,
         })),
       };
-    } catch {
-      return null;
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === "TransactionReceiptNotFoundError") {
+        return null;
+      }
+      throw error;
     }
   }
 
