@@ -165,12 +165,28 @@ describe("createOakContractsClient", () => {
       rpcUrl: RPC,
       privateKey: PK,
     });
+    const notFoundError = new Error("Transaction receipt not found");
+    notFoundError.name = "TransactionReceiptNotFoundError";
     (
       client.publicClient as unknown as { getTransactionReceipt: jest.Mock }
-    ).getTransactionReceipt = jest.fn().mockRejectedValue(new Error("not found"));
+    ).getTransactionReceipt = jest.fn().mockRejectedValue(notFoundError);
 
     const receipt = await client.getReceipt("0xdeadbeef");
     expect(receipt).toBeNull();
+  });
+
+  it("getReceipt re-throws non-receipt errors (e.g. network failures)", async () => {
+    const client = createOakContractsClient({
+      chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+      rpcUrl: RPC,
+      privateKey: PK,
+    });
+    const networkError = new Error("RPC timeout");
+    (
+      client.publicClient as unknown as { getTransactionReceipt: jest.Mock }
+    ).getTransactionReceipt = jest.fn().mockRejectedValue(networkError);
+
+    await expect(client.getReceipt("0xdeadbeef")).rejects.toThrow("RPC timeout");
   });
 
   it("waitForReceipt calls publicClient.waitForTransactionReceipt", async () => {
