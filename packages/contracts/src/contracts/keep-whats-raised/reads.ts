@@ -34,6 +34,9 @@ export function createKeepWhatsRaisedReads(
         functionName: "getReward",
         args: [rewardName],
       });
+      // viem returns Solidity structs as readonly tuple objects whose type doesn't
+      // unify with the SDK's named interface; the double-cast bridges the gap safely
+      // because the ABI field names and types are identical to TieredReward.
       return result as unknown as TieredReward;
     },
     async getPlatformHash() {

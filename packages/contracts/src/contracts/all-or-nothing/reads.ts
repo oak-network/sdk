@@ -27,6 +27,9 @@ export function createAllOrNothingReads(
     },
     async getReward(rewardName: Hex): Promise<TieredReward> {
       const result = await publicClient.readContract({ ...contract, functionName: "getReward", args: [rewardName] });
+      // viem returns Solidity structs as readonly tuple objects whose type doesn't
+      // unify with the SDK's named interface; the double-cast bridges the gap safely
+      // because the ABI field names and types are identical to TieredReward.
       return result as unknown as TieredReward;
     },
     async getPlatformHash() {
