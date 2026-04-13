@@ -5,6 +5,7 @@
  */
 
 import type { Address, PublicClient, WalletClient, Chain } from "../../src/lib";
+import type { Bytes4 } from "../../src/types/structs";
 import { keccak256, toHex } from "viem";
 
 const ADDR = "0x0000000000000000000000000000000000000001" as Address;
@@ -344,7 +345,7 @@ describe("CampaignInfo entity", () => {
     it("tokenURI", async () => { await entity.tokenURI(0n); });
     it("ownerOf", async () => { await entity.ownerOf(0n); });
     it("balanceOf", async () => { await entity.balanceOf(ADDR); });
-    it("supportsInterface", async () => { await entity.supportsInterface(B32.slice(0, 10) as `0x${string}`); });
+    it("supportsInterface", async () => { await entity.supportsInterface(B32.slice(0, 10) as Bytes4); });
   });
 
   describe("writes", () => {
@@ -577,7 +578,7 @@ describe("AllOrNothing entity", () => {
     it("symbol", async () => { await entity.symbol(); });
     it("getApproved", async () => { await entity.getApproved(0n); });
     it("isApprovedForAll", async () => { await entity.isApprovedForAll(ADDR, ADDR); });
-    it("supportsInterface", async () => { await entity.supportsInterface("0x80ac58cd"); });
+    it("supportsInterface", async () => { await entity.supportsInterface("0x80ac58cd" as Bytes4); });
   });
 
   describe("writes", () => {
@@ -704,7 +705,7 @@ describe("KeepWhatsRaised entity", () => {
     it("symbol", async () => { await entity.symbol(); });
     it("getApproved", async () => { await entity.getApproved(0n); });
     it("isApprovedForAll", async () => { await entity.isApprovedForAll(ADDR, ADDR); });
-    it("supportsInterface", async () => { await entity.supportsInterface("0x80ac58cd"); });
+    it("supportsInterface", async () => { await entity.supportsInterface("0x80ac58cd" as Bytes4); });
   });
 
   describe("writes", () => {

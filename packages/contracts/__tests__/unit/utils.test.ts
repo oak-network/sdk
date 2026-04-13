@@ -1,7 +1,7 @@
 import { requireAccount, requireSigner } from "../../src/utils/account";
 import { getChainFromId } from "../../src/utils/chain";
 import { keccak256, id } from "../../src/utils/hash";
-import { isHex, toHex } from "../../src/utils/hex";
+import { isHex, isBytes4, toHex } from "../../src/utils/hex";
 import { getCurrentTimestamp, addDays } from "../../src/utils/time";
 import type { WalletClient } from "../../src/lib";
 
@@ -92,6 +92,32 @@ describe("isHex", () => {
 
   it("returns false for empty string", () => {
     expect(isHex("")).toBe(false);
+  });
+});
+
+describe("isBytes4", () => {
+  it("returns true for a valid 4-byte hex string", () => {
+    expect(isBytes4("0x01ffc9a7")).toBe(true);
+    expect(isBytes4("0x80ac58cd")).toBe(true);
+    expect(isBytes4("0xFFFFFFFF")).toBe(true);
+  });
+
+  it("returns false for hex strings shorter than 4 bytes", () => {
+    expect(isBytes4("0x01ffc9")).toBe(false);
+    expect(isBytes4("0x")).toBe(false);
+  });
+
+  it("returns false for hex strings longer than 4 bytes", () => {
+    expect(isBytes4("0x01ffc9a7ff")).toBe(false);
+    expect(isBytes4("0x0000000000000000000000000000000000000000000000000000000000000001")).toBe(false);
+  });
+
+  it("returns false for non-hex characters", () => {
+    expect(isBytes4("0xZZZZZZZZ")).toBe(false);
+  });
+
+  it("returns false for missing 0x prefix", () => {
+    expect(isBytes4("01ffc9a7")).toBe(false);
   });
 });
 
