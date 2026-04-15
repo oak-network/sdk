@@ -67,8 +67,9 @@ examples/
 │   ├── 03-configure-treasury.ts         ← Platform Admin
 │   ├── 04-manage-rewards.ts             ← add + remove rewards
 │   ├── 05-backer-pledge.ts              ← with/without reward, gateway fees
-│   ├── 06a-partial-withdrawal.ts        ← mid-campaign partial withdrawal
-│   ├── 06b-final-withdrawal.ts          ← post-deadline sweep
+│   ├── 06a-approve-partial-withdrawal.ts ← platform approves mid-campaign withdraw
+│   ├── 06b-execute-partial-withdrawal.ts ← creator partial withdraw (after delay)
+│   ├── 06c-final-withdrawal.ts          ← post-deadline sweep
 │   ├── 07-monitor-progress.ts           ← full campaign dashboard
 │   ├── 08-disburse-fees.ts              ← must call before cancellation
 │   ├── 09-claim-fund.ts                 ← Platform Admin

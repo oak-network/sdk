@@ -8,7 +8,8 @@
  * Configuration includes:
  *
  *   - Withdrawal delay: how long after approval before funds can be
- *     withdrawn (gives backers visibility)
+ *     withdrawn (gives backers visibility). This file uses 0 so Steps 6a/6b
+ *     can run in one session; use a positive value in production.
  *   - Refund delay: how long after the deadline (or cancellation)
  *     backers must wait before claiming refunds
  *   - Config lock period: prevents parameter changes close to the
@@ -48,7 +49,9 @@ const currency = toHex("USD", { size: 32 });
 
 const config: KeepWhatsRaisedConfig = {
   minimumWithdrawalForFeeExemption: 1_000_000_000n,  // $1,000 — withdrawals above this skip flat fee
-  withdrawalDelay: 86400n,        // 24 hours between approval and withdrawal
+  // 0 so Steps 6a (approve) and 6b (partial withdraw) can run back-to-back in this tutorial.
+  // In production, use e.g. 86400n (24h) so backers have time after `approveWithdrawal`.
+  withdrawalDelay: 0n,
   refundDelay: 259200n,           // 3-day delay after deadline before backers can refund
   configLockPeriod: 604800n,      // config is locked for 7 days before deadline
   isColombianCreator: false,

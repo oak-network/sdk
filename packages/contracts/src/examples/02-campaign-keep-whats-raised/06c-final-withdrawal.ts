@@ -1,8 +1,8 @@
 /**
- * Step 6b: Final Withdrawal — After Deadline (Creator or Platform Admin)
+ * Step 6c: Final withdrawal — after deadline (Creator or Platform Admin)
  *
  * After the campaign deadline passes, the creator or platform admin
- * can execute a final withdrawal. Unlike partial withdrawals (Step 6a),
+ * can execute a final withdrawal. Unlike partial withdrawals (Steps 6a–6b),
  * the final withdrawal sweeps the entire remaining balance of a
  * specific token from the treasury.
  *

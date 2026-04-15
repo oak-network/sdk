@@ -25,8 +25,8 @@ Same model as Scenario 1: the campaign whitelists **multiple ERC-20s** per **cur
 4. **TechForge** adds reward tiers — and optionally removes one they no longer want to offer
 5. **Backers** discover the campaign and pledge — some choose a reward tier, others pledge without a reward as a show of support
 6. Two types of withdrawal:
-   - **(a) Partial:** ArtFund approves withdrawals, then TechForge withdraws $2,000 mid-campaign to begin prototyping
-   - **(b) Final:** After the deadline, TechForge sweeps the remaining balance minus applicable fees
+   - **(a–b) Partial:** ArtFund approves withdrawals (`06a`), then TechForge executes the partial amount (`06b`). Step 3 sets **`withdrawalDelay: 0`** so both scripts can run in one session; use a non-zero delay in production.
+   - **(c) Final:** After the deadline, TechForge sweeps the remaining balance (`06c`) minus applicable fees
 7. **Anyone** monitors the campaign dashboard — total raised vs. goal, fee details, treasury state
 8. **Anyone** disburses accumulated protocol and platform fees (must happen before cancellation)
 9. **ArtFund (Platform Admin)** claims any residual funds after the withdrawal delay has fully elapsed
@@ -45,8 +45,9 @@ Same model as Scenario 1: the campaign whitelists **multiple ERC-20s** per **cur
 | 3 | `03-configure-treasury.ts` | Platform Admin | Set withdrawal delays, refund policies, and fees | Required |
 | 4 | `04-manage-rewards.ts` | Creator | Add reward tiers + optionally remove a tier | Required |
 | 5 | `05-backer-pledge.ts` | Backer | Pledge with or without a reward; platform can set gateway fees | Required |
-| 6a | `06a-partial-withdrawal.ts` | Platform Admin + Creator | Platform approves, then creator withdraws partial funds mid-campaign | Required |
-| 6b | `06b-final-withdrawal.ts` | Creator or Platform Admin | Post-deadline withdrawal — sweep remaining balance with fees | Required |
+| 6a | `06a-approve-partial-withdrawal.ts` | Platform Admin | `approveWithdrawal` — required before any mid-campaign `withdraw` | Required |
+| 6b | `06b-execute-partial-withdrawal.ts` | Creator | Partial `withdraw(token, amount)` after delay (0 in Step 3 for sequential runs) | Required |
+| 6c | `06c-final-withdrawal.ts` | Creator or Platform Admin | Post-deadline withdrawal — sweep remaining balance with fees | Required |
 | 7 | `07-monitor-progress.ts` | Anyone | Full campaign dashboard — raised amount, fees, treasury state | Required |
 | 8 | `08-disburse-fees.ts` | Anyone | Disburse accumulated fees (must call before cancellation) | Required |
 | 9 | `09-claim-fund.ts` | Platform Admin | Claim residual funds after the withdrawal delay elapses | Required |

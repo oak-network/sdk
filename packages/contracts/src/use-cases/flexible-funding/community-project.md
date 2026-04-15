@@ -264,10 +264,9 @@ const txHash = await kwrTreasury.approveWithdrawal();
 await oak.waitForReceipt(txHash);
 ```
 
-**After the withdrawal delay, creator withdraws:**
+**Creator executes the partial amount** (only after **`withdrawalDelay`** seconds since approval, unless the delay is `0` in `configureTreasury` for a walkthrough):
 
 ```typescript
-// 3 days after approval (configured withdrawalDelay)
 const txHash = await kwrTreasury.withdraw(
   USDC_TOKEN_ADDRESS,
   3_000_000000n,   // Withdraw 3,000 USDC for component order (6 decimals)
