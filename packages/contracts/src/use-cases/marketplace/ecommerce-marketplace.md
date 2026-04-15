@@ -31,7 +31,7 @@ CeloMarket needs:
 |------|-----|--------------------|
 | **Platform Admin** | CeloMarket backend | `createPayment`, `createPaymentBatch`, `confirmPayment`, `confirmPaymentBatch`, `cancelPayment`, `claimRefund(paymentId, address)` (non-NFT), `claimExpiredFunds`, `claimNonGoalLineItems`, `pauseTreasury`, `unpauseTreasury`, `cancelTreasury` |
 | **Platform Admin or Campaign Owner** | CeloMarket or seller | `withdraw`, `cancelTreasury` |
-| **Buyer** | End customer | ERC-20 `approve`, `processCryptoPayment`, `claimRefund(paymentId)` (NFT payments) |
+| **Buyer** | End customer | ERC-20 `approve`, `processCryptoPayment`, `claimRefundSelf(paymentId)` (NFT payments) |
 | **Seller** | Independent merchant | `addItem`, `addItemsBatch` (ItemRegistry) |
 | **Protocol Admin** | Oak protocol | Receives protocol fees (via `disburseFees`) |
 | **Any caller** | Anyone | `disburseFees`, all read functions (`getPaymentData`, `getRaisedAmount`, `getItem`, `paused`, etc.) |
@@ -235,7 +235,7 @@ await oak.waitForReceipt(txHash);
 
 ### Alternative: Buyer refund before shipment
 
-> **Role: Platform Admin** for `cancelPayment` and `claimRefund(paymentId, address)`. **Any caller** for `claimRefund(paymentId)` (NFT payments only — refund goes to current NFT owner).
+> **Role: Platform Admin** for `cancelPayment` and `claimRefund(paymentId, refundAddress)`. **Buyer (NFT owner)** for `claimRefundSelf(paymentId)` (crypto / NFT payments).
 
 If the buyer cancels before the seller ships, CeloMarket cancels the payment and the buyer gets a refund.
 
@@ -253,7 +253,7 @@ await treasury.claimRefund(orderId, BUYER_ADDRESS);
 
 ```typescript
 // Anyone can trigger the refund — funds go to the current NFT owner, and the NFT is burned
-await treasury.claimRefund(orderId);
+await treasury.claimRefundSelf(orderId);
 ```
 
 ### Claim non-goal line items
@@ -368,7 +368,7 @@ Buyer (Alex)              CeloMarket (Platform Admin)        Blockchain
 - **Multi-token** — orders can settle in any **accepted** `paymentToken`; treasury accounting is per token address
 - **ItemRegistry** provides on-chain proof of product attributes for dispute resolution and compliance
 - **Role-based access** — `createPayment`/`confirmPayment`/`cancelPayment` are platform-admin-only; `processCryptoPayment` and `disburseFees` are permissionless; `withdraw` requires admin or owner
-- **Two refund models** — `claimRefund(paymentId, address)` for non-NFT payments (platform admin only) and `claimRefund(paymentId)` for NFT payments (permissionless, refund to NFT owner)
+- **Two refund models** — `claimRefund(paymentId, address)` for non-NFT payments (platform admin only) and `claimRefundSelf(paymentId)` for NFT payments (signer must be NFT owner)
 - **Line items** separate product cost, shipping, and commission with configurable goal-counting, fees, and refund rules
 - **Non-goal line items** (e.g., platform commission) can be claimed separately via `claimNonGoalLineItems`
 - **Batch operations** (`createPaymentBatch`, `confirmPaymentBatch`) enable efficient end-of-day settlement

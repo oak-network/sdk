@@ -28,12 +28,12 @@ Like **PaymentTreasury**, the time-constrained variant is **multi-token**: **`pa
 |------|-----|--------------------|
 | **Platform Admin** | Karma's ordering system | `createPayment`, `createPaymentBatch`, `confirmPayment`, `confirmPaymentBatch`, `cancelPayment`, `claimRefund(paymentId, address)` (non-NFT), `claimExpiredFunds`, `claimNonGoalLineItems`, `pauseTreasury`, `unpauseTreasury`, `cancelTreasury` |
 | **Platform Admin or Campaign Owner** | Karma or dealer | `withdraw`, `cancelTreasury` |
-| **Buyer** | Vehicle customer | ERC-20 `approve`, `processCryptoPayment`, `claimRefund(paymentId)` (NFT payments) |
+| **Buyer** | Vehicle customer | ERC-20 `approve`, `processCryptoPayment`, `claimRefundSelf(paymentId)` (NFT payments) |
 | **Dealer (Campaign Owner)** | Karma dealership | Receives funds after `withdraw` |
 | **Protocol Admin** | Oak protocol | Receives protocol fees (via `disburseFees`) |
 | **Any caller** | Anyone | `disburseFees`, all read functions (`getPaymentData`, `getRaisedAmount`, `getExpectedAmount`, `paused`, etc.) |
 
-> **Note on time constraints:** Unlike the standard PaymentTreasury, `createPayment`, `createPaymentBatch`, `processCryptoPayment`, `cancelPayment`, `confirmPayment`, and `confirmPaymentBatch` must be called while the current time is within `launchTime` … `deadline + bufferTime` (per `TimestampChecker`). `claimRefund` (both overloads), `claimExpiredFunds`, `disburseFees`, `withdraw`, and `claimNonGoalLineItems` require the current time to be **after** `launchTime` (they use `_checkTimeIsGreater()`).
+> **Note on time constraints:** Unlike the standard PaymentTreasury, `createPayment`, `createPaymentBatch`, `processCryptoPayment`, `cancelPayment`, `confirmPayment`, and `confirmPaymentBatch` must be called while the current time is within `launchTime` … `deadline + bufferTime` (per `TimestampChecker`). `claimRefund`, `claimRefundSelf`, `claimExpiredFunds`, `disburseFees`, `withdraw`, and `claimNonGoalLineItems` require the current time to be **after** `launchTime` (they use `_checkTimeIsGreater()`).
 
 ## Integration Flow
 
@@ -203,10 +203,10 @@ await treasury.claimRefund(orderId, JAMES_WALLET_ADDRESS);
 
 **C) Refund after confirmation — NFT-backed crypto payment:**
 
-> **Role: Any caller** — `claimRefund(paymentId)` burns the NFT and sends the refund to the **current NFT owner** (after `launchTime`).
+> **Role: Buyer (NFT owner)** — `claimRefundSelf(paymentId)` burns the NFT and sends the refund to the **current NFT owner** (after `launchTime`).
 
 ```typescript
-await treasury.claimRefund(orderId);
+await treasury.claimRefundSelf(orderId);
 ```
 
 ### Claim non-goal line items
@@ -298,7 +298,7 @@ Customer (James)            Karma (Platform Admin)         TimeConstrainedTreasu
        |   Policy refund         |  (ops / off-chain follow-up)   |
        |<------------------------|                                |
        |                         |                                |
-       |   Or: NFT refund        |  claimRefund(paymentId)        |
+       |   Or: NFT refund        |  claimRefundSelf(paymentId)    |
        |                         |  [Any caller, after launch]    |
        |                         |------------------------------->|  Refund → NFT owner
 ```
@@ -311,7 +311,7 @@ Customer (James)            Karma (Platform Admin)         TimeConstrainedTreasu
 - **Same SDK interface** as PaymentTreasury — `oak.paymentTreasury()` works for both; behavior differs in the deployed contract bytecode
 - **`claimExpiredFunds()`** is platform-admin-only and only after `deadline + platformClaimDelay`; on-chain recipients are the platform and protocol admins — align customer refunds with your product policy
 - **Role-based access** — matches PaymentTreasury for admin-only writes; `withdraw` is platform admin or campaign owner; `disburseFees` is permissionless
-- **Two refund models** — `claimRefund(paymentId, address)` (platform admin, non-NFT) vs `claimRefund(paymentId)` (any caller, NFT owner receives funds)
+- **Two refund models** — `claimRefund(paymentId, address)` (platform admin, non-NFT) vs `claimRefundSelf(paymentId)` (signer must be NFT owner)
 - **High-value transactions** benefit from deterministic rules instead of informal wire holds
 - **Line items** provide a clear audit trail (base price vs. options vs. delivery)
 - **Batch, pause, cancel, and `claimNonGoalLineItems`** behave like PaymentTreasury but inherit the same time checks from `TimeConstrainedPaymentTreasury`

@@ -28,7 +28,7 @@ Payments specify **`paymentToken`**; the contract reverts unless **`CampaignInfo
 |------|-----|--------------------|
 | **Platform Admin** | MedConnect backend | `createPayment`, `createPaymentBatch`, `confirmPayment`, `confirmPaymentBatch`, `cancelPayment`, `claimRefund(paymentId, address)` (non-NFT), `claimExpiredFunds`, `claimNonGoalLineItems`, `pauseTreasury`, `unpauseTreasury`, `cancelTreasury` |
 | **Platform Admin or Campaign Owner** | MedConnect or clinic | `withdraw`, `cancelTreasury` |
-| **Patient (Buyer)** | Sarah | ERC-20 `approve`, `processCryptoPayment`, `claimRefund(paymentId)` (NFT payments) |
+| **Patient (Buyer)** | Sarah | ERC-20 `approve`, `processCryptoPayment`, `claimRefundSelf(paymentId)` (NFT payments) |
 | **Protocol Admin** | Oak protocol | Receives protocol fees (via `disburseFees`) |
 | **Any caller** | Anyone | `disburseFees`, all read functions (`getPaymentData`, `getRaisedAmount`, `getExpectedAmount`, `paused`, etc.) |
 
@@ -185,7 +185,7 @@ await oak.waitForReceipt(txHash);
 
 ### Alternative: Cancel and refund flow
 
-> **Role: Platform Admin** for `cancelPayment` and `claimRefund(paymentId, address)`. **Any caller** for `claimRefund(paymentId)` (NFT payments only — refund goes to current NFT owner).
+> **Role: Platform Admin** for `cancelPayment` and `claimRefund(paymentId, refundAddress)`. **Buyer (NFT owner)** for `claimRefundSelf(paymentId)` (crypto / NFT payments — refund to current NFT owner).
 
 If Sarah needs to cancel the appointment before the doctor confirms delivery, MedConnect cancels the payment and initiates a refund.
 
@@ -203,7 +203,7 @@ await treasury.claimRefund(paymentId, SARAH_WALLET_ADDRESS);
 
 ```typescript
 // Anyone can trigger the refund — funds go to the current NFT owner, and the NFT is burned
-await treasury.claimRefund(paymentId);
+await treasury.claimRefundSelf(paymentId);
 ```
 
 ### Step 8: Claim non-goal line items
@@ -348,7 +348,7 @@ Patient (Sarah)                  MedConnect (Platform Admin)      PaymentTreasur
 - **Multi-token** — `paymentToken` must be on the campaign’s accepted list; balances and refunds are tracked per ERC-20 (each token’s decimals)
 - **Funds are never at risk** — they stay locked in the smart contract until service is confirmed
 - **Role-based access** — `createPayment`/`confirmPayment`/`cancelPayment` are platform-admin-only; `processCryptoPayment` and `disburseFees` are permissionless; `withdraw` requires admin or owner
-- **Two refund models** — `claimRefund(paymentId, address)` for non-NFT payments (platform admin only) and `claimRefund(paymentId)` for NFT payments (permissionless, refund to NFT owner)
+- **Two refund models** — `claimRefund(paymentId, address)` for non-NFT payments (platform admin only) and `claimRefundSelf(paymentId)` for NFT payments (signer must be NFT owner; burns pledge NFT)
 - **Line items** allow granular tracking (consultation vs. lab work) with configurable goal-counting, fees, and refund rules
 - **Non-goal line items** (e.g., platform commission) can be claimed separately via `claimNonGoalLineItems`
 - **Batch operations** — `createPaymentBatch` and `confirmPaymentBatch` for high-volume platforms
