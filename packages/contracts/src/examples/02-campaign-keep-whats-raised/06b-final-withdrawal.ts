@@ -32,7 +32,7 @@ const oak = createOakContractsClient({
 const treasuryAddress = process.env.KEEP_WHATS_RAISED_ADDRESS! as `0x${string}`;
 const treasury = oak.keepWhatsRaisedTreasury(treasuryAddress);
 
-const withdrawToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
+const withdrawToken = process.env.USDC_TOKEN_ADDRESS! as `0x${string}`;
 
 // For a final withdrawal the contract ignores the amount parameter
 // and uses the full available balance — pass 0n or any value

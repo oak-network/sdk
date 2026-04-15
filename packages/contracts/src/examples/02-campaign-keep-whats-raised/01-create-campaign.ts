@@ -8,6 +8,10 @@
  * After creation, they immediately look up the deployed CampaignInfo
  * contract address using the identifier hash — this address is needed
  * for all subsequent steps (deploying the treasury, adding rewards, etc.).
+ *
+ * Multi-token: the campaign `currency` resolves to accepted ERC-20
+ * addresses; pledges and `withdraw(token, amount)` use tokens from that
+ * whitelist only. This example uses one token for simplicity.
  */
 
 import {

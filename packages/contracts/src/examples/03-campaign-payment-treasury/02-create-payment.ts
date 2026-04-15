@@ -16,6 +16,10 @@
  *
  * For high-volume platforms, `createPaymentBatch` is available to
  * create multiple payment records in a single transaction.
+ *
+ * Multi-token: `paymentToken` must be on the campaign’s accepted-token
+ * list (`CampaignInfo.isTokenAccepted`). Balances and refunds are tracked
+ * per ERC-20. See Scenario 0 for currency ↔ token mapping in GlobalParams.
  */
 
 import { createOakContractsClient, keccak256, toHex, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
@@ -34,7 +38,7 @@ const paymentTreasury = oak.paymentTreasury(
 const paymentId = keccak256(toHex("order-12345"));
 const buyerId = keccak256(toHex("sam-user-id"));
 const itemId = keccak256(toHex("handcrafted-vase-001"));
-const paymentToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
+const paymentToken = process.env.USDC_TOKEN_ADDRESS! as `0x${string}`;
 const totalAmount = 135_000_000n; // $135 total (product + shipping)
 const expiration = BigInt(Math.floor(Date.now() / 1000)) + 86400n; // 24 hours
 

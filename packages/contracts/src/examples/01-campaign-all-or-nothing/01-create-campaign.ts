@@ -10,6 +10,10 @@
  *   - ArtFund as the selected platform (identified by its platform hash)
  *   - NFT metadata so each backer receives a collectible receipt
  *
+ * Multi-token: the campaign `currency` resolves to one or more accepted
+ * ERC-20 addresses on-chain; later pledges must use `pledgeToken` in that
+ * whitelist (`CampaignInfo.isTokenAccepted`). This example uses one token.
+ *
  * The factory assigns a unique contract address to the campaign, which
  * Maya will look up in the next step.
  */

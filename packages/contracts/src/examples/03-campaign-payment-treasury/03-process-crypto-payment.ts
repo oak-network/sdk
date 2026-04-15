@@ -1,7 +1,7 @@
 /**
  * Step 3: Process the Crypto Payment (Buyer)
  *
- * Sam completes the purchase by transferring ERC-20 tokens (e.g., cUSD)
+ * Sam completes the purchase by transferring ERC-20 tokens (e.g., USDC)
  * from his wallet to the treasury contract. This is the moment funds
  * actually move on-chain.
  *
@@ -12,6 +12,9 @@
  * Prerequisite: Sam must have already approved the treasury contract
  * to spend his ERC-20 tokens before calling this method. This is a
  * standard ERC-20 approval, not specific to Oak Protocol.
+ *
+ * Multi-token: `paymentToken` here must match Step 2 and be accepted for
+ * the campaign; use a separate approval per token if you support several.
  */
 
 import { createOakContractsClient, keccak256, toHex, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
@@ -29,7 +32,7 @@ const paymentTreasury = samOak.paymentTreasury(
 
 const paymentId = keccak256(toHex("order-12345"));
 const itemId = keccak256(toHex("handcrafted-vase-001"));
-const paymentToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
+const paymentToken = process.env.USDC_TOKEN_ADDRESS! as `0x${string}`;
 const totalAmount = 135_000_000n;
 
 const lineItems: LineItem[] = [

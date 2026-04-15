@@ -20,6 +20,14 @@ Start with **Scenario 0** if you are a new platform joining Oak Protocol. Start 
 
 ---
 
+## Multi-token ERC-20 support
+
+Oak is **multi-token**: **`GlobalParams`** stores **`currencyToTokens`** — seeded in **`initialize(currencies, tokensPerCurrency)`**, then maintained by the protocol owner with **`addTokenToCurrency`** / **`removeTokenFromCurrency`**, readable via **`getTokensForCurrency(currency)`**. Campaign creation copies that list onto **`CampaignInfo`**; treasuries check **`isTokenAccepted`** on every **`pledgeToken` / `paymentToken`**. In code, use **`globalParams.getTokensForCurrency(...)`** or **`campaign.getAcceptedTokens()`** to populate wallet UIs or validation. Balances, fees, refunds, and raised-amount reads are **per token address**, in **native decimals** (normalized where the protocol aggregates across tokens).
+
+The numbered examples use **one stablecoin** (e.g. USDC) so the files stay easy to read. In production, swap in **any address** from your campaign’s accepted-token list and match **decimals** when you build amounts.
+
+---
+
 ## Folder Structure
 
 ```

@@ -25,8 +25,8 @@ const paymentTreasury = platformOak.paymentTreasury(
   process.env.PAYMENT_TREASURY_ADDRESS! as `0x${string}`,
 );
 
-const cusdToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
+const usdcToken = process.env.USDC_TOKEN_ADDRESS! as `0x${string}`;
 
-const claimTxHash = await paymentTreasury.claimNonGoalLineItems(cusdToken);
+const claimTxHash = await paymentTreasury.claimNonGoalLineItems(usdcToken);
 const receipt = await platformOak.waitForReceipt(claimTxHash);
 console.log(`Non-goal line items claimed at block ${receipt.blockNumber}`);

@@ -8,6 +8,10 @@ CeloMarket uses the **PaymentTreasury** model, which works like a traditional pa
 
 In this scenario, a buyer named **Sam** purchases a handcrafted ceramic vase for **$120** with **$15 shipping**. The payment flows through the treasury, gets confirmed by the platform, and the funds become available for withdrawal.
 
+## Multi-token support
+
+Every payment record includes **`paymentToken`**. The treasury only accepts tokens that **`CampaignInfo.isTokenAccepted`** allows for that campaign. Pending, confirmed, fee, and refund accounting is **per ERC-20 contract** (amounts in that token’s decimals). The walkthrough uses **one stablecoin**; batch and single-payment APIs work the same way for **each additional accepted token** you configure at the protocol/campaign level.
+
 ## How It Unfolds
 
 1. **CeloMarket (Platform Admin)** connects to its deployed PaymentTreasury contract and reads back the platform configuration

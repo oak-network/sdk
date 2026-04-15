@@ -43,6 +43,12 @@ Each platform maintains its own mapping of implementation ID to treasury contrac
 
 > **PaymentTreasury vs. TimeConstrainedPaymentTreasury:** Both share the same SDK interface — `oak.paymentTreasury(address)`. The only difference is at registration time: you register a different implementation contract address. The time constraints are enforced transparently by the smart contract. See the [Payment Treasury README](../03-campaign-payment-treasury/README.md) for details.
 
+## Multi-token currencies (ERC-20)
+
+Campaigns are not limited to a single asset. **`GlobalParams`** holds **`currencyToTokens`**: the list is **bootstrapped in `initialize`** with parallel **`currencies[]`** and **`tokensPerCurrency[][]`**, then the protocol owner (**`onlyOwner`**) can **`addTokenToCurrency`** / **`removeTokenFromCurrency`**; anyone can read **`getTokensForCurrency(currency)`**. Emitted events: **`TokenAddedToCurrency`**, **`TokenRemovedFromCurrency`**.
+
+When **`CampaignInfoFactory`** creates a campaign, it reads **`getTokensForCurrency(campaignData.currency)`** and stores that snapshot on **`CampaignInfo`** (`getAcceptedTokens` / `isTokenAccepted`). Treasuries validate every **`paymentToken`** / **`pledgeToken`** against that campaign cache. Step 6’s optional configuration shows **`getTokensForCurrency`** and commented **`addTokenToCurrency`** / **`removeTokenFromCurrency`** calls.
+
 ## Optional Configuration (Step 6)
 
 After the core onboarding, a platform can configure additional features. These are all optional and independent — skip any you don't need. They are documented in `06-optional-configuration.ts`:

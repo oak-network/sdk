@@ -17,6 +17,9 @@
  *
  * Prerequisite: the backer must have already approved the treasury
  * contract to spend their ERC-20 tokens.
+ *
+ * Multi-token: `pledgeToken` must be accepted for the campaign; backers
+ * can use different whitelisted tokens across pledges (each tracked separately).
  */
 
 import { createOakContractsClient, keccak256, toHex, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
@@ -34,7 +37,7 @@ const alexOak = createOakContractsClient({
 const treasuryAddress = process.env.ALL_OR_NOTHING_ADDRESS! as `0x${string}`;
 const alexTreasury = alexOak.allOrNothingTreasury(treasuryAddress);
 
-const pledgeToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
+const pledgeToken = process.env.USDC_TOKEN_ADDRESS! as `0x${string}`;
 const shippingFee = 5_000_000n; // $5 shipping
 const printReward = keccak256(toHex("signed-print"));
 

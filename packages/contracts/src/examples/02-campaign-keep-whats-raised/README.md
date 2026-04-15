@@ -13,6 +13,10 @@ TechForge chooses the **Keep-What's-Raised** funding model on the **ArtFund** pl
 - **Refund delays** — A configurable waiting period after the deadline before backers can claim refunds
 - **Updatable parameters** — The creator or platform admin can extend the deadline or adjust the funding goal (before the config lock period)
 
+## Multi-token support
+
+Same model as Scenario 1: the campaign whitelists **multiple ERC-20s** per **currency**; each pledge names **`pledgeToken`**; **`withdraw(token, amount)`** and fee paths are **per token**. Example files use a single stablecoin for clarity—use any accepted token from your campaign’s list in real integrations.
+
 ## How It Unfolds
 
 1. **TechForge (Creator)** creates the campaign with a $10,000 goal and a 60-day deadline

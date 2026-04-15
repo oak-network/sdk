@@ -27,7 +27,9 @@
  *        across all treasury types
  *
  *   E. Protocol Admin Functions (Protocol Admin only)
- *      — Currency/token management, global data registry, delisting,
+ *      — Currency/token management (map a currency bytes32 to one or more
+ *        ERC-20s via `addTokenToCurrency` / `removeTokenFromCurrency` so
+ *        campaigns accept multiple tokens), global data registry, delisting,
  *        admin address updates, fee updates. Listed for completeness;
  *        platforms coordinate with Oak support for these.
  */
@@ -274,23 +276,29 @@ async function protocolAdminExamples(): Promise<void> {
 
   // --- Currency management ---
   //
-  // The Protocol Admin manages which ERC-20 tokens are accepted
-  // for each currency. Campaigns specify a currency (e.g., "USD"),
-  // and the protocol resolves it to a list of accepted token addresses.
+  // GlobalParams stores currency → token[] in storage. The mapping is
+  // first populated in contract initialize(currencies, tokensPerCurrency).
+  // After deploy, only the owner adds/removes tokens:
+  //   addTokenToCurrency(currency, token)  — push to the array
+  //   removeTokenFromCurrency(currency, token)  — swap-and-pop
+  //   getTokensForCurrency(currency)  — read the full list (view)
+  // CampaignInfoFactory.createCampaign reads getTokensForCurrency for the
+  // campaign currency and caches the result on CampaignInfo; treasuries
+  // then use CampaignInfo.isTokenAccepted(paymentToken | pledgeToken).
 
   const usdCurrency = toHex("USD", { size: 32 });
 
-  // const cusdToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
-  // const addTokenTx = await globalParams.addTokenToCurrency(usdCurrency, cusdToken);
+  // const usdcToken = process.env.USDC_TOKEN_ADDRESS! as `0x${string}`;
+  // const addTokenTx = await globalParams.addTokenToCurrency(usdCurrency, usdcToken);
   // await oak.waitForReceipt(addTokenTx);
-  // console.log("cUSD added as accepted token for USD");
+  // console.log("USDC added as accepted token for USD");
 
   const usdTokens = await globalParams.getTokensForCurrency(usdCurrency);
   console.log("USD accepted tokens:", usdTokens);
 
-  // const removeTokenTx = await globalParams.removeTokenFromCurrency(usdCurrency, cusdToken);
+  // const removeTokenTx = await globalParams.removeTokenFromCurrency(usdCurrency, usdcToken);
   // await oak.waitForReceipt(removeTokenTx);
-  // console.log("cUSD removed from USD currency");
+  // console.log("USDC removed from USD currency");
 
   // --- Global data registry ---
   //

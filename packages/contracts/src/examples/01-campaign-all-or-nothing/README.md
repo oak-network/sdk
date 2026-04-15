@@ -8,6 +8,10 @@ Maya chooses the **All-or-Nothing** funding model. This means every dollar pledg
 
 This model builds trust with backers because their funds are protected by the smart contract. Maya cannot access the money unless the community collectively meets the target.
 
+## Multi-token support
+
+Maya’s campaign accepts whatever **ERC-20s** the platform mapped to her campaign **currency** at creation time. Each pledge passes **`pledgeToken`**; the All-or-Nothing treasury checks **`CampaignInfo.isTokenAccepted`**. Raised totals aggregate across accepted tokens (normalized on-chain); refunds return **the same token** the backer used. The TypeScript steps use **one token address** as a stand-in—replace it with any **whitelisted** token for your deployment.
+
 ## How It Unfolds
 
 1. **Maya (Creator)** creates the campaign through the CampaignInfoFactory, setting the funding goal, deadline, platform, and NFT metadata for backer receipts

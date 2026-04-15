@@ -54,7 +54,7 @@ const creatorOak = createOakContractsClient({
 
 const creatorTreasury = creatorOak.keepWhatsRaisedTreasury(treasuryAddress);
 
-const withdrawToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
+const withdrawToken = process.env.USDC_TOKEN_ADDRESS! as `0x${string}`;
 const withdrawAmount = 2_000_000_000n; // $2,000
 
 const withdrawTxHash = await creatorTreasury.withdraw(withdrawToken, withdrawAmount);

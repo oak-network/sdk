@@ -17,6 +17,9 @@
  *
  * Every pledge requires a unique `pledgeId` (a bytes32 value) and
  * supports an optional `tip` that goes directly to the platform.
+ *
+ * Multi-token: each pledge names `pledgeToken`; only campaign-accepted
+ * ERC-20s are allowed; partial/final withdrawals specify the token explicitly.
  */
 
 import { createOakContractsClient, keccak256, toHex, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
@@ -30,7 +33,7 @@ const oak = createOakContractsClient({
 const treasuryAddress = process.env.KEEP_WHATS_RAISED_ADDRESS! as `0x${string}`;
 const treasury = oak.keepWhatsRaisedTreasury(treasuryAddress);
 
-const pledgeToken = process.env.CUSD_TOKEN_ADDRESS! as `0x${string}`;
+const pledgeToken = process.env.USDC_TOKEN_ADDRESS! as `0x${string}`;
 const backerAddress = process.env.BACKER_ADDRESS! as `0x${string}`;
 const earlyBirdReward = keccak256(toHex("early-bird"));
 
