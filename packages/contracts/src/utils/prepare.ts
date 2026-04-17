@@ -71,9 +71,9 @@ export interface PreparedTransaction {
  * // tx = { to, data, value, gas }
  * ```
  */
-export async function prepareContractWrite(
+export async function prepareContractWrite<TAbi extends readonly unknown[]>(
   publicClient: PublicClient,
-  options: PrepareWriteOptions,
+  options: PrepareWriteOptions<TAbi>,
 ): Promise<PreparedTransaction> {
   const data = encodeFunctionData({
     abi: options.abi,
