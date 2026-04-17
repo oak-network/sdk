@@ -1,20 +1,23 @@
 /**
- * Step 3: Process the Crypto Payment (Buyer)
+ * Step 3: Process a Crypto Payment (Buyer) — Independent On-Chain Flow
  *
- * Sam completes the purchase by transferring ERC-20 tokens (e.g., USDC)
- * from his wallet to the treasury contract. This is the moment funds
- * actually move on-chain.
+ * This is an alternative to Step 2's off-chain `createPayment` flow.
+ * `processCryptoPayment` is a standalone operation that creates the
+ * payment record AND transfers ERC-20 tokens to the treasury in a
+ * single transaction. It does NOT require or complete a prior
+ * `createPayment` call — they are two independent payment flows:
  *
- * The payment details (line items, amounts, external fees) must match
- * what the platform recorded in Step 2. If anything differs, the
- * contract reverts to prevent mismatched payments.
+ *   - Flow A (`createPayment`): Platform records payment off-chain,
+ *     buyer pays via fiat/external rails, platform confirms later.
+ *   - Flow B (`processCryptoPayment`): Buyer pays directly on-chain
+ *     with ERC-20 tokens. An NFT is minted as proof of payment.
  *
  * Prerequisite: Sam must have already approved the treasury contract
  * to spend his ERC-20 tokens before calling this method. This is a
  * standard ERC-20 approval, not specific to Oak Protocol.
  *
- * Multi-token: `paymentToken` here must match Step 2 and be accepted for
- * the campaign; use a separate approval per token if you support several.
+ * Multi-token: `paymentToken` must be on the campaign's accepted-token
+ * list; use a separate approval per token if you support several.
  */
 
 import { createOakContractsClient, keccak256, toHex, CHAIN_IDS } from "@oaknetwork/contracts-sdk";

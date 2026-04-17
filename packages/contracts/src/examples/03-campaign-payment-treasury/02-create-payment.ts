@@ -1,5 +1,5 @@
 /**
- * Step 2: Create a Payment Record (Platform Admin)
+ * Step 2: Create a Payment Record (Platform Admin) — Off-Chain Payment Flow
  *
  * Sam has added a handcrafted ceramic vase ($120) to his cart and
  * proceeds to checkout. CeloMarket creates a payment record on-chain
@@ -11,8 +11,15 @@
  *   - A 24-hour expiration window — if Sam does not pay within this
  *     time, the payment record expires
  *
- * This step does not move any funds. It simply records the payment
- * intent on-chain so the buyer can execute it in the next step.
+ * This step does not move any funds. It records the payment intent
+ * on-chain. The buyer pays through off-chain rails (credit card, bank
+ * transfer, etc.) and the platform later confirms via `confirmPayment`.
+ *
+ * This is one of two independent payment flows:
+ *   - Flow A (`createPayment` → off-chain payment → `confirmPayment`):
+ *     shown here — platform-initiated, no on-chain token transfer.
+ *   - Flow B (`processCryptoPayment`): shown in Step 3 — buyer pays
+ *     directly on-chain with ERC-20 tokens in a single transaction.
  *
  * For high-volume platforms, `createPaymentBatch` is available to
  * create multiple payment records in a single transaction.

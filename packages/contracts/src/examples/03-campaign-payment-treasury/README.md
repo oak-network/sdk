@@ -15,8 +15,14 @@ Every payment record includes **`paymentToken`**. The treasury only accepts toke
 ## How It Unfolds
 
 1. **CeloMarket (Platform Admin)** connects to its deployed PaymentTreasury contract and reads back the platform configuration
-2. **CeloMarket** creates a payment record for Sam's order — this includes the total amount, line items (product + shipping), external fees, and an expiration window. Batch creation is also available for high-volume platforms.
-3. **Sam (Buyer)** transfers the payment on-chain by sending ERC-20 tokens to the treasury contract
+
+**Two independent payment flows** — a platform uses one or both depending on its business model:
+
+2. **Flow A — Off-chain / fiat payment:** **CeloMarket** creates a payment record for Sam's order via `createPayment`. This records the intent on-chain (total amount, line items, external fees, expiration) but **no funds move**. A buyer pays through off-chain rails (credit card, bank transfer, etc.) and the platform later calls `confirmPayment` after verifying receipt.
+3. **Flow B — On-chain crypto payment:** **Sam (Buyer)** pays directly on-chain via `processCryptoPayment`. This is a **standalone operation** — it creates the payment record AND transfers ERC-20 tokens to the treasury in a single transaction. It does **not** require a prior `createPayment` call. An NFT is minted to the buyer as proof of payment.
+
+> **These are two separate flows, not sequential steps.** `processCryptoPayment` does not "complete" a pending `createPayment` — it is an independent entry point for on-chain payments.
+
 4. **CeloMarket** verifies the order (inventory check, fraud review) and confirms the payment. Batch confirmation is available for multiple payments.
 5. **Anyone** can read payment data and treasury balances — buyer address, amount, confirmation status, expected pending amount, and line item breakdown
 6. If something goes wrong (wrong item shipped, order cancelled), a refund is issued. For off-chain payments the **platform admin** cancels and directs the refund to an address (`claimRefund`). For on-chain crypto payments the **buyer (NFT owner)** calls `claimRefundSelf` — the contract verifies NFT ownership, burns the NFT, and sends refundable line items back.
@@ -56,8 +62,8 @@ Which variant your platform uses depends on the treasury implementation register
 | Step | File | Role | Description | Required? |
 | --- | --- | --- | --- | --- |
 | 1 | `01-setup-treasury.ts` | Platform Admin | Connect to the PaymentTreasury and read platform config | Required |
-| 2 | `02-create-payment.ts` | Platform Admin | Create a payment record with line items (single + batch) | Required |
-| 3 | `03-process-crypto-payment.ts` | Buyer | Transfer ERC-20 tokens to the treasury | Required |
+| 2 | `02-create-payment.ts` | Platform Admin | Flow A: Create an off-chain payment record with line items (single + batch) | Required |
+| 3 | `03-process-crypto-payment.ts` | Buyer | Flow B: Pay on-chain — creates the payment AND transfers ERC-20 tokens in one step (independent of Step 2) | Required |
 | 4 | `04-confirm-payment.ts` | Platform Admin | Confirm the payment after order verification (single + batch) | Required |
 | 5 | `05-read-payment-data.ts` | Anyone | Read payment details and treasury dashboard | Required |
 | 6 | `06-handle-refunds.ts` | Platform Admin / Buyer | Cancel a payment and claim a refund (self or admin-directed) | Required |
