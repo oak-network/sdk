@@ -106,17 +106,11 @@ export function createAllOrNothingEvents(
     async getUnpausedLogs(options) {
       return fetchEventLogs(publicClient, address, "Unpaused", options);
     },
-    async getTransferLogs(options) {
-      return fetchEventLogs(publicClient, address, "Transfer", options);
+    async getCancelledLogs(options) {
+      return fetchEventLogs(publicClient, address, "Cancelled", options);
     },
     async getSuccessConditionNotFulfilledLogs(options) {
       return fetchEventLogs(publicClient, address, "SuccessConditionNotFulfilled", options);
-    },
-    async getApprovalLogs(options) {
-      return fetchEventLogs(publicClient, address, "Approval", options);
-    },
-    async getApprovalForAllLogs(options) {
-      return fetchEventLogs(publicClient, address, "ApprovalForAll", options);
     },
     decodeLog(log) {
       return decode({ topics: [...log.topics] as Hex[], data: log.data });
@@ -145,17 +139,11 @@ export function createAllOrNothingEvents(
     watchUnpaused(onLogs) {
       return createWatcher(publicClient, address, "Unpaused", onLogs);
     },
-    watchTransfer(onLogs) {
-      return createWatcher(publicClient, address, "Transfer", onLogs);
+    watchCancelled(onLogs) {
+      return createWatcher(publicClient, address, "Cancelled", onLogs);
     },
     watchSuccessConditionNotFulfilled(onLogs) {
       return createWatcher(publicClient, address, "SuccessConditionNotFulfilled", onLogs);
-    },
-    watchApproval(onLogs) {
-      return createWatcher(publicClient, address, "Approval", onLogs);
-    },
-    watchApprovalForAll(onLogs) {
-      return createWatcher(publicClient, address, "ApprovalForAll", onLogs);
     },
   };
 }

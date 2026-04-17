@@ -3,9 +3,11 @@ export {
   parseContractError,
   getRevertData,
   simulateWithErrorDecode,
+  toSimulationResult,
 } from "./parse-contract-error";
 
 export {
+  GlobalParamsErrorNames,
   GlobalParamsCurrencyHasNoTokensError,
   GlobalParamsCurrencyTokenLengthMismatchError,
   GlobalParamsInvalidInputError,
@@ -23,6 +25,7 @@ export {
 export type { GlobalParamsError } from "./contracts/global-params";
 
 export {
+  CampaignInfoFactoryErrorNames,
   CampaignInfoFactoryCampaignInitializationFailedError,
   CampaignInfoFactoryCampaignWithSameIdentifierExistsError,
   CampaignInfoFactoryInvalidInputError,
@@ -32,6 +35,7 @@ export {
 export type { CampaignInfoFactoryError } from "./contracts/campaign-info-factory";
 
 export {
+  CampaignInfoErrorNames,
   CampaignInfoInvalidInputError,
   CampaignInfoInvalidPlatformUpdateError,
   CampaignInfoIsLockedError,
@@ -42,6 +46,7 @@ export {
 export type { CampaignInfoError } from "./contracts/campaign-info";
 
 export {
+  AllOrNothingErrorNames,
   AllOrNothingFeeAlreadyDisbursedError,
   AllOrNothingFeeNotDisbursedError,
   AllOrNothingInvalidInputError,
@@ -56,6 +61,7 @@ export {
 export type { AllOrNothingError } from "./contracts/all-or-nothing";
 
 export {
+  KeepWhatsRaisedErrorNames,
   KeepWhatsRaisedAlreadyClaimedError,
   KeepWhatsRaisedAlreadyEnabledError,
   KeepWhatsRaisedAlreadyWithdrawnError,
@@ -74,10 +80,14 @@ export {
 } from "./contracts/keep-whats-raised";
 export type { KeepWhatsRaisedError } from "./contracts/keep-whats-raised";
 
-export { ItemRegistryMismatchedArraysLengthError } from "./contracts/item-registry";
+export {
+  ItemRegistryErrorNames,
+  ItemRegistryMismatchedArraysLengthError,
+} from "./contracts/item-registry";
 export type { ItemRegistryError } from "./contracts/item-registry";
 
 export {
+  PaymentTreasuryErrorNames,
   PaymentTreasuryAlreadyWithdrawnError,
   PaymentTreasuryCampaignInfoIsPausedError,
   PaymentTreasuryClaimWindowNotReachedError,
@@ -101,6 +111,7 @@ export {
 export type { PaymentTreasuryError } from "./contracts/payment-treasury";
 
 export {
+  TreasuryFactoryErrorNames,
   TreasuryFactoryImplementationNotSetError,
   TreasuryFactoryImplementationNotSetOrApprovedError,
   TreasuryFactoryInvalidAddressError,
@@ -113,11 +124,19 @@ export {
 export type { TreasuryFactoryError } from "./contracts/treasury-factory";
 
 export {
+  SharedErrorNames,
   AccessCheckerUnauthorizedError,
   AdminAccessCheckerUnauthorizedError,
+  CannotCancelError,
+  CancelledErrorError,
   CurrentTimeIsGreaterError,
   CurrentTimeIsLessError,
   CurrentTimeIsNotWithinRangeError,
+  NotCancelledErrorError,
+  NotPausedErrorError,
+  PausedErrorError,
+  PledgeNFTInvalidJsonStringError,
+  PledgeNFTUnAuthorizedError,
   TreasuryCampaignInfoIsPausedError,
   TreasuryFeeNotDisbursedError,
   TreasuryTransferFailedError,

@@ -91,6 +91,15 @@ export function createGlobalParamsEvents(
     async getUnpausedLogs(options) {
       return fetchEventLogs(publicClient, address, "Unpaused", options);
     },
+    async getDataAddedToRegistryLogs(options) {
+      return fetchEventLogs(publicClient, address, "DataAddedToRegistry", options);
+    },
+    async getPlatformLineItemTypeSetLogs(options) {
+      return fetchEventLogs(publicClient, address, "PlatformLineItemTypeSet", options);
+    },
+    async getPlatformLineItemTypeRemovedLogs(options) {
+      return fetchEventLogs(publicClient, address, "PlatformLineItemTypeRemoved", options);
+    },
     decodeLog(log) {
       return decode({ topics: [...log.topics] as Hex[], data: log.data });
     },
@@ -135,6 +144,15 @@ export function createGlobalParamsEvents(
     },
     watchUnpaused(onLogs) {
       return createWatcher(publicClient, address, "Unpaused", onLogs);
+    },
+    watchDataAddedToRegistry(onLogs) {
+      return createWatcher(publicClient, address, "DataAddedToRegistry", onLogs);
+    },
+    watchPlatformLineItemTypeSet(onLogs) {
+      return createWatcher(publicClient, address, "PlatformLineItemTypeSet", onLogs);
+    },
+    watchPlatformLineItemTypeRemoved(onLogs) {
+      return createWatcher(publicClient, address, "PlatformLineItemTypeRemoved", onLogs);
     },
   };
 }

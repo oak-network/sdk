@@ -48,6 +48,9 @@ export function createGlobalParamsReads(
     },
     async getPlatformLineItemType(platformHash: Hex, typeId: Hex): Promise<LineItemTypeInfo> {
       const result = await publicClient.readContract({ ...contract, functionName: "getPlatformLineItemType", args: [platformHash, typeId] });
+      // viem returns Solidity structs as readonly tuple objects whose type doesn't
+      // unify with the SDK's named interface; the double-cast bridges the gap safely
+      // because the ABI field names and types are identical to LineItemTypeInfo.
       return result as unknown as LineItemTypeInfo;
     },
     async getTokensForCurrency(currency: Hex) {
@@ -55,6 +58,9 @@ export function createGlobalParamsReads(
     },
     async getFromRegistry(key: Hex) {
       return publicClient.readContract({ ...contract, functionName: "getFromRegistry", args: [key] });
+    },
+    async paused() {
+      return publicClient.readContract({ ...contract, functionName: "paused" });
     },
     async owner() {
       return publicClient.readContract({ ...contract, functionName: "owner" });

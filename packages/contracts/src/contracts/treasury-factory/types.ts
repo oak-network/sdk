@@ -1,5 +1,5 @@
 import type { Address, Hex } from "../../lib";
-import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for TreasuryFactory (none in ABI). */
@@ -21,16 +21,16 @@ export interface TreasuryFactoryWrites {
 
 /** Simulate counterparts for TreasuryFactory write methods. */
 export interface TreasuryFactorySimulate {
-  /** Simulates deploy; throws a typed error on revert. */
-  deploy(platformHash: Hex, infoAddress: Address, implementationId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates registerTreasuryImplementation; throws a typed error on revert. */
-  registerTreasuryImplementation(platformHash: Hex, implementationId: bigint, implementation: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates approveTreasuryImplementation; throws a typed error on revert. */
-  approveTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates disapproveTreasuryImplementation; throws a typed error on revert. */
-  disapproveTreasuryImplementation(implementation: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates removeTreasuryImplementation; throws a typed error on revert. */
-  removeTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions): Promise<void>;
+  /** Simulates deploy; returns a SimulationResult on success, throws a typed error on revert. */
+  deploy(platformHash: Hex, infoAddress: Address, implementationId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates registerTreasuryImplementation; returns a SimulationResult on success, throws a typed error on revert. */
+  registerTreasuryImplementation(platformHash: Hex, implementationId: bigint, implementation: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates approveTreasuryImplementation; returns a SimulationResult on success, throws a typed error on revert. */
+  approveTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates disapproveTreasuryImplementation; returns a SimulationResult on success, throws a typed error on revert. */
+  disapproveTreasuryImplementation(implementation: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates removeTreasuryImplementation; returns a SimulationResult on success, throws a typed error on revert. */
+  removeTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for a TreasuryFactory contract instance. */

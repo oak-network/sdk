@@ -1,6 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { LineItemTypeInfo } from "../../types/structs";
-import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for a GlobalParams contract instance. */
@@ -31,6 +31,8 @@ export interface GlobalParamsReads {
   getTokensForCurrency(currency: Hex): Promise<readonly Address[]>;
   /** Returns a value from the global data registry by key. */
   getFromRegistry(key: Hex): Promise<Hex>;
+  /** Returns true if the contract is currently paused. */
+  paused(): Promise<boolean>;
   /** Returns the contract owner address. */
   owner(): Promise<Address>;
 }
@@ -73,38 +75,38 @@ export interface GlobalParamsWrites {
 
 /** Simulate counterparts for GlobalParams write methods. */
 export interface GlobalParamsSimulate {
-  /** Simulates enlistPlatform; throws a typed error on revert. */
-  enlistPlatform(platformHash: Hex, platformAdminAddress: Address, platformFeePercent: bigint, platformAdapter: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates delistPlatform; throws a typed error on revert. */
-  delistPlatform(platformBytes: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updatePlatformAdminAddress; throws a typed error on revert. */
-  updatePlatformAdminAddress(platformBytes: Hex, platformAdminAddress: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updatePlatformClaimDelay; throws a typed error on revert. */
-  updatePlatformClaimDelay(platformBytes: Hex, claimDelay: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateProtocolAdminAddress; throws a typed error on revert. */
-  updateProtocolAdminAddress(protocolAdminAddress: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateProtocolFeePercent; throws a typed error on revert. */
-  updateProtocolFeePercent(protocolFeePercent: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates setPlatformAdapter; throws a typed error on revert. */
-  setPlatformAdapter(platformBytes: Hex, platformAdapter: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates setPlatformLineItemType; throws a typed error on revert. */
-  setPlatformLineItemType(platformHash: Hex, typeId: Hex, label: string, countsTowardGoal: boolean, applyProtocolFee: boolean, canRefund: boolean, instantTransfer: boolean, options?: CallSignerOptions): Promise<void>;
-  /** Simulates removePlatformLineItemType; throws a typed error on revert. */
-  removePlatformLineItemType(platformHash: Hex, typeId: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates addTokenToCurrency; throws a typed error on revert. */
-  addTokenToCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates removeTokenFromCurrency; throws a typed error on revert. */
-  removeTokenFromCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates addPlatformData; throws a typed error on revert. */
-  addPlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates removePlatformData; throws a typed error on revert. */
-  removePlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates addToRegistry; throws a typed error on revert. */
-  addToRegistry(key: Hex, value: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates transferOwnership; throws a typed error on revert. */
-  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates renounceOwnership; throws a typed error on revert. */
-  renounceOwnership(options?: CallSignerOptions): Promise<void>;
+  /** Simulates enlistPlatform; returns a SimulationResult on success, throws a typed error on revert. */
+  enlistPlatform(platformHash: Hex, platformAdminAddress: Address, platformFeePercent: bigint, platformAdapter: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates delistPlatform; returns a SimulationResult on success, throws a typed error on revert. */
+  delistPlatform(platformBytes: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updatePlatformAdminAddress; returns a SimulationResult on success, throws a typed error on revert. */
+  updatePlatformAdminAddress(platformBytes: Hex, platformAdminAddress: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updatePlatformClaimDelay; returns a SimulationResult on success, throws a typed error on revert. */
+  updatePlatformClaimDelay(platformBytes: Hex, claimDelay: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateProtocolAdminAddress; returns a SimulationResult on success, throws a typed error on revert. */
+  updateProtocolAdminAddress(protocolAdminAddress: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateProtocolFeePercent; returns a SimulationResult on success, throws a typed error on revert. */
+  updateProtocolFeePercent(protocolFeePercent: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setPlatformAdapter; returns a SimulationResult on success, throws a typed error on revert. */
+  setPlatformAdapter(platformBytes: Hex, platformAdapter: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setPlatformLineItemType; returns a SimulationResult on success, throws a typed error on revert. */
+  setPlatformLineItemType(platformHash: Hex, typeId: Hex, label: string, countsTowardGoal: boolean, applyProtocolFee: boolean, canRefund: boolean, instantTransfer: boolean, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates removePlatformLineItemType; returns a SimulationResult on success, throws a typed error on revert. */
+  removePlatformLineItemType(platformHash: Hex, typeId: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates addTokenToCurrency; returns a SimulationResult on success, throws a typed error on revert. */
+  addTokenToCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates removeTokenFromCurrency; returns a SimulationResult on success, throws a typed error on revert. */
+  removeTokenFromCurrency(currency: Hex, token: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates addPlatformData; returns a SimulationResult on success, throws a typed error on revert. */
+  addPlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates removePlatformData; returns a SimulationResult on success, throws a typed error on revert. */
+  removePlatformData(platformBytes: Hex, platformDataKey: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates addToRegistry; returns a SimulationResult on success, throws a typed error on revert. */
+  addToRegistry(key: Hex, value: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates transferOwnership; returns a SimulationResult on success, throws a typed error on revert. */
+  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates renounceOwnership; returns a SimulationResult on success, throws a typed error on revert. */
+  renounceOwnership(options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for a GlobalParams contract instance. */
@@ -137,6 +139,12 @@ export interface GlobalParamsEvents {
   getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Unpaused event logs. */
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded DataAddedToRegistry event logs. */
+  getDataAddedToRegistryLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformLineItemTypeSet event logs. */
+  getPlatformLineItemTypeSetLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded PlatformLineItemTypeRemoved event logs. */
+  getPlatformLineItemTypeRemovedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known GlobalParams events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for PlatformEnlisted events in real time. Returns an unwatch function. */
@@ -167,6 +175,12 @@ export interface GlobalParamsEvents {
   watchPaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Unpaused events in real time. Returns an unwatch function. */
   watchUnpaused(onLogs: EventWatchHandler): () => void;
+  /** Watches for DataAddedToRegistry events in real time. Returns an unwatch function. */
+  watchDataAddedToRegistry(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformLineItemTypeSet events in real time. Returns an unwatch function. */
+  watchPlatformLineItemTypeSet(onLogs: EventWatchHandler): () => void;
+  /** Watches for PlatformLineItemTypeRemoved events in real time. Returns an unwatch function. */
+  watchPlatformLineItemTypeRemoved(onLogs: EventWatchHandler): () => void;
 }
 
 /** Full GlobalParams entity combining reads, writes, simulate, and events. */

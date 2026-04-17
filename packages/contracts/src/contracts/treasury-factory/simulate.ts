@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { TREASURY_FACTORY_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode, toSimulationResult } from "../../errors";
 import type { TreasuryFactorySimulate } from "./types";
 import type { CallSignerOptions } from "../../client/types";
 
@@ -24,9 +24,9 @@ export function createTreasuryFactorySimulate(
   const contract = { address, abi: TREASURY_FACTORY_ABI } as const;
 
   return {
-    async deploy(platformHash: Hex, infoAddress: Address, implementationId: bigint, options?: CallSignerOptions): Promise<void> {
+    async deploy(platformHash: Hex, infoAddress: Address, implementationId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -35,10 +35,11 @@ export function createTreasuryFactorySimulate(
           args: [platformHash, infoAddress, implementationId],
         }),
       );
+      return toSimulationResult(response);
     },
-    async registerTreasuryImplementation(platformHash: Hex, implementationId: bigint, implementation: Address, options?: CallSignerOptions): Promise<void> {
+    async registerTreasuryImplementation(platformHash: Hex, implementationId: bigint, implementation: Address, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -47,10 +48,11 @@ export function createTreasuryFactorySimulate(
           args: [platformHash, implementationId, implementation],
         }),
       );
+      return toSimulationResult(response);
     },
-    async approveTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions): Promise<void> {
+    async approveTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -59,10 +61,11 @@ export function createTreasuryFactorySimulate(
           args: [platformHash, implementationId],
         }),
       );
+      return toSimulationResult(response);
     },
-    async disapproveTreasuryImplementation(implementation: Address, options?: CallSignerOptions): Promise<void> {
+    async disapproveTreasuryImplementation(implementation: Address, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -71,10 +74,11 @@ export function createTreasuryFactorySimulate(
           args: [implementation],
         }),
       );
+      return toSimulationResult(response);
     },
-    async removeTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions): Promise<void> {
+    async removeTreasuryImplementation(platformHash: Hex, implementationId: bigint, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -83,6 +87,7 @@ export function createTreasuryFactorySimulate(
           args: [platformHash, implementationId],
         }),
       );
+      return toSimulationResult(response);
     },
   };
 }

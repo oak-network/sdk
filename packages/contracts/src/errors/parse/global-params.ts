@@ -18,7 +18,7 @@ import {
   GlobalParamsUnauthorizedError,
 } from "../contracts/global-params";
 import type { ErrorAbiEntry } from "./shared";
-import { tryDecodeContractError } from "./shared";
+import { toSharedContractError, tryDecodeContractError } from "./shared";
 
 /**
  * Maps a decoded GlobalParams error name and args to a typed SDK error instance.
@@ -70,12 +70,17 @@ function toGlobalParamsError(name: string, args: Record<string, unknown>): Contr
         platformHash: args["platformHash"] as string,
         typeId: args["typeId"] as string,
       });
-    /* istanbul ignore next -- defensive fallback; all ABI errors are handled above */
-    default:
-      return new (class extends Error implements ContractErrorBase {
-        readonly name = name;
-        readonly args = args;
-      })(`${name}(${JSON.stringify(args)})`);
+    /* istanbul ignore next -- defensive fallback; GlobalParams ABI has no shared error selectors */
+    default: {
+      const shared = toSharedContractError(name, args);
+      if (!shared) {
+        return new (class extends Error implements ContractErrorBase {
+          readonly name = name;
+          readonly args = args;
+        })(`${name}(${JSON.stringify(args)})`);
+      }
+      return shared;
+    }
   }
 }
 

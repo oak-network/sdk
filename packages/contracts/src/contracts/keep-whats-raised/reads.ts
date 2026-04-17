@@ -34,6 +34,9 @@ export function createKeepWhatsRaisedReads(
         functionName: "getReward",
         args: [rewardName],
       });
+      // viem returns Solidity structs as readonly tuple objects whose type doesn't
+      // unify with the SDK's named interface; the double-cast bridges the gap safely
+      // because the ABI field names and types are identical to TieredReward.
       return result as unknown as TieredReward;
     },
     async getPlatformHash() {
@@ -73,54 +76,6 @@ export function createKeepWhatsRaisedReads(
     },
     async cancelled() {
       return publicClient.readContract({ ...contract, functionName: "cancelled" });
-    },
-    async balanceOf(owner: Address) {
-      return publicClient.readContract({
-        ...contract,
-        functionName: "balanceOf",
-        args: [owner],
-      });
-    },
-    async ownerOf(tokenId: bigint) {
-      return publicClient.readContract({
-        ...contract,
-        functionName: "ownerOf",
-        args: [tokenId],
-      });
-    },
-    async tokenURI(tokenId: bigint) {
-      return publicClient.readContract({
-        ...contract,
-        functionName: "tokenURI",
-        args: [tokenId],
-      });
-    },
-    async name() {
-      return publicClient.readContract({ ...contract, functionName: "name" });
-    },
-    async symbol() {
-      return publicClient.readContract({ ...contract, functionName: "symbol" });
-    },
-    async getApproved(tokenId: bigint) {
-      return publicClient.readContract({
-        ...contract,
-        functionName: "getApproved",
-        args: [tokenId],
-      });
-    },
-    async isApprovedForAll(owner: Address, operator: Address) {
-      return publicClient.readContract({
-        ...contract,
-        functionName: "isApprovedForAll",
-        args: [owner, operator],
-      });
-    },
-    async supportsInterface(interfaceId: Hex) {
-      return publicClient.readContract({
-        ...contract,
-        functionName: "supportsInterface",
-        args: [interfaceId],
-      });
     },
   };
 }

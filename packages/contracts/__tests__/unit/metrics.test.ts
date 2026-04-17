@@ -204,3 +204,4 @@ describe("getTreasuryReport", () => {
     expect(report.cancelled).toBe(true);
   });
 });
+

@@ -79,6 +79,15 @@ export function createPaymentTreasuryEvents(
     async getExpiredFundsClaimedLogs(options) {
       return fetchEventLogs(publicClient, address, "ExpiredFundsClaimed", options);
     },
+    async getPausedLogs(options) {
+      return fetchEventLogs(publicClient, address, "Paused", options);
+    },
+    async getUnpausedLogs(options) {
+      return fetchEventLogs(publicClient, address, "Unpaused", options);
+    },
+    async getCancelledLogs(options) {
+      return fetchEventLogs(publicClient, address, "Cancelled", options);
+    },
     decodeLog(log) {
       return decode({ topics: [...log.topics] as Hex[], data: log.data });
     },
@@ -111,6 +120,15 @@ export function createPaymentTreasuryEvents(
     },
     watchExpiredFundsClaimed(onLogs) {
       return createWatcher(publicClient, address, "ExpiredFundsClaimed", onLogs);
+    },
+    watchPaused(onLogs) {
+      return createWatcher(publicClient, address, "Paused", onLogs);
+    },
+    watchUnpaused(onLogs) {
+      return createWatcher(publicClient, address, "Unpaused", onLogs);
+    },
+    watchCancelled(onLogs) {
+      return createWatcher(publicClient, address, "Cancelled", onLogs);
     },
   };
 }

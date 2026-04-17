@@ -22,6 +22,9 @@ export function createItemRegistryReads(
         functionName: "getItem",
         args: [owner, itemId],
       });
+      // viem returns Solidity structs as readonly tuple objects whose type doesn't
+      // unify with the SDK's named interface; the double-cast bridges the gap safely
+      // because the ABI field names and types are identical to Item.
       return result as unknown as Item;
     },
   };
