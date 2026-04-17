@@ -1,6 +1,6 @@
 import type { Address, Hex } from "../../lib";
 import type { CreateCampaignParams } from "../../types/params";
-import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for a CampaignInfoFactory contract instance. */
@@ -31,14 +31,14 @@ export interface CampaignInfoFactoryWrites {
 
 /** Simulate counterparts for CampaignInfoFactory write methods. */
 export interface CampaignInfoFactorySimulate {
-  /** Simulates createCampaign; throws a typed error on revert. */
-  createCampaign(params: CreateCampaignParams, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateImplementation; throws a typed error on revert. */
-  updateImplementation(newImplementation: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates transferOwnership; throws a typed error on revert. */
-  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<void>;
-  /** Simulates renounceOwnership; throws a typed error on revert. */
-  renounceOwnership(options?: CallSignerOptions): Promise<void>;
+  /** Simulates createCampaign; returns a SimulationResult on success, throws a typed error on revert. */
+  createCampaign(params: CreateCampaignParams, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateImplementation; returns a SimulationResult on success, throws a typed error on revert. */
+  updateImplementation(newImplementation: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates transferOwnership; returns a SimulationResult on success, throws a typed error on revert. */
+  transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates renounceOwnership; returns a SimulationResult on success, throws a typed error on revert. */
+  renounceOwnership(options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for a CampaignInfoFactory contract instance. */

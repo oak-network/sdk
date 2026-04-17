@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient, WalletClient, Chain } from "../../lib";
 import { PAYMENT_TREASURY_ABI } from "./abi";
 import { requireSigner, requireAccount } from "../../utils/account";
-import { simulateWithErrorDecode } from "../../errors";
+import { simulateWithErrorDecode, toSimulationResult } from "../../errors";
 import type { PaymentTreasurySimulate } from "./types";
 import type { LineItem, ExternalFees } from "../../types/structs";
 import type { CallSignerOptions } from "../../client/types";
@@ -37,7 +37,7 @@ export function createPaymentTreasurySimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -55,6 +55,7 @@ export function createPaymentTreasurySimulate(
           ],
         }),
       );
+      return toSimulationResult(response);
     },
     async createPaymentBatch(
       paymentIds: readonly Hex[],
@@ -68,7 +69,7 @@ export function createPaymentTreasurySimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -86,6 +87,7 @@ export function createPaymentTreasurySimulate(
           ],
         }),
       );
+      return toSimulationResult(response);
     },
     async processCryptoPayment(
       paymentId: Hex,
@@ -98,7 +100,7 @@ export function createPaymentTreasurySimulate(
       options?: CallSignerOptions,
     ) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -115,10 +117,11 @@ export function createPaymentTreasurySimulate(
           ],
         }),
       );
+      return toSimulationResult(response);
     },
     async cancelPayment(paymentId: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -127,10 +130,11 @@ export function createPaymentTreasurySimulate(
           args: [paymentId],
         }),
       );
+      return toSimulationResult(response);
     },
     async confirmPayment(paymentId: Hex, buyerAddress: Address, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -139,10 +143,11 @@ export function createPaymentTreasurySimulate(
           args: [paymentId, buyerAddress],
         }),
       );
+      return toSimulationResult(response);
     },
     async confirmPaymentBatch(paymentIds: readonly Hex[], buyerAddresses: readonly Address[], options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -151,10 +156,11 @@ export function createPaymentTreasurySimulate(
           args: [[...paymentIds], [...buyerAddresses]],
         }),
       );
+      return toSimulationResult(response);
     },
     async disburseFees(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -163,10 +169,11 @@ export function createPaymentTreasurySimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
     async withdraw(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -175,10 +182,11 @@ export function createPaymentTreasurySimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
     async claimRefund(paymentId: Hex, refundAddress: Address, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -187,10 +195,11 @@ export function createPaymentTreasurySimulate(
           args: [paymentId, refundAddress],
         }),
       );
+      return toSimulationResult(response);
     },
     async claimRefundSelf(paymentId: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -199,10 +208,11 @@ export function createPaymentTreasurySimulate(
           args: [paymentId],
         }),
       );
+      return toSimulationResult(response);
     },
     async claimExpiredFunds(options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -211,10 +221,11 @@ export function createPaymentTreasurySimulate(
           args: [],
         }),
       );
+      return toSimulationResult(response);
     },
     async claimNonGoalLineItems(token: Address, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -223,10 +234,11 @@ export function createPaymentTreasurySimulate(
           args: [token],
         }),
       );
+      return toSimulationResult(response);
     },
     async pauseTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -235,10 +247,11 @@ export function createPaymentTreasurySimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
     async unpauseTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -247,10 +260,11 @@ export function createPaymentTreasurySimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
     async cancelTreasury(message: Hex, options?: CallSignerOptions) {
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      await simulateWithErrorDecode(() =>
+      const response = await simulateWithErrorDecode(() =>
         publicClient.simulateContract({
           ...contract,
           chain,
@@ -259,6 +273,7 @@ export function createPaymentTreasurySimulate(
           args: [message],
         }),
       );
+      return toSimulationResult(response);
     },
   };
 }

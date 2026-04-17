@@ -8,9 +8,16 @@ import type { ContractErrorBase } from "../base";
 import {
   AccessCheckerUnauthorizedError,
   AdminAccessCheckerUnauthorizedError,
+  CannotCancelError,
+  CancelledErrorError,
   CurrentTimeIsGreaterError,
   CurrentTimeIsLessError,
   CurrentTimeIsNotWithinRangeError,
+  NotCancelledErrorError,
+  NotPausedErrorError,
+  PausedErrorError,
+  PledgeNFTInvalidJsonStringError,
+  PledgeNFTUnAuthorizedError,
   SharedErrorNames,
   TreasuryCampaignInfoIsPausedError,
   TreasuryFeeNotDisbursedError,
@@ -86,6 +93,20 @@ export function toSharedContractError(
       return new TreasuryFeeNotDisbursedError();
     case SharedErrorNames.TreasuryTransferFailed:
       return new TreasuryTransferFailedError();
+    case SharedErrorNames.PausedError:
+      return new PausedErrorError();
+    case SharedErrorNames.NotPausedError:
+      return new NotPausedErrorError();
+    case SharedErrorNames.CancelledError:
+      return new CancelledErrorError();
+    case SharedErrorNames.NotCancelledError:
+      return new NotCancelledErrorError();
+    case SharedErrorNames.CannotCancel:
+      return new CannotCancelError();
+    case SharedErrorNames.PledgeNFTUnAuthorized:
+      return new PledgeNFTUnAuthorizedError();
+    case SharedErrorNames.PledgeNFTInvalidJsonString:
+      return new PledgeNFTInvalidJsonStringError();
     default:
       return null;
   }

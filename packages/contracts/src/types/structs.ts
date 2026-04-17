@@ -1,5 +1,15 @@
 import type { Address, Hex } from "../lib";
 
+/**
+ * A 4-byte hex string (`0x` + 8 hex chars), e.g. `"0x01ffc9a7"`.
+ * Used for ERC-165 interface IDs passed to `supportsInterface`.
+ *
+ * Branded to prevent accidentally passing a full-length hash or
+ * arbitrary Hex value where only 4 bytes are valid on-chain.
+ * Use {@link isBytes4} to validate and narrow at runtime.
+ */
+export type Bytes4 = `0x${string}` & { readonly __bytes4: unique symbol };
+
 /** ICampaignData.CampaignData — used by CampaignInfo and CampaignInfoFactory. */
 export interface CampaignData {
   /** Unix timestamp (seconds) when the campaign launches. */
@@ -150,6 +160,24 @@ export interface LineItemTypeInfo {
   canRefund: boolean;
   /** True if funds are transferred immediately on confirmation. */
   instantTransfer: boolean;
+}
+
+/** PledgeNFT.PledgeData — on-chain pledge metadata stored per token ID. */
+export interface PledgeData {
+  /** Backer wallet address. */
+  backer: Address;
+  /** bytes32 reward identifier (ZERO_BYTES for no-reward pledges). */
+  reward: Hex;
+  /** Treasury contract that minted this NFT. */
+  treasury: Address;
+  /** ERC-20 token address used for the pledge. */
+  tokenAddress: Address;
+  /** Pledge amount in token units. */
+  amount: bigint;
+  /** Shipping fee in token units. */
+  shippingFee: bigint;
+  /** Tip amount in token units. */
+  tipAmount: bigint;
 }
 
 /** Return type for CampaignInfo.getCampaignConfig. */

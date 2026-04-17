@@ -19,7 +19,7 @@ async function fetchEventLogs(
 ): Promise<readonly DecodedEventLog[]> {
   const logs = await publicClient.getContractEvents({
     address, abi: KEEP_WHATS_RAISED_ABI, eventName,
-    fromBlock: options?.fromBlock ?? 0n, toBlock: options?.toBlock,
+    fromBlock: options?.fromBlock, toBlock: options?.toBlock,
   });
   return logs.map((log) => decode({ topics: [...log.topics] as Hex[], data: log.data }));
 }
@@ -94,14 +94,8 @@ export function createKeepWhatsRaisedEvents(
     async getUnpausedLogs(options) {
       return fetchEventLogs(publicClient, address, "Unpaused", options);
     },
-    async getTransferLogs(options) {
-      return fetchEventLogs(publicClient, address, "Transfer", options);
-    },
-    async getApprovalLogs(options) {
-      return fetchEventLogs(publicClient, address, "Approval", options);
-    },
-    async getApprovalForAllLogs(options) {
-      return fetchEventLogs(publicClient, address, "ApprovalForAll", options);
+    async getCancelledLogs(options) {
+      return fetchEventLogs(publicClient, address, "Cancelled", options);
     },
     decodeLog(log) {
       return decode({ topics: [...log.topics] as Hex[], data: log.data });
@@ -151,14 +145,8 @@ export function createKeepWhatsRaisedEvents(
     watchUnpaused(onLogs) {
       return createWatcher(publicClient, address, "Unpaused", onLogs);
     },
-    watchTransfer(onLogs) {
-      return createWatcher(publicClient, address, "Transfer", onLogs);
-    },
-    watchApproval(onLogs) {
-      return createWatcher(publicClient, address, "Approval", onLogs);
-    },
-    watchApprovalForAll(onLogs) {
-      return createWatcher(publicClient, address, "ApprovalForAll", onLogs);
+    watchCancelled(onLogs) {
+      return createWatcher(publicClient, address, "Cancelled", onLogs);
     },
   };
 }

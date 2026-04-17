@@ -19,7 +19,7 @@ async function fetchEventLogs(
 ): Promise<readonly DecodedEventLog[]> {
   const logs = await publicClient.getContractEvents({
     address, abi: TREASURY_FACTORY_ABI, eventName,
-    fromBlock: options?.fromBlock ?? 0n, toBlock: options?.toBlock,
+    fromBlock: options?.fromBlock, toBlock: options?.toBlock,
   });
   return logs.map((log) => decode({ topics: [...log.topics] as Hex[], data: log.data }));
 }

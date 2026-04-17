@@ -60,25 +60,5 @@ export function createAllOrNothingWrites(
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "withdraw", args: [] });
     },
-    async burn(tokenId: bigint, options?: CallSignerOptions): Promise<Hex> {
-      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      return signer.writeContract({ ...contract, chain, account, functionName: "burn", args: [tokenId] });
-    },
-    async approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex> {
-      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      return signer.writeContract({ ...contract, chain, account, functionName: "approve", args: [to, tokenId] });
-    },
-    async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<Hex> {
-      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      return signer.writeContract({ ...contract, chain, account, functionName: "setApprovalForAll", args: [operator, approved] });
-    },
-    async safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex> {
-      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      return signer.writeContract({ ...contract, chain, account, functionName: "safeTransferFrom", args: [from, to, tokenId] });
-    },
-    async transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex> {
-      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      return signer.writeContract({ ...contract, chain, account, functionName: "transferFrom", args: [from, to, tokenId] });
-    },
   };
 }

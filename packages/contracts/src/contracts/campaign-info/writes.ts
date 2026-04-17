@@ -75,5 +75,13 @@ export function createCampaignInfoWrites(
       const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
       return signer.writeContract({ ...contract, chain, account, functionName: "renounceOwnership", args: [] });
     },
+    async approve(to: Address, tokenId: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      return signer.writeContract({ ...contract, chain, account, functionName: "approve", args: [to, tokenId] });
+    },
+    async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      return signer.writeContract({ ...contract, chain, account, functionName: "setApprovalForAll", args: [operator, approved] });
+    },
   };
 }

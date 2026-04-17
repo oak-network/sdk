@@ -137,6 +137,58 @@ describe("createOakContractsClient", () => {
     expect(results).toEqual([5n, 250n]);
   });
 
+  it("getReceipt returns receipt for mined transaction", async () => {
+    const client = createOakContractsClient({
+      chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+      rpcUrl: RPC,
+      privateKey: PK,
+    });
+    const mockReceipt = {
+      blockNumber: 456n,
+      gasUsed: 42000n,
+      logs: [{ topics: ["0xabc"], data: "0xdef" }],
+    };
+    (
+      client.publicClient as unknown as { getTransactionReceipt: jest.Mock }
+    ).getTransactionReceipt = jest.fn().mockResolvedValue(mockReceipt);
+
+    const receipt = await client.getReceipt("0xdeadbeef");
+    expect(receipt).not.toBeNull();
+    expect(receipt!.blockNumber).toBe(456n);
+    expect(receipt!.gasUsed).toBe(42000n);
+    expect(receipt!.logs).toHaveLength(1);
+  });
+
+  it("getReceipt returns null when transaction is not found", async () => {
+    const client = createOakContractsClient({
+      chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+      rpcUrl: RPC,
+      privateKey: PK,
+    });
+    const notFoundError = new Error("Transaction receipt not found");
+    notFoundError.name = "TransactionReceiptNotFoundError";
+    (
+      client.publicClient as unknown as { getTransactionReceipt: jest.Mock }
+    ).getTransactionReceipt = jest.fn().mockRejectedValue(notFoundError);
+
+    const receipt = await client.getReceipt("0xdeadbeef");
+    expect(receipt).toBeNull();
+  });
+
+  it("getReceipt re-throws non-receipt errors (e.g. network failures)", async () => {
+    const client = createOakContractsClient({
+      chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+      rpcUrl: RPC,
+      privateKey: PK,
+    });
+    const networkError = new Error("RPC timeout");
+    (
+      client.publicClient as unknown as { getTransactionReceipt: jest.Mock }
+    ).getTransactionReceipt = jest.fn().mockRejectedValue(networkError);
+
+    await expect(client.getReceipt("0xdeadbeef")).rejects.toThrow("RPC timeout");
+  });
+
   it("waitForReceipt calls publicClient.waitForTransactionReceipt", async () => {
     const client = createOakContractsClient({
       chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
@@ -172,5 +224,16 @@ describe("contracts barrel export", () => {
     expect(contractsIndex.createAllOrNothingEntity).toBeDefined();
     expect(contractsIndex.createKeepWhatsRaisedEntity).toBeDefined();
     expect(contractsIndex.createItemRegistryEntity).toBeDefined();
+  });
+
+  it("re-exports all contract ABIs", () => {
+    expect(contractsIndex.GLOBAL_PARAMS_ABI).toBeDefined();
+    expect(contractsIndex.CAMPAIGN_INFO_FACTORY_ABI).toBeDefined();
+    expect(contractsIndex.CAMPAIGN_INFO_ABI).toBeDefined();
+    expect(contractsIndex.TREASURY_FACTORY_ABI).toBeDefined();
+    expect(contractsIndex.PAYMENT_TREASURY_ABI).toBeDefined();
+    expect(contractsIndex.ALL_OR_NOTHING_ABI).toBeDefined();
+    expect(contractsIndex.KEEP_WHATS_RAISED_ABI).toBeDefined();
+    expect(contractsIndex.ITEM_REGISTRY_ABI).toBeDefined();
   });
 });

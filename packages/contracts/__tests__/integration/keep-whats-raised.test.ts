@@ -22,14 +22,6 @@ describe("KeepWhatsRaised — reads (may revert on uninitialized implementation)
   it("getFeeValue", async () => { try { expect(typeof (await kwr.getFeeValue(BYTES32_ZERO))).toBe("bigint"); } catch { /* implementation revert */ } });
   it("paused", async () => { try { expect(typeof (await kwr.paused())).toBe("boolean"); } catch { /* implementation revert */ } });
   it("cancelled", async () => { try { expect(typeof (await kwr.cancelled())).toBe("boolean"); } catch { /* implementation revert */ } });
-  it("balanceOf", async () => { try { expect(typeof (await kwr.balanceOf(ZERO_ADDR))).toBe("bigint"); } catch { /* implementation revert */ } });
-  it("ownerOf (may revert)", async () => { try { await kwr.ownerOf(0n); } catch { /* expected */ } });
-  it("tokenURI (may revert)", async () => { try { await kwr.tokenURI(0n); } catch { /* expected */ } });
-  it("name", async () => { try { expect(typeof (await kwr.name())).toBe("string"); } catch { /* implementation revert */ } });
-  it("symbol", async () => { try { expect(typeof (await kwr.symbol())).toBe("string"); } catch { /* implementation revert */ } });
-  it("getApproved (may revert)", async () => { try { await kwr.getApproved(0n); } catch { /* expected */ } });
-  it("isApprovedForAll", async () => { try { expect(typeof (await kwr.isApprovedForAll(ZERO_ADDR, ZERO_ADDR))).toBe("boolean"); } catch { /* implementation revert */ } });
-  it("supportsInterface", async () => { try { expect(typeof (await kwr.supportsInterface("0x80ac58cd"))).toBe("boolean"); } catch { /* implementation revert */ } });
 });
 
 describe("KeepWhatsRaised — writes (may revert)", () => {
@@ -62,10 +54,6 @@ describe("KeepWhatsRaised — writes (may revert)", () => {
   it("withdraw", async () => { try { await kwr.withdraw(ZERO_ADDR, 0n); } catch { /* expected */ } });
   it("updateDeadline", async () => { try { await kwr.updateDeadline(9999999999n); } catch { /* expected */ } });
   it("updateGoalAmount", async () => { try { await kwr.updateGoalAmount(1000n); } catch { /* expected */ } });
-  it("approve", async () => { try { await kwr.approve(ZERO_ADDR, 0n); } catch { /* expected */ } });
-  it("setApprovalForAll", async () => { try { await kwr.setApprovalForAll(ZERO_ADDR, true); } catch { /* expected */ } });
-  it("safeTransferFrom", async () => { try { await kwr.safeTransferFrom(ZERO_ADDR, ZERO_ADDR, 0n); } catch { /* expected */ } });
-  it("transferFrom", async () => { try { await kwr.transferFrom(ZERO_ADDR, ZERO_ADDR, 0n); } catch { /* expected */ } });
 });
 
 describe("KeepWhatsRaised — simulate (may throw)", () => {

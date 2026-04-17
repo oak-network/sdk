@@ -1,7 +1,7 @@
 import type { Address, Hex } from "../../lib";
 import type { TieredReward, CampaignData } from "../../types/structs";
 import type { KeepWhatsRaisedConfig, KeepWhatsRaisedFeeKeys, KeepWhatsRaisedFeeValues } from "../../types/params";
-import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog } from "../../types/events";
+import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
 /** Read-only methods for KeepWhatsRaised treasury. */
@@ -36,22 +36,6 @@ export interface KeepWhatsRaisedReads {
   paused(): Promise<boolean>;
   /** Returns true if the treasury has been cancelled. */
   cancelled(): Promise<boolean>;
-  /** Returns the number of pledge NFT tokens held by the given owner. */
-  balanceOf(owner: Address): Promise<bigint>;
-  /** Returns the owner address of the pledge NFT with the given token ID. */
-  ownerOf(tokenId: bigint): Promise<Address>;
-  /** Returns the metadata URI for the pledge NFT with the given token ID. */
-  tokenURI(tokenId: bigint): Promise<string>;
-  /** Returns the ERC-721 collection name. */
-  name(): Promise<string>;
-  /** Returns the ERC-721 collection symbol. */
-  symbol(): Promise<string>;
-  /** Returns the address approved to transfer the given token ID. */
-  getApproved(tokenId: bigint): Promise<Address>;
-  /** Returns true if the operator is approved to manage all tokens of the given owner. */
-  isApprovedForAll(owner: Address, operator: Address): Promise<boolean>;
-  /** Returns true if the contract implements the given ERC-165 interface ID. */
-  supportsInterface(interfaceId: Hex): Promise<boolean>;
 }
 
 /** Write methods for KeepWhatsRaised treasury. */
@@ -122,41 +106,33 @@ export interface KeepWhatsRaisedWrites {
   updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the campaign funding goal amount. */
   updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<Hex>;
-  /** Approves an address to transfer a specific pledge NFT token. */
-  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
-  /** Grants or revokes operator approval for all tokens owned by the caller. */
-  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<Hex>;
-  /** Safely transfers a pledge NFT, calling onERC721Received on the recipient. */
-  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
-  /** Transfers a pledge NFT without the ERC-721 receiver check. */
-  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for KeepWhatsRaised write methods. */
 export interface KeepWhatsRaisedSimulate {
-  /** Simulates pauseTreasury; throws a typed error on revert. */
-  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates unpauseTreasury; throws a typed error on revert. */
-  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates cancelTreasury; throws a typed error on revert. */
-  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates configureTreasury; throws a typed error on revert. */
+  /** Simulates pauseTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  pauseTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates unpauseTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  unpauseTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates cancelTreasury; returns a SimulationResult on success, throws a typed error on revert. */
+  cancelTreasury(message: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates configureTreasury; returns a SimulationResult on success, throws a typed error on revert. */
   configureTreasury(
     config: KeepWhatsRaisedConfig,
     campaignData: CampaignData,
     feeKeys: KeepWhatsRaisedFeeKeys,
     feeValues: KeepWhatsRaisedFeeValues,
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates addRewards; throws a typed error on revert. */
-  addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<void>;
-  /** Simulates removeReward; throws a typed error on revert. */
-  removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<void>;
-  /** Simulates approveWithdrawal; throws a typed error on revert. */
-  approveWithdrawal(options?: CallSignerOptions): Promise<void>;
-  /** Simulates setPaymentGatewayFee; throws a typed error on revert. */
-  setPaymentGatewayFee(pledgeId: Hex, fee: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates setFeeAndPledge; throws a typed error on revert. */
+  ): Promise<SimulationResult>;
+  /** Simulates addRewards; returns a SimulationResult on success, throws a typed error on revert. */
+  addRewards(rewardNames: readonly Hex[], rewards: readonly TieredReward[], options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates removeReward; returns a SimulationResult on success, throws a typed error on revert. */
+  removeReward(rewardName: Hex, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates approveWithdrawal; returns a SimulationResult on success, throws a typed error on revert. */
+  approveWithdrawal(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setPaymentGatewayFee; returns a SimulationResult on success, throws a typed error on revert. */
+  setPaymentGatewayFee(pledgeId: Hex, fee: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setFeeAndPledge; returns a SimulationResult on success, throws a typed error on revert. */
   setFeeAndPledge(
     pledgeId: Hex,
     backer: Address,
@@ -167,8 +143,8 @@ export interface KeepWhatsRaisedSimulate {
     reward: readonly Hex[],
     isPledgeForAReward: boolean,
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates pledgeForAReward; throws a typed error on revert. */
+  ): Promise<SimulationResult>;
+  /** Simulates pledgeForAReward; returns a SimulationResult on success, throws a typed error on revert. */
   pledgeForAReward(
     pledgeId: Hex,
     backer: Address,
@@ -176,8 +152,8 @@ export interface KeepWhatsRaisedSimulate {
     tip: bigint,
     rewardNames: readonly Hex[],
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates pledgeWithoutAReward; throws a typed error on revert. */
+  ): Promise<SimulationResult>;
+  /** Simulates pledgeWithoutAReward; returns a SimulationResult on success, throws a typed error on revert. */
   pledgeWithoutAReward(
     pledgeId: Hex,
     backer: Address,
@@ -185,29 +161,21 @@ export interface KeepWhatsRaisedSimulate {
     pledgeAmount: bigint,
     tip: bigint,
     options?: CallSignerOptions,
-  ): Promise<void>;
-  /** Simulates claimRefund; throws a typed error on revert. */
-  claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates claimTip; throws a typed error on revert. */
-  claimTip(options?: CallSignerOptions): Promise<void>;
-  /** Simulates claimFund; throws a typed error on revert. */
-  claimFund(options?: CallSignerOptions): Promise<void>;
-  /** Simulates disburseFees; throws a typed error on revert. */
-  disburseFees(options?: CallSignerOptions): Promise<void>;
-  /** Simulates withdraw; throws a typed error on revert. */
-  withdraw(token: Address, amount: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateDeadline; throws a typed error on revert. */
-  updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates updateGoalAmount; throws a typed error on revert. */
-  updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates approve; throws a typed error on revert. */
-  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates setApprovalForAll; throws a typed error on revert. */
-  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<void>;
-  /** Simulates safeTransferFrom; throws a typed error on revert. */
-  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
-  /** Simulates transferFrom; throws a typed error on revert. */
-  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<void>;
+  ): Promise<SimulationResult>;
+  /** Simulates claimRefund; returns a SimulationResult on success, throws a typed error on revert. */
+  claimRefund(tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates claimTip; returns a SimulationResult on success, throws a typed error on revert. */
+  claimTip(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates claimFund; returns a SimulationResult on success, throws a typed error on revert. */
+  claimFund(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates disburseFees; returns a SimulationResult on success, throws a typed error on revert. */
+  disburseFees(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates withdraw; returns a SimulationResult on success, throws a typed error on revert. */
+  withdraw(token: Address, amount: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateDeadline; returns a SimulationResult on success, throws a typed error on revert. */
+  updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates updateGoalAmount; returns a SimulationResult on success, throws a typed error on revert. */
+  updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for KeepWhatsRaised. */
@@ -242,12 +210,8 @@ export interface KeepWhatsRaisedEvents {
   getPausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Unpaused event logs. */
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
-  /** Returns decoded Transfer event logs. */
-  getTransferLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
-  /** Returns decoded Approval event logs. */
-  getApprovalLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
-  /** Returns decoded ApprovalForAll event logs. */
-  getApprovalForAllLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
+  /** Returns decoded Cancelled event logs. */
+  getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known KeepWhatsRaised events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for Receipt events in real time. Returns an unwatch function. */
@@ -280,12 +244,8 @@ export interface KeepWhatsRaisedEvents {
   watchPaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Unpaused events in real time. Returns an unwatch function. */
   watchUnpaused(onLogs: EventWatchHandler): () => void;
-  /** Watches for Transfer events in real time. Returns an unwatch function. */
-  watchTransfer(onLogs: EventWatchHandler): () => void;
-  /** Watches for Approval events in real time. Returns an unwatch function. */
-  watchApproval(onLogs: EventWatchHandler): () => void;
-  /** Watches for ApprovalForAll events in real time. Returns an unwatch function. */
-  watchApprovalForAll(onLogs: EventWatchHandler): () => void;
+  /** Watches for Cancelled events in real time. Returns an unwatch function. */
+  watchCancelled(onLogs: EventWatchHandler): () => void;
 }
 
 /** Full KeepWhatsRaised treasury entity (reads, writes, simulate, events). */
