@@ -411,10 +411,46 @@ See [CLAUDE.md](../../CLAUDE.md) for coding standards including architecture pri
 
 ---
 
+## Examples
+
+The [`src/examples/`](./src/examples/) folder contains scenario-driven, step-by-step TypeScript examples covering the full SDK surface. Each scenario tells a story (platform onboarding, crowdfunding campaign, e-commerce checkout) and implements it with working code.
+
+| # | Scenario | What you will learn |
+| --- | --- | --- |
+| 0 | [Platform Enlistment](./src/examples/00-platform-enlistment/) | How a new platform joins Oak Protocol — enlistment, treasury registration, approval, optional configuration |
+| 1 | [All-or-Nothing Campaign](./src/examples/01-campaign-all-or-nothing/) | Full crowdfunding lifecycle — campaign creation, pledges, success/failure paths |
+| 2 | [Keep-What's-Raised Campaign](./src/examples/02-campaign-keep-whats-raised/) | Flexible funding with partial withdrawals, tips, and configurable fees |
+| 3 | [Payment Treasury](./src/examples/03-campaign-payment-treasury/) | E-commerce payment flow with line items, confirmations, and refunds |
+| 4 | [Event Monitoring](./src/examples/04-event-monitoring/) | Historical logs, real-time watchers, raw log decoding, and metrics |
+| 5 | [Error Handling](./src/examples/05-error-handling/) | Simulation, typed errors, prepared transactions, and safe send patterns |
+| 6 | [Advanced Patterns](./src/examples/06-advanced-patterns/) | Multicall batching, signer overrides, item registry, browser/Privy wallets |
+
+> Start with **Scenario 0** if you are a new platform. Start with **Scenario 1**, **2**, or **3** if your platform is already onboarded.
+
+---
+
+## Use Cases
+
+The [`src/use-cases/`](./src/use-cases/) folder contains business-oriented integration guides that show how real companies would use the SDK. Each guide tells a complete story — from the business problem to the on-chain solution — with illustrative code snippets.
+
+| Use Case | Guide | Contract(s) Used |
+| --- | --- | --- |
+| **Crowdfunding** | [Creative Campaign](./src/use-cases/crowdfunding/creative-campaign.md) | CampaignInfoFactory + AllOrNothing |
+| **Flexible Funding** | [Community Project](./src/use-cases/flexible-funding/community-project.md) | CampaignInfoFactory + KeepWhatsRaised |
+| **Marketplace** | [E-Commerce Marketplace](./src/use-cases/marketplace/ecommerce-marketplace.md) | CampaignInfoFactory + PaymentTreasury |
+| **Escrow** | [Healthcare Escrow](./src/use-cases/escrow/healthcare-escrow.md) | CampaignInfoFactory + PaymentTreasury |
+| **Prepayment** | [Automotive Prepayment](./src/use-cases/prepayment/automotive-prepayment.md) | CampaignInfoFactory + TimeConstrainedPaymentTreasury |
+
+> These are documentation guides, not runnable scripts. For executable examples, see the [`src/examples/`](./src/examples/) folder above.
+
+---
+
 ## Documentation
 
 - [Full docs](https://oaknetwork.org/docs/contracts-sdk/overview) — oaknetwork.org/docs/contracts-sdk/overview
 - [Quickstart](https://oaknetwork.org/docs/contracts-sdk/quickstart) — oaknetwork.org/docs/contracts-sdk/quickstart
+- [Examples](./src/examples/) — scenario-driven TypeScript examples
+- [Use Cases](./src/use-cases/) — business-oriented integration guides
 - [Monorepo README](../../README.md) — README.md
 - [Changelog](./CHANGELOG.md) — CHANGELOG.md
 
