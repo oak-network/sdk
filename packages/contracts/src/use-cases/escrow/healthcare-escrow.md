@@ -56,11 +56,17 @@ const isPaused = await treasury.paused();
 const isCancelled = await treasury.cancelled();
 ```
 
-### Step 2: Patient books appointment — create payment
+### Step 2: Patient books appointment — two independent payment flows
+
+Sarah books a cardiology consultation with Dr. Rivera. The appointment costs 150 USDC broken down into two line items: consultation (120 USDC) and lab work (30 USDC).
+
+MedConnect supports two payment methods — they are **not** sequential steps:
+
+#### Flow A: Off-chain / fiat payment (`createPayment`)
 
 > **Role: Platform Admin** — only the platform admin can create payment records.
 
-Sarah books a cardiology consultation with Dr. Rivera. The appointment costs 150 USDC broken down into two line items: consultation (120 USDC) and lab work (30 USDC).
+MedConnect creates a payment record on-chain. **No funds move** — Sarah pays through off-chain rails (credit card, insurance billing, etc.) and MedConnect calls `confirmPayment` after verifying receipt.
 
 ```typescript
 import { toHex } from "@oaknetwork/contracts-sdk";
@@ -96,13 +102,15 @@ const txHash = await treasury.createPayment(
 await oak.waitForReceipt(txHash);
 ```
 
-At this point the payment record exists on-chain, but **no funds have moved yet**. The treasury is waiting for Sarah to pay.
+At this point the payment record exists on-chain, but **no funds have moved yet**. Sarah pays through off-chain channels.
 
-### Step 3: Patient pays — crypto payment processed on-chain
+#### Flow B: On-chain crypto payment (`processCryptoPayment`)
 
 > **Role: Any caller** — `processCryptoPayment` is permissionless, but the buyer must first approve the treasury to transfer their ERC-20 tokens.
 
-Sarah opens the MedConnect app, sees the $150 charge, and approves the transfer. Before the treasury can pull funds, Sarah must grant an ERC-20 allowance:
+This is a **standalone operation** — it creates the payment record AND transfers ERC-20 tokens in a single transaction. It does **not** require or complete a prior `createPayment` call. An NFT is minted to Sarah as proof of payment.
+
+Sarah opens the MedConnect app, sees the $150 charge, and approves the transfer:
 
 ```typescript
 import { erc20Abi } from "viem";
@@ -131,7 +139,7 @@ await oak.waitForReceipt(txHash);
 
 Funds are now **locked in the treasury**. Sarah cannot withdraw them, and neither can Dr. Rivera — only the platform can release them by confirming delivery.
 
-### Step 4: Doctor confirms service delivery
+### Step 3: Doctor confirms service delivery
 
 > **Role: Platform Admin** — only the platform admin can confirm payments.
 
@@ -146,7 +154,7 @@ await oak.waitForReceipt(txHash);
 
 The payment status is now **confirmed**. Funds are settled and ready for fee disbursement and withdrawal.
 
-### Step 5: Read the final treasury state
+### Step 4: Read the final treasury state
 
 > **Role: Any caller** — all read functions are public.
 
@@ -161,7 +169,7 @@ const [raised, available, lifetime, refunded] = await oak.multicall([
 ]);
 ```
 
-### Step 6: Disburse fees
+### Step 5: Disburse fees
 
 > **Role: Any caller** — `disburseFees` is permissionless. Fees are sent to the Protocol Admin and Platform Admin automatically.
 
@@ -172,7 +180,7 @@ const txHash = await treasury.disburseFees();
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 7: Withdraw settled funds
+### Step 6: Withdraw settled funds
 
 > **Role: Platform Admin or Campaign Owner** — either party can trigger withdrawal. Funds are always sent to the campaign owner (Dr. Rivera's clinic).
 
@@ -206,7 +214,7 @@ await treasury.claimRefund(paymentId, SARAH_WALLET_ADDRESS);
 await treasury.claimRefundSelf(paymentId);
 ```
 
-### Step 8: Claim non-goal line items
+### Step 7: Claim non-goal line items
 
 > **Role: Platform Admin** — only the platform admin can claim non-goal line items.
 
@@ -217,7 +225,7 @@ const txHash = await treasury.claimNonGoalLineItems(USDC_TOKEN_ADDRESS);
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 9: Pause, unpause, or cancel the treasury
+### Step 8: Pause, unpause, or cancel the treasury
 
 **Pause the treasury:**
 
@@ -308,16 +316,27 @@ Patient (Sarah)                  MedConnect (Platform Admin)      PaymentTreasur
        |                                |                               |
        |   Books appointment            |                               |
        |------------------------------->|                               |
+       |                                |                               |
+       |         --- FLOW A: Off-chain / fiat payment ---               |
+       |                                |                               |
        |                                |  createPayment(...)           |
        |                                |  [Platform Admin]             |
-       |                                |------------------------------>|  Payment record created
+       |                                |------------------------------>|  Payment recorded (no funds)
+       |                                |                               |
+       |   Pays off-chain               |                               |
+       |   (insurance, credit card)     |                               |
+       |------------------------------->|                               |
+       |                                |                               |
+       |         --- FLOW B: On-chain crypto payment ---                |
        |                                |                               |
        |   ERC-20 approve()             |                               |
        |--------------------------------------------------------------->|  Treasury approved to spend
        |                                |                               |
        |                                |  processCryptoPayment(...)    |
        |                                |  [Any caller]                 |
-       |                                |------------------------------>|  Funds locked in escrow
+       |                                |------------------------------>|  Payment created + funds locked
+       |                                |                               |
+       |         --- Both flows continue here ---                       |
        |                                |                               |
        |                     Doctor confirms delivery                   |
        |                                |  confirmPayment(...)          |

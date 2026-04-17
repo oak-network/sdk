@@ -101,11 +101,15 @@ const txHash = await registry.addItemsBatch(productIds, items);
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 3: Buyer places order — create payment with line items
+### Step 3: Buyer places order — two independent payment flows
+
+CeloMarket supports two payment methods. A platform uses one or both depending on its business model — they are **not** sequential steps.
+
+#### Flow A: Off-chain / fiat payment (`createPayment`)
 
 > **Role: Platform Admin** — only the platform admin can create payment records.
 
-A buyer orders wireless headphones for $79.99. The order breaks down into three line items: product ($69.99), shipping ($7.50), and platform commission ($2.50).
+A buyer orders wireless headphones for $79.99. CeloMarket's backend creates a payment record on-chain. **No funds move** — the buyer pays through off-chain rails (credit card, bank transfer, etc.) and CeloMarket calls `confirmPayment` after verifying receipt.
 
 ```typescript
 const orderId = toHex("order-20260415-001", { size: 32 });
@@ -136,11 +140,13 @@ const txHash = await treasury.createPayment(
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 4: Buyer pays — ERC-20 transfer to treasury
+#### Flow B: On-chain crypto payment (`processCryptoPayment`)
 
 > **Role: Any caller** — `processCryptoPayment` is permissionless, but the buyer must first approve the treasury to transfer their ERC-20 tokens.
 
-The buyer's fiat payment is converted to an **accepted** on-chain ERC-20 (often a stablecoin such as USDC) behind the scenes. Before the treasury can pull funds, the buyer must grant an ERC-20 allowance for the **same `paymentToken`** used in `createPayment`:
+This is a **standalone operation** — it creates the payment record AND transfers ERC-20 tokens in a single transaction. It does **not** require or complete a prior `createPayment` call. An NFT is minted to the buyer as proof of payment.
+
+Before the treasury can pull funds, the buyer must grant an ERC-20 allowance:
 
 ```typescript
 import { erc20Abi } from "viem";
@@ -168,7 +174,7 @@ await oak.waitForReceipt(txHash);
 
 Funds are now **locked** — the seller cannot access them until CeloMarket confirms shipment.
 
-### Step 5: Seller ships — platform confirms payment
+### Step 4: Seller ships — platform confirms payment
 
 > **Role: Platform Admin** — only the platform admin can confirm payments.
 
@@ -191,7 +197,7 @@ const txHash = await treasury.confirmPaymentBatch(orderIds, buyerAddresses);
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 6: Read order state — dashboard view
+### Step 5: Read order state — dashboard view
 
 > **Role: Any caller** — all read functions are public.
 
@@ -211,7 +217,7 @@ const [raised, available, refunded, expected] = await oak.multicall([
 ]);
 ```
 
-### Step 7: Fee disbursement
+### Step 6: Fee disbursement
 
 > **Role: Any caller** — `disburseFees` is permissionless. Fees are sent to the Protocol Admin and Platform Admin automatically.
 
@@ -222,7 +228,7 @@ const txHash = await treasury.disburseFees();
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 8: Seller withdrawal
+### Step 7: Seller withdrawal
 
 > **Role: Platform Admin or Campaign Owner** — either party can trigger withdrawal. Funds are always sent to the campaign owner (the seller).
 
@@ -328,16 +334,26 @@ Buyer (Alex)              CeloMarket (Platform Admin)        Blockchain
      |                          |   [Seller]                     |
      |                          |------------------------------->|  Product registered
      |                          |                                |
+     |            --- FLOW A: Off-chain / fiat payment ---       |
+     |                          |                                |
      |                          |   createPayment()              |
      |                          |   [Platform Admin]             |
-     |                          |------------------------------->|  Order created
+     |                          |------------------------------->|  Order recorded (no funds)
+     |                          |                                |
+     |   Buyer pays off-chain   |                                |
+     |   (credit card, etc.)    |                                |
+     |------------------------->|                                |
+     |                          |                                |
+     |            --- FLOW B: On-chain crypto payment ---        |
      |                          |                                |
      |   ERC-20 approve()       |                                |
      |------------------------------------------------------>   |  Treasury approved
      |                          |                                |
      |                          |   processCryptoPayment()       |
      |                          |   [Any caller]                 |
-     |                          |------------------------------->|  Funds locked
+     |                          |------------------------------->|  Payment created + funds locked
+     |                          |                                |
+     |            --- Both flows continue here ---               |
      |                          |                                |
      |                   Seller ships product                    |
      |                          |   confirmPayment()             |

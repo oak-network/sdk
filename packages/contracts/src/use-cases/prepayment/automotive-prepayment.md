@@ -59,11 +59,17 @@ const isPaused = await treasury.paused();
 const isCancelled = await treasury.cancelled();
 ```
 
-### Step 2: Customer orders a vehicle — create prepayment
+### Step 2: Customer orders a vehicle — two independent payment flows
+
+James orders a Karma GS-6 electric sedan with the Performance Package. The total prepayment is $52,500 broken down into line items.
+
+Karma supports two payment methods — they are **not** sequential steps:
+
+#### Flow A: Off-chain / fiat payment (`createPayment`)
 
 > **Role: Platform Admin** — only the platform admin can create payment records. Must be called within the time window (`launchTime` to `deadline + bufferTime`).
 
-James orders a Karma GS-6 electric sedan with the Performance Package. The total prepayment is $52,500 broken down into line items.
+Karma's system creates a payment record on-chain. **No funds move** — James pays through off-chain rails (wire transfer, dealership financing, etc.) and Karma calls `confirmPayment` after verifying receipt.
 
 ```typescript
 const orderId = toHex("karma-order-GS6-2026-0415", { size: 32 });
@@ -96,9 +102,11 @@ const txHash = await treasury.createPayment(
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 3: Customer pays the deposit
+#### Flow B: On-chain crypto payment (`processCryptoPayment`)
 
 > **Role: Any caller** — `processCryptoPayment` is permissionless, but the buyer must first approve the treasury to transfer their ERC-20 tokens. Must be called within the time window.
+
+This is a **standalone operation** — it creates the payment record AND transfers ERC-20 tokens in a single transaction. It does **not** require or complete a prior `createPayment` call. An NFT is minted to James as proof of payment.
 
 James transfers the full prepayment amount. Before the treasury can pull funds, James must grant an ERC-20 allowance:
 
@@ -128,7 +136,7 @@ await oak.waitForReceipt(txHash);
 
 Funds are now **locked in the time-constrained treasury**. The clock is ticking toward the 6-month delivery deadline.
 
-### Step 4: Monitor the order status
+### Step 3: Monitor the order status
 
 > **Role: Any caller** — all read functions are public.
 
@@ -148,7 +156,7 @@ const [raised, available, expected] = await oak.multicall([
 ]);
 ```
 
-### Step 5 (Success): Vehicle delivered — confirm and withdraw
+### Step 4 (Success): Vehicle delivered — confirm and withdraw
 
 > **Role: Platform Admin** for `confirmPayment` (must still be within the launch…deadline+buffer window). **Any caller** for `disburseFees` (after `launchTime`). **Platform Admin or Campaign Owner** for `withdraw` (after `launchTime`).
 
@@ -169,7 +177,7 @@ const withdrawTx = await treasury.withdraw();
 await oak.waitForReceipt(withdrawTx);
 ```
 
-### Step 5 (Failure): Claim window after deadline — platform sweeps expired funds
+### Step 4 (Failure): Claim window after deadline — platform sweeps expired funds
 
 > **Role: Platform Admin** — only the platform admin can call `claimExpiredFunds`. Callable only after `campaignDeadline + platformClaimDelay`, and only after `launchTime` (time-constrained variant).
 
@@ -265,16 +273,27 @@ Customer (James)            Karma (Platform Admin)         TimeConstrainedTreasu
        |                         |                                |
        |   Order GS-6            |                                |
        |------------------------>|                                |
+       |                         |                                |
+       |         --- FLOW A: Off-chain / fiat payment ---         |
+       |                         |                                |
        |                         |  createPayment(...)            |
        |                         |  [Platform Admin, in window]   |
-       |                         |------------------------------->|  Order recorded
+       |                         |------------------------------->|  Order recorded (no funds)
+       |                         |                                |
+       |   Pays off-chain        |                                |
+       |   (wire, financing)     |                                |
+       |------------------------>|                                |
+       |                         |                                |
+       |         --- FLOW B: On-chain crypto payment ---          |
        |                         |                                |
        |   ERC-20 approve()      |                                |
        |-------------------------------------------------------->|  Treasury approved
        |                         |                                |
        |                         |  processCryptoPayment(...)     |
        |                         |  [Any caller, in window]       |
-       |                         |------------------------------->|  Funds locked
+       |                         |------------------------------->|  Payment created + funds locked
+       |                         |                                |
+       |         --- Both flows continue here ---                 |
        |                         |                                |
        |              --- SUCCESS PATH ---                        |
        |                         |                                |
