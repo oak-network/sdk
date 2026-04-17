@@ -96,6 +96,16 @@ export async function simulateWithErrorDecode<T = unknown>(operation: () => Prom
   }
 }
 
+/** Shape of the `request` object returned by viem's `simulateContract`. */
+interface ViemSimulateRequest {
+  address: Address;
+  abi: readonly unknown[];
+  functionName: string;
+  args?: readonly unknown[];
+  value?: bigint;
+  gas?: bigint;
+}
+
 /**
  * Converts the raw viem simulateContract response into the SDK's SimulationResult shape.
  *
@@ -106,11 +116,8 @@ export async function simulateWithErrorDecode<T = unknown>(operation: () => Prom
  * @param response - Raw response from publicClient.simulateContract
  * @returns SimulationResult with the contract return value and prepared transaction params
  */
-export function toSimulationResult<T>(response: { result: T; request: Record<string, unknown> }): SimulationResult<T> {
-  const req = response.request;
-  const abi = req["abi"] as readonly unknown[];
-  const functionName = req["functionName"] as string;
-  const args = req["args"] as readonly unknown[] | undefined;
+export function toSimulationResult<T>(response: { result: T; request: ViemSimulateRequest }): SimulationResult<T> {
+  const { address, abi, functionName, args, value, gas } = response.request;
 
   const data = encodeFunctionData({
     abi,
@@ -121,10 +128,10 @@ export function toSimulationResult<T>(response: { result: T; request: Record<str
   return {
     result: response.result,
     request: {
-      to: req["address"] as Address,
+      to: address,
       data,
-      value: req["value"] as bigint | undefined,
-      gas: req["gas"] as bigint | undefined,
+      value,
+      gas,
     },
   };
 }

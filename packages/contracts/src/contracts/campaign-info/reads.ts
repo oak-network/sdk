@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient } from "../../lib";
 import { CAMPAIGN_INFO_ABI } from "./abi";
 import type { CampaignInfoReads } from "./types";
-import type { LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
+import type { Bytes4, LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
 
 /**
  * Builds read methods for a CampaignInfo contract instance.
@@ -87,6 +87,9 @@ export function createCampaignInfoReads(
     },
     async getLineItemType(platformHash: Hex, typeId: Hex): Promise<LineItemTypeInfo> {
       const result = await publicClient.readContract({ ...contract, functionName: "getLineItemType", args: [platformHash, typeId] });
+      // viem returns Solidity structs as readonly tuple objects whose type doesn't
+      // unify with the SDK's named interface; the double-cast bridges the gap safely
+      // because the ABI field names and types are identical to the target interface.
       return result as unknown as LineItemTypeInfo;
     },
     async getCampaignConfig(): Promise<CampaignConfig> {
@@ -136,8 +139,14 @@ export function createCampaignInfoReads(
     async balanceOf(owner: Address) {
       return publicClient.readContract({ ...contract, functionName: "balanceOf", args: [owner] });
     },
-    async supportsInterface(interfaceId: Hex) {
+    async supportsInterface(interfaceId: Bytes4) {
       return publicClient.readContract({ ...contract, functionName: "supportsInterface", args: [interfaceId] });
+    },
+    async getApproved(tokenId: bigint) {
+      return publicClient.readContract({ ...contract, functionName: "getApproved", args: [tokenId] });
+    },
+    async isApprovedForAll(owner: Address, operator: Address) {
+      return publicClient.readContract({ ...contract, functionName: "isApprovedForAll", args: [owner, operator] });
     },
   };
 }

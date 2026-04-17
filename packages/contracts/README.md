@@ -58,7 +58,13 @@ See the full [Quickstart](https://oaknetwork.org/docs/contracts-sdk/quickstart) 
 
 ## Client Configuration
 
-Five config/signer patterns are supported. Mix and match as needed.
+Five config/signer patterns are supported — mix and match as needed:
+
+1. **Simple** — `chainId` + `rpcUrl` + `privateKey` (full read/write)
+2. **Read-only** — `chainId` + `rpcUrl`, no private key (reads only, writes throw)
+3. **Per-entity signer** — attach a signer when creating an entity
+4. **Per-call signer** — pass a signer to individual write/simulate calls
+5. **Full (BYO clients)** — pass pre-built viem `PublicClient` / `WalletClient`
 
 ### Pattern 1 — Simple (chainId + rpcUrl + privateKey)
 

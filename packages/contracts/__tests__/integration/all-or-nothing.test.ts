@@ -15,14 +15,6 @@ describe("AllOrNothing — reads (may revert on uninitialized implementation)", 
   it("getPlatformFeePercent", async () => { try { expect(typeof (await aon.getPlatformFeePercent())).toBe("bigint"); } catch { /* implementation revert */ } });
   it("paused", async () => { try { expect(typeof (await aon.paused())).toBe("boolean"); } catch { /* implementation revert */ } });
   it("cancelled", async () => { try { expect(typeof (await aon.cancelled())).toBe("boolean"); } catch { /* implementation revert */ } });
-  it("balanceOf", async () => { try { expect(typeof (await aon.balanceOf(ZERO_ADDR))).toBe("bigint"); } catch { /* implementation revert */ } });
-  it("ownerOf (may revert)", async () => { try { await aon.ownerOf(0n); } catch { /* expected */ } });
-  it("tokenURI (may revert)", async () => { try { await aon.tokenURI(0n); } catch { /* expected */ } });
-  it("name", async () => { try { expect(typeof (await aon.name())).toBe("string"); } catch { /* implementation revert */ } });
-  it("symbol", async () => { try { expect(typeof (await aon.symbol())).toBe("string"); } catch { /* implementation revert */ } });
-  it("getApproved (may revert)", async () => { try { await aon.getApproved(0n); } catch { /* expected */ } });
-  it("isApprovedForAll", async () => { try { expect(typeof (await aon.isApprovedForAll(ZERO_ADDR, ZERO_ADDR))).toBe("boolean"); } catch { /* implementation revert */ } });
-  it("supportsInterface", async () => { try { expect(typeof (await aon.supportsInterface("0x80ac58cd"))).toBe("boolean"); } catch { /* implementation revert */ } });
 });
 
 describe("AllOrNothing — writes (may revert)", () => {
@@ -40,11 +32,6 @@ describe("AllOrNothing — writes (may revert)", () => {
   it("claimRefund", async () => { try { await aon.claimRefund(0n); } catch { /* expected */ } });
   it("disburseFees", async () => { try { await aon.disburseFees(); } catch { /* expected */ } });
   it("withdraw", async () => { try { await aon.withdraw(); } catch { /* expected */ } });
-  it("burn", async () => { try { await aon.burn(0n); } catch { /* expected */ } });
-  it("approve", async () => { try { await aon.approve(ZERO_ADDR, 0n); } catch { /* expected */ } });
-  it("setApprovalForAll", async () => { try { await aon.setApprovalForAll(ZERO_ADDR, true); } catch { /* expected */ } });
-  it("safeTransferFrom", async () => { try { await aon.safeTransferFrom(ZERO_ADDR, ZERO_ADDR, 0n); } catch { /* expected */ } });
-  it("transferFrom", async () => { try { await aon.transferFrom(ZERO_ADDR, ZERO_ADDR, 0n); } catch { /* expected */ } });
 });
 
 describe("AllOrNothing — simulate (may throw)", () => {

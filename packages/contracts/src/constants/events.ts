@@ -66,8 +66,6 @@ export const TREASURY_FACTORY_EVENTS = {
 
 /** Event names emitted by the AllOrNothing treasury contract. */
 export const ALL_OR_NOTHING_EVENTS = {
-  Approval: "Approval",
-  ApprovalForAll: "ApprovalForAll",
   Cancelled: "Cancelled",
   FeesDisbursed: "FeesDisbursed",
   Paused: "Paused",
@@ -76,15 +74,12 @@ export const ALL_OR_NOTHING_EVENTS = {
   RewardsAdded: "RewardsAdded",
   RewardRemoved: "RewardRemoved",
   SuccessConditionNotFulfilled: "SuccessConditionNotFulfilled",
-  Transfer: "Transfer",
   Unpaused: "Unpaused",
   WithdrawalSuccessful: "WithdrawalSuccessful",
 } as const;
 
 /** Event names emitted by the KeepWhatsRaised treasury contract. */
 export const KEEP_WHATS_RAISED_EVENTS = {
-  Approval: "Approval",
-  ApprovalForAll: "ApprovalForAll",
   Cancelled: "Cancelled",
   DeadlineUpdated: "KeepWhatsRaisedDeadlineUpdated",
   FeesDisbursed: "FeesDisbursed",
@@ -97,7 +92,6 @@ export const KEEP_WHATS_RAISED_EVENTS = {
   RewardsAdded: "RewardsAdded",
   RewardRemoved: "RewardRemoved",
   TipClaimed: "TipClaimed",
-  Transfer: "Transfer",
   TreasuryConfigured: "TreasuryConfigured",
   Unpaused: "Unpaused",
   WithdrawalApproved: "WithdrawalApproved",

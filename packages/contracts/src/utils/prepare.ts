@@ -2,6 +2,12 @@ import type { Address, Hex, PublicClient, Chain } from "../lib";
 import { encodeFunctionData } from "../lib";
 import type { SimulationResult } from "../types/events";
 
+/** Extracts function names from a typed ABI array; falls back to `string` for untyped ABIs. */
+type AbiWriteFunctionName<TAbi extends readonly unknown[]> =
+  Extract<TAbi[number], { type: "function"; name: string }> extends never
+    ? string
+    : Extract<TAbi[number], { type: "function"; name: string }>["name"];
+
 /**
  * Options for preparing a contract write transaction.
  *
@@ -12,8 +18,8 @@ export interface PrepareWriteOptions<TAbi extends readonly unknown[] = readonly 
   address: Address;
   /** Contract ABI (use an exported ABI constant, e.g. GLOBAL_PARAMS_ABI). */
   abi: TAbi;
-  /** The contract function name to call. */
-  functionName: string;
+  /** The contract function name to call — must match a function in the ABI. */
+  functionName: AbiWriteFunctionName<TAbi>;
   /** Arguments to pass to the contract function. */
   args?: readonly unknown[];
   /** Native token value to send (wei). Defaults to 0. */

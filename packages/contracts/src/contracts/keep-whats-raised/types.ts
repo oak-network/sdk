@@ -36,22 +36,6 @@ export interface KeepWhatsRaisedReads {
   paused(): Promise<boolean>;
   /** Returns true if the treasury has been cancelled. */
   cancelled(): Promise<boolean>;
-  /** Returns the number of pledge NFT tokens held by the given owner. */
-  balanceOf(owner: Address): Promise<bigint>;
-  /** Returns the owner address of the pledge NFT with the given token ID. */
-  ownerOf(tokenId: bigint): Promise<Address>;
-  /** Returns the metadata URI for the pledge NFT with the given token ID. */
-  tokenURI(tokenId: bigint): Promise<string>;
-  /** Returns the ERC-721 collection name. */
-  name(): Promise<string>;
-  /** Returns the ERC-721 collection symbol. */
-  symbol(): Promise<string>;
-  /** Returns the address approved to transfer the given token ID. */
-  getApproved(tokenId: bigint): Promise<Address>;
-  /** Returns true if the operator is approved to manage all tokens of the given owner. */
-  isApprovedForAll(owner: Address, operator: Address): Promise<boolean>;
-  /** Returns true if the contract implements the given ERC-165 interface ID. */
-  supportsInterface(interfaceId: Hex): Promise<boolean>;
 }
 
 /** Write methods for KeepWhatsRaised treasury. */
@@ -122,14 +106,6 @@ export interface KeepWhatsRaisedWrites {
   updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<Hex>;
   /** Updates the campaign funding goal amount. */
   updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<Hex>;
-  /** Approves an address to transfer a specific pledge NFT token. */
-  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
-  /** Grants or revokes operator approval for all tokens owned by the caller. */
-  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<Hex>;
-  /** Safely transfers a pledge NFT, calling onERC721Received on the recipient. */
-  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
-  /** Transfers a pledge NFT without the ERC-721 receiver check. */
-  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for KeepWhatsRaised write methods. */
@@ -200,14 +176,6 @@ export interface KeepWhatsRaisedSimulate {
   updateDeadline(deadline: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
   /** Simulates updateGoalAmount; returns a SimulationResult on success, throws a typed error on revert. */
   updateGoalAmount(goalAmount: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates approve; returns a SimulationResult on success, throws a typed error on revert. */
-  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates setApprovalForAll; returns a SimulationResult on success, throws a typed error on revert. */
-  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates safeTransferFrom; returns a SimulationResult on success, throws a typed error on revert. */
-  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates transferFrom; returns a SimulationResult on success, throws a typed error on revert. */
-  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for KeepWhatsRaised. */
@@ -244,12 +212,6 @@ export interface KeepWhatsRaisedEvents {
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Cancelled event logs. */
   getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
-  /** Returns decoded Transfer event logs. */
-  getTransferLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
-  /** Returns decoded Approval event logs. */
-  getApprovalLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
-  /** Returns decoded ApprovalForAll event logs. */
-  getApprovalForAllLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known KeepWhatsRaised events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for Receipt events in real time. Returns an unwatch function. */
@@ -284,12 +246,6 @@ export interface KeepWhatsRaisedEvents {
   watchUnpaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Cancelled events in real time. Returns an unwatch function. */
   watchCancelled(onLogs: EventWatchHandler): () => void;
-  /** Watches for Transfer events in real time. Returns an unwatch function. */
-  watchTransfer(onLogs: EventWatchHandler): () => void;
-  /** Watches for Approval events in real time. Returns an unwatch function. */
-  watchApproval(onLogs: EventWatchHandler): () => void;
-  /** Watches for ApprovalForAll events in real time. Returns an unwatch function. */
-  watchApprovalForAll(onLogs: EventWatchHandler): () => void;
 }
 
 /** Full KeepWhatsRaised treasury entity (reads, writes, simulate, events). */

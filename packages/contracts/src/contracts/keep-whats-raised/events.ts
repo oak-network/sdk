@@ -97,15 +97,6 @@ export function createKeepWhatsRaisedEvents(
     async getCancelledLogs(options) {
       return fetchEventLogs(publicClient, address, "Cancelled", options);
     },
-    async getTransferLogs(options) {
-      return fetchEventLogs(publicClient, address, "Transfer", options);
-    },
-    async getApprovalLogs(options) {
-      return fetchEventLogs(publicClient, address, "Approval", options);
-    },
-    async getApprovalForAllLogs(options) {
-      return fetchEventLogs(publicClient, address, "ApprovalForAll", options);
-    },
     decodeLog(log) {
       return decode({ topics: [...log.topics] as Hex[], data: log.data });
     },
@@ -156,15 +147,6 @@ export function createKeepWhatsRaisedEvents(
     },
     watchCancelled(onLogs) {
       return createWatcher(publicClient, address, "Cancelled", onLogs);
-    },
-    watchTransfer(onLogs) {
-      return createWatcher(publicClient, address, "Transfer", onLogs);
-    },
-    watchApproval(onLogs) {
-      return createWatcher(publicClient, address, "Approval", onLogs);
-    },
-    watchApprovalForAll(onLogs) {
-      return createWatcher(publicClient, address, "ApprovalForAll", onLogs);
     },
   };
 }

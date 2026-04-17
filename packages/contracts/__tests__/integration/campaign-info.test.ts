@@ -97,6 +97,10 @@ describe("CampaignInfo — reads (may revert on uninitialized implementation)", 
   it("paused", async () => {
     try { expect(typeof (await ci.paused())).toBe("boolean"); } catch { /* implementation revert */ }
   });
+  it("getApproved (may revert)", async () => { try { await ci.getApproved(0n); } catch { /* expected */ } });
+  it("isApprovedForAll", async () => {
+    try { expect(typeof (await ci.isApprovedForAll(ZERO_ADDR, ZERO_ADDR))).toBe("boolean"); } catch { /* implementation revert */ }
+  });
 });
 
 describe("CampaignInfo — writes (may revert)", () => {
@@ -112,6 +116,8 @@ describe("CampaignInfo — writes (may revert)", () => {
   it("unpauseCampaign", async () => { try { await ci.unpauseCampaign(BYTES32_ZERO); } catch { /* expected */ } });
   it("cancelCampaign", async () => { try { await ci.cancelCampaign(BYTES32_ZERO); } catch { /* expected */ } });
   it("setPlatformInfo", async () => { try { await ci.setPlatformInfo(BYTES32_ZERO, ZERO_ADDR); } catch { /* expected */ } });
+  it("approve", async () => { try { await ci.approve(ZERO_ADDR, 0n); } catch { /* expected */ } });
+  it("setApprovalForAll", async () => { try { await ci.setApprovalForAll(ZERO_ADDR, true); } catch { /* expected */ } });
   it("transferOwnership", async () => { try { await ci.transferOwnership(ZERO_ADDR); } catch { /* expected */ } });
   it("renounceOwnership", async () => { try { await ci.renounceOwnership(); } catch { /* expected */ } });
 });
@@ -124,6 +130,8 @@ describe("CampaignInfo — simulate (may throw)", () => {
   it("simulate.mintNFTForPledge", async () => { try { await ci.simulate.mintNFTForPledge(ZERO_ADDR, BYTES32_ZERO, ZERO_ADDR, 100n, 0n, 0n); } catch { /* expected */ } });
   it("simulate.pauseCampaign", async () => { try { await ci.simulate.pauseCampaign(BYTES32_ZERO); } catch { /* expected */ } });
   it("simulate.cancelCampaign", async () => { try { await ci.simulate.cancelCampaign(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.approve", async () => { try { await ci.simulate.approve(ZERO_ADDR, 0n); } catch { /* expected */ } });
+  it("simulate.setApprovalForAll", async () => { try { await ci.simulate.setApprovalForAll(ZERO_ADDR, true); } catch { /* expected */ } });
 });
 
 describe("CampaignInfo — events", () => {

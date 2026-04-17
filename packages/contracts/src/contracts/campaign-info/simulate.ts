@@ -206,6 +206,32 @@ export function createCampaignInfoSimulate(
       );
       return toSimulationResult(response);
     },
+    async approve(to: Address, tokenId: bigint, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      const response = await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "approve",
+          args: [to, tokenId],
+        }),
+      );
+      return toSimulationResult(response);
+    },
+    async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions) {
+      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
+      const response = await simulateWithErrorDecode(() =>
+        publicClient.simulateContract({
+          ...contract,
+          chain,
+          account,
+          functionName: "setApprovalForAll",
+          args: [operator, approved],
+        }),
+      );
+      return toSimulationResult(response);
+    },
   };
 }
 

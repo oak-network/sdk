@@ -1,5 +1,5 @@
 import type { Address, Hex } from "../../lib";
-import type { LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
+import type { Bytes4, LineItemTypeInfo, CampaignConfig, PledgeData } from "../../types/structs";
 import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
@@ -84,7 +84,11 @@ export interface CampaignInfoReads {
   /** Returns the number of tokens held by an owner. */
   balanceOf(owner: Address): Promise<bigint>;
   /** Returns true if the contract supports the given ERC-165 interface ID. */
-  supportsInterface(interfaceId: Hex): Promise<boolean>;
+  supportsInterface(interfaceId: Bytes4): Promise<boolean>;
+  /** Returns the approved address for a given token ID, or zero if none. */
+  getApproved(tokenId: bigint): Promise<Address>;
+  /** Returns true if the operator is approved to manage all tokens of the given owner. */
+  isApprovedForAll(owner: Address, operator: Address): Promise<boolean>;
 }
 
 /** Write methods for a CampaignInfo contract instance. */
@@ -117,6 +121,10 @@ export interface CampaignInfoWrites {
   transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<Hex>;
   /** Renounces contract ownership permanently. */
   renounceOwnership(options?: CallSignerOptions): Promise<Hex>;
+  /** Approves an address to transfer a specific pledge NFT. */
+  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
+  /** Grants or revokes operator approval for all tokens owned by the caller. */
+  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for CampaignInfo write methods. */
@@ -149,6 +157,10 @@ export interface CampaignInfoSimulate {
   transferOwnership(newOwner: Address, options?: CallSignerOptions): Promise<SimulationResult>;
   /** Simulates renounceOwnership; returns a SimulationResult on success, throws a typed error on revert. */
   renounceOwnership(options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates approve; returns a SimulationResult on success, throws a typed error on revert. */
+  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
+  /** Simulates setApprovalForAll; returns a SimulationResult on success, throws a typed error on revert. */
+  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for a CampaignInfo contract instance. */

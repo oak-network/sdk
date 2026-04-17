@@ -1,5 +1,15 @@
 import type { Address, Hex } from "../lib";
 
+/**
+ * A 4-byte hex string (`0x` + 8 hex chars), e.g. `"0x01ffc9a7"`.
+ * Used for ERC-165 interface IDs passed to `supportsInterface`.
+ *
+ * Branded to prevent accidentally passing a full-length hash or
+ * arbitrary Hex value where only 4 bytes are valid on-chain.
+ * Use {@link isBytes4} to validate and narrow at runtime.
+ */
+export type Bytes4 = `0x${string}` & { readonly __bytes4: unique symbol };
+
 /** ICampaignData.CampaignData — used by CampaignInfo and CampaignInfoFactory. */
 export interface CampaignData {
   /** Unix timestamp (seconds) when the campaign launches. */
