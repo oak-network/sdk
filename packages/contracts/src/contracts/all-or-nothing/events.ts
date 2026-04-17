@@ -37,7 +37,7 @@ async function fetchEventLogs(
     address,
     abi: ALL_OR_NOTHING_ABI,
     eventName,
-    fromBlock: options?.fromBlock ?? 0n,
+    fromBlock: options?.fromBlock,
     toBlock: options?.toBlock,
   });
   return logs.map((log) =>
