@@ -150,7 +150,7 @@ import { createOakContractsClient, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
   rpcUrl: process.env.RPC_URL,
-  privateKey: process.env.PRIVATE_KEY as `0x${string}`,
+  privateKey: process.env.PRIVATE_KEY! as `0x${string}`,
 });
 ```
 
