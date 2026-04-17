@@ -23,7 +23,7 @@ Same model as Scenario 1: the campaign whitelists **multiple ERC-20s** per **cur
 2. **TechForge** deploys a Keep-What's-Raised treasury for the campaign
 3. **ArtFund (Platform Admin)** configures the treasury with withdrawal delays, refund policies, and the fee structure
 4. **TechForge** adds reward tiers — and optionally removes one they no longer want to offer
-5. **Backers** discover the campaign and pledge — some choose a reward tier, others pledge without a reward as a show of support
+5. **Backers** discover the campaign and pledge — some choose a reward tier, others pledge without a reward as a show of support. **ArtFund (Platform Admin)** may record payment gateway fees per pledge via `setPaymentGatewayFee` or `setFeeAndPledge`
 6. Two types of withdrawal:
    - **(a–b) Partial:** ArtFund approves withdrawals (`06a`), then TechForge executes the partial amount (`06b`). Step 3 sets **`withdrawalDelay: 0`** so both scripts can run in one session; use a non-zero delay in production.
    - **(c) Final:** After the deadline, TechForge sweeps the remaining balance (`06c`) minus applicable fees
@@ -44,7 +44,7 @@ Same model as Scenario 1: the campaign whitelists **multiple ERC-20s** per **cur
 | 2 | `02-deploy-treasury.ts` | Creator | Deploy a Keep-What's-Raised treasury | Required |
 | 3 | `03-configure-treasury.ts` | Platform Admin | Set withdrawal delays, refund policies, and fees | Required |
 | 4 | `04-manage-rewards.ts` | Creator | Add reward tiers + optionally remove a tier | Required |
-| 5 | `05-backer-pledge.ts` | Backer | Pledge with or without a reward; platform can set gateway fees | Required |
+| 5 | `05-backer-pledge.ts` | Backer + Platform Admin | Backer pledges with or without a reward; Platform Admin records gateway fees (`setPaymentGatewayFee` / `setFeeAndPledge`) | Required |
 | 6a | `06a-approve-partial-withdrawal.ts` | Platform Admin | `approveWithdrawal` — required before any mid-campaign `withdraw` | Required |
 | 6b | `06b-execute-partial-withdrawal.ts` | Creator | Partial `withdraw(token, amount)` after delay (0 in Step 3 for sequential runs) | Required |
 | 6c | `06c-final-withdrawal.ts` | Creator or Platform Admin | Post-deadline withdrawal — sweep remaining balance with fees | Required |

@@ -192,11 +192,13 @@ const txHash = await kwrTreasury.addRewards(rewardNames, rewards);
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 5: Backers pledge with tips and gateway fees
+### Step 5: Backers pledge with tips
 
-Backers pledge to Lena's campaign. KWR supports **tips** (on top of the pledge) and **payment gateway fees** (recorded per-pledge).
+Backers pledge to Lena's campaign. KWR supports **tips** (on top of the pledge), which go directly to the platform.
 
 **Pledge with a reward and a tip:**
+
+> **Role: Any caller (backer)** — `pledgeForAReward` is permissionless but time-gated (must be within the campaign window).
 
 ```typescript
 const pledgeId = toHex("pledge-001", { size: 32 });
@@ -211,7 +213,30 @@ const txHash = await kwrTreasury.pledgeForAReward(
 await oak.waitForReceipt(txHash);
 ```
 
-**Record a payment gateway fee for the pledge:**
+**Pledge without a reward:**
+
+> **Role: Any caller (backer)** — `pledgeWithoutAReward` is permissionless but time-gated.
+
+```typescript
+const pledgeId = toHex("pledge-003", { size: 32 });
+
+const txHash = await kwrTreasury.pledgeWithoutAReward(
+  pledgeId,
+  BACKER_ADDRESS,
+  USDC_TOKEN_ADDRESS,
+  30_000000n,    // 30 USDC pledge (6 decimals)
+  2_000000n,     // 2 USDC tip
+);
+await oak.waitForReceipt(txHash);
+```
+
+### Step 5b: Platform records payment gateway fees
+
+> **Role: Platform Admin** — `setPaymentGatewayFee` and `setFeeAndPledge` are admin-gated (`onlyPlatformAdmin`). These are called by the platform backend, not by the backer.
+
+Platforms that charge on-ramp or payment processing fees can record them on-chain for transparent accounting. There are two approaches:
+
+**Record a gateway fee for an existing pledge:**
 
 ```typescript
 await kwrTreasury.setPaymentGatewayFee(
@@ -220,7 +245,7 @@ await kwrTreasury.setPaymentGatewayFee(
 );
 ```
 
-**Combined fee + pledge in one transaction:**
+**Combined fee + pledge in one transaction** — records the gateway fee and creates the pledge atomically. Tokens are transferred from the admin wallet:
 
 ```typescript
 const pledgeId = toHex("pledge-002", { size: 32 });
@@ -234,21 +259,6 @@ const txHash = await kwrTreasury.setFeeAndPledge(
   2_000000n,                                          // 2 USDC gateway fee
   [toHex("early-bird-kit", { size: 32 })],            // reward
   true,                                                // isPledgeForAReward
-);
-await oak.waitForReceipt(txHash);
-```
-
-**Pledge without a reward:**
-
-```typescript
-const pledgeId = toHex("pledge-003", { size: 32 });
-
-const txHash = await kwrTreasury.pledgeWithoutAReward(
-  pledgeId,
-  BACKER_ADDRESS,
-  USDC_TOKEN_ADDRESS,
-  30_000000n,    // 30 USDC pledge (6 decimals)
-  2_000000n,     // 2 USDC tip
 );
 await oak.waitForReceipt(txHash);
 ```
@@ -359,7 +369,8 @@ Creator (Lena)         TechForge Platform           KeepWhatsRaised Treasury
 Backers pledge + tip          |                               |
      |  pledgeForAReward()    |                               |
      |----------------------->|------------------------------>|  NFT minted, funds + tip locked
-     |  setPaymentGatewayFee()|                               |
+     |                        |  setPaymentGatewayFee()       |
+     |                        |  [Platform Admin]             |
      |                        |------------------------------>|  Gateway fee recorded
      |                        |                               |
      |           --- MID-CAMPAIGN WITHDRAWAL ---              |
