@@ -346,6 +346,8 @@ describe("CampaignInfo entity", () => {
     it("ownerOf", async () => { await entity.ownerOf(0n); });
     it("balanceOf", async () => { await entity.balanceOf(ADDR); });
     it("supportsInterface", async () => { await entity.supportsInterface(B32.slice(0, 10) as Bytes4); });
+    it("getApproved", async () => { await entity.getApproved(0n); });
+    it("isApprovedForAll", async () => { await entity.isApprovedForAll(ADDR, ADDR); });
   });
 
   describe("writes", () => {
@@ -363,6 +365,8 @@ describe("CampaignInfo entity", () => {
     it("setPlatformInfo", async () => { await entity.setPlatformInfo(B32, ADDR); });
     it("transferOwnership", async () => { await entity.transferOwnership(ADDR); });
     it("renounceOwnership", async () => { await entity.renounceOwnership(); });
+    it("approve", async () => { await entity.approve(ADDR, 0n); });
+    it("setApprovalForAll", async () => { await entity.setApprovalForAll(ADDR, true); });
   });
 
   describe("simulate", () => {
@@ -380,6 +384,8 @@ describe("CampaignInfo entity", () => {
     it("setPlatformInfo", async () => { await entity.simulate.setPlatformInfo(B32, ADDR); });
     it("transferOwnership", async () => { await entity.simulate.transferOwnership(ADDR); });
     it("renounceOwnership", async () => { await entity.simulate.renounceOwnership(); });
+    it("approve", async () => { await entity.simulate.approve(ADDR, 0n); });
+    it("setApprovalForAll", async () => { await entity.simulate.setApprovalForAll(ADDR, true); });
   });
 
   describe("events", () => {
@@ -571,14 +577,6 @@ describe("AllOrNothing entity", () => {
     it("getPlatformFeePercent", async () => { await entity.getPlatformFeePercent(); });
     it("paused", async () => { await entity.paused(); });
     it("cancelled", async () => { await entity.cancelled(); });
-    it("balanceOf", async () => { await entity.balanceOf(ADDR); });
-    it("ownerOf", async () => { await entity.ownerOf(0n); });
-    it("tokenURI", async () => { await entity.tokenURI(0n); });
-    it("name", async () => { await entity.name(); });
-    it("symbol", async () => { await entity.symbol(); });
-    it("getApproved", async () => { await entity.getApproved(0n); });
-    it("isApprovedForAll", async () => { await entity.isApprovedForAll(ADDR, ADDR); });
-    it("supportsInterface", async () => { await entity.supportsInterface("0x80ac58cd" as Bytes4); });
   });
 
   describe("writes", () => {
@@ -592,11 +590,6 @@ describe("AllOrNothing entity", () => {
     it("claimRefund", async () => { await entity.claimRefund(0n); });
     it("disburseFees", async () => { await entity.disburseFees(); });
     it("withdraw", async () => { await entity.withdraw(); });
-    it("burn", async () => { await entity.burn(0n); });
-    it("approve", async () => { await entity.approve(ADDR, 0n); });
-    it("setApprovalForAll", async () => { await entity.setApprovalForAll(ADDR, true); });
-    it("safeTransferFrom", async () => { await entity.safeTransferFrom(ADDR, ADDR, 0n); });
-    it("transferFrom", async () => { await entity.transferFrom(ADDR, ADDR, 0n); });
   });
 
   describe("simulate", () => {
@@ -610,11 +603,6 @@ describe("AllOrNothing entity", () => {
     it("claimRefund", async () => { await entity.simulate.claimRefund(0n); });
     it("disburseFees", async () => { await entity.simulate.disburseFees(); });
     it("withdraw", async () => { await entity.simulate.withdraw(); });
-    it("burn", async () => { await entity.simulate.burn(0n); });
-    it("approve", async () => { await entity.simulate.approve(ADDR, 0n); });
-    it("setApprovalForAll", async () => { await entity.simulate.setApprovalForAll(ADDR, true); });
-    it("safeTransferFrom", async () => { await entity.simulate.safeTransferFrom(ADDR, ADDR, 0n); });
-    it("transferFrom", async () => { await entity.simulate.transferFrom(ADDR, ADDR, 0n); });
   });
 
   describe("events", () => {
@@ -627,10 +615,7 @@ describe("AllOrNothing entity", () => {
     it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
     it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
     it("getCancelledLogs", async () => { await entity.events.getCancelledLogs(); });
-    it("getTransferLogs", async () => { await entity.events.getTransferLogs(); });
     it("getSuccessConditionNotFulfilledLogs", async () => { await entity.events.getSuccessConditionNotFulfilledLogs(); });
-    it("getApprovalLogs", async () => { await entity.events.getApprovalLogs(); });
-    it("getApprovalForAllLogs", async () => { await entity.events.getApprovalForAllLogs(); });
     it("watchReceipt", () => { entity.events.watchReceipt(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
     it("watchRefundClaimed", () => { entity.events.watchRefundClaimed(() => {}); });
     it("watchWithdrawalSuccessful", () => { entity.events.watchWithdrawalSuccessful(() => {}); });
@@ -640,10 +625,7 @@ describe("AllOrNothing entity", () => {
     it("watchPaused", () => { entity.events.watchPaused(() => {}); });
     it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
     it("watchCancelled", () => { entity.events.watchCancelled(() => {}); });
-    it("watchTransfer", () => { entity.events.watchTransfer(() => {}); });
     it("watchSuccessConditionNotFulfilled", () => { entity.events.watchSuccessConditionNotFulfilled(() => {}); });
-    it("watchApproval", () => { entity.events.watchApproval(() => {}); });
-    it("watchApprovalForAll", () => { entity.events.watchApprovalForAll(() => {}); });
     it("decodeLog decodes a SuccessConditionNotFulfilled event", () => {
       const sig = keccak256(toHex("SuccessConditionNotFulfilled()"));
       const result = entity.events.decodeLog({ topics: [sig], data: "0x" as `0x${string}` });
@@ -698,14 +680,6 @@ describe("KeepWhatsRaised entity", () => {
     it("getFeeValue", async () => { await entity.getFeeValue(B32); });
     it("paused", async () => { await entity.paused(); });
     it("cancelled", async () => { await entity.cancelled(); });
-    it("balanceOf", async () => { await entity.balanceOf(ADDR); });
-    it("ownerOf", async () => { await entity.ownerOf(0n); });
-    it("tokenURI", async () => { await entity.tokenURI(0n); });
-    it("name", async () => { await entity.name(); });
-    it("symbol", async () => { await entity.symbol(); });
-    it("getApproved", async () => { await entity.getApproved(0n); });
-    it("isApprovedForAll", async () => { await entity.isApprovedForAll(ADDR, ADDR); });
-    it("supportsInterface", async () => { await entity.supportsInterface("0x80ac58cd" as Bytes4); });
   });
 
   describe("writes", () => {
@@ -734,10 +708,6 @@ describe("KeepWhatsRaised entity", () => {
     it("withdraw", async () => { await entity.withdraw(ADDR, 0n); });
     it("updateDeadline", async () => { await entity.updateDeadline(0n); });
     it("updateGoalAmount", async () => { await entity.updateGoalAmount(0n); });
-    it("approve", async () => { await entity.approve(ADDR, 0n); });
-    it("setApprovalForAll", async () => { await entity.setApprovalForAll(ADDR, true); });
-    it("safeTransferFrom", async () => { await entity.safeTransferFrom(ADDR, ADDR, 0n); });
-    it("transferFrom", async () => { await entity.transferFrom(ADDR, ADDR, 0n); });
   });
 
   describe("simulate", () => {
@@ -766,10 +736,6 @@ describe("KeepWhatsRaised entity", () => {
     it("withdraw", async () => { await entity.simulate.withdraw(ADDR, 0n); });
     it("updateDeadline", async () => { await entity.simulate.updateDeadline(0n); });
     it("updateGoalAmount", async () => { await entity.simulate.updateGoalAmount(0n); });
-    it("approve", async () => { await entity.simulate.approve(ADDR, 0n); });
-    it("setApprovalForAll", async () => { await entity.simulate.setApprovalForAll(ADDR, true); });
-    it("safeTransferFrom", async () => { await entity.simulate.safeTransferFrom(ADDR, ADDR, 0n); });
-    it("transferFrom", async () => { await entity.simulate.transferFrom(ADDR, ADDR, 0n); });
   });
 
   describe("events", () => {
@@ -789,9 +755,6 @@ describe("KeepWhatsRaised entity", () => {
     it("getPausedLogs", async () => { await entity.events.getPausedLogs(); });
     it("getUnpausedLogs", async () => { await entity.events.getUnpausedLogs(); });
     it("getCancelledLogs", async () => { await entity.events.getCancelledLogs(); });
-    it("getTransferLogs", async () => { await entity.events.getTransferLogs(); });
-    it("getApprovalLogs", async () => { await entity.events.getApprovalLogs(); });
-    it("getApprovalForAllLogs", async () => { await entity.events.getApprovalForAllLogs(); });
     it("watchReceipt", () => { entity.events.watchReceipt(() => {}); expect(pub.watchContractEvent).toHaveBeenCalled(); });
     it("watchRefundClaimed", () => { entity.events.watchRefundClaimed(() => {}); });
     it("watchWithdrawalWithFeeSuccessful", () => { entity.events.watchWithdrawalWithFeeSuccessful(() => {}); });
@@ -808,9 +771,6 @@ describe("KeepWhatsRaised entity", () => {
     it("watchPaused", () => { entity.events.watchPaused(() => {}); });
     it("watchUnpaused", () => { entity.events.watchUnpaused(() => {}); });
     it("watchCancelled", () => { entity.events.watchCancelled(() => {}); });
-    it("watchTransfer", () => { entity.events.watchTransfer(() => {}); });
-    it("watchApproval", () => { entity.events.watchApproval(() => {}); });
-    it("watchApprovalForAll", () => { entity.events.watchApprovalForAll(() => {}); });
     it("decodeLog decodes a WithdrawalApproved event", () => {
       const sig = keccak256(toHex("WithdrawalApproved()"));
       const result = entity.events.decodeLog({ topics: [sig], data: "0x" as `0x${string}` });
