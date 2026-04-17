@@ -35,7 +35,9 @@ const alexOak = createOakContractsClient({
 });
 
 const treasuryAddress = process.env.ALL_OR_NOTHING_ADDRESS! as `0x${string}`;
+const campaignInfoAddress = process.env.CAMPAIGN_INFO_ADDRESS! as `0x${string}`;
 const alexTreasury = alexOak.allOrNothingTreasury(treasuryAddress);
+const alexCampaign = alexOak.campaignInfo(campaignInfoAddress);
 
 const pledgeToken = process.env.USDC_TOKEN_ADDRESS! as `0x${string}`;
 const shippingFee = 5_000_000n; // $5 shipping
@@ -51,7 +53,8 @@ const pledgeTxHash = await alexTreasury.pledgeForAReward(
 const pledgeReceipt = await alexOak.waitForReceipt(pledgeTxHash);
 console.log(`Alex pledged for "Signed Print" at block ${pledgeReceipt.blockNumber}`);
 
-const alexBalance = await alexTreasury.balanceOf(process.env.ALEX_ADDRESS! as `0x${string}`);
+// Pledge NFTs live on the CampaignInfo contract, not the treasury
+const alexBalance = await alexCampaign.balanceOf(process.env.ALEX_ADDRESS! as `0x${string}`);
 console.log("Alex's NFT balance:", alexBalance); // 1n
 
 // --- Pledge WITHOUT a reward ---
@@ -67,6 +70,7 @@ const samOak = createOakContractsClient({
 });
 
 const samTreasury = samOak.allOrNothingTreasury(treasuryAddress);
+const samCampaign = samOak.campaignInfo(campaignInfoAddress);
 
 const samPledgeTxHash = await samTreasury.pledgeWithoutAReward(
   process.env.SAM_ADDRESS! as `0x${string}`,
@@ -77,5 +81,6 @@ const samPledgeTxHash = await samTreasury.pledgeWithoutAReward(
 await samOak.waitForReceipt(samPledgeTxHash);
 console.log("Sam pledged $50 (no reward)");
 
-const samBalance = await samTreasury.balanceOf(process.env.SAM_ADDRESS! as `0x${string}`);
+// Pledge NFTs live on the CampaignInfo contract, not the treasury
+const samBalance = await samCampaign.balanceOf(process.env.SAM_ADDRESS! as `0x${string}`);
 console.log("Sam's NFT balance:", samBalance); // 1n

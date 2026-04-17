@@ -7,10 +7,10 @@
  * to the NFT owner's wallet in a single transaction.
  *
  * Prerequisite: the backer must approve the treasury contract to
- * manage their pledge NFT before calling `claimRefund`. The KWR
- * treasury is an ERC-721 itself, so `approve` is called directly on
- * the treasury entity (not on a separate NFT contract). Use `approve`
- * for a single token or `setApprovalForAll` for all tokens at once.
+ * manage their pledge NFT before calling `claimRefund`. Pledge NFTs
+ * live on the **CampaignInfo** contract, so `approve` is called on
+ * the CampaignInfo entity (not the treasury). Use `approve` for a
+ * single token or `setApprovalForAll` for all tokens at once.
  *
  * Refund eligibility timing:
  *
@@ -32,7 +32,9 @@ const backerOak = createOakContractsClient({
 });
 
 const treasuryAddress = process.env.KEEP_WHATS_RAISED_ADDRESS! as `0x${string}`;
+const campaignInfoAddress = process.env.CAMPAIGN_INFO_ADDRESS! as `0x${string}`;
 const treasury = backerOak.keepWhatsRaisedTreasury(treasuryAddress);
+const campaign = backerOak.campaignInfo(campaignInfoAddress);
 
 const pledgeTokenIdEnv = process.env.BACKER_PLEDGE_TOKEN_ID?.trim();
 if (!pledgeTokenIdEnv) {
@@ -41,8 +43,8 @@ if (!pledgeTokenIdEnv) {
 const tokenId = BigInt(pledgeTokenIdEnv);
 
 // Approve the treasury to burn this pledge NFT.
-// The KWR treasury IS the ERC-721, so approve is called on the treasury itself.
-const approveTxHash = await treasury.approve(treasuryAddress, tokenId);
+// Pledge NFTs live on CampaignInfo, so approve is called on the CampaignInfo entity.
+const approveTxHash = await campaign.approve(treasuryAddress, tokenId);
 await backerOak.waitForReceipt(approveTxHash);
 
 const refundTxHash = await treasury.claimRefund(tokenId);

@@ -25,7 +25,7 @@ Every payment record includes **`paymentToken`**. The treasury only accepts toke
 
 4. **CeloMarket** verifies the order (inventory check, fraud review) and confirms the payment. Batch confirmation is available for multiple payments.
 5. **Anyone** can read payment data and treasury balances — buyer address, amount, confirmation status, expected pending amount, and line item breakdown
-6. If something goes wrong (wrong item shipped, order cancelled), a refund is issued. For off-chain payments the **platform admin** cancels and directs the refund to an address (`claimRefund`). For on-chain crypto payments the **buyer (NFT owner)** calls `claimRefundSelf` — the contract verifies NFT ownership, burns the NFT, and sends refundable line items back.
+6. If something goes wrong, three separate cancellation/refund paths exist: **a)** the **platform admin** cancels an unconfirmed off-chain payment via `cancelPayment` (deletes the record; no on-chain refund since no funds were transferred); **b)** the **platform admin** refunds a confirmed non-NFT payment via `claimRefund(paymentId, refundAddress)`; **c)** for crypto payments, anyone can call `claimRefundSelf` — the contract looks up the NFT owner, burns the NFT, and sends refundable line items to that owner (no `cancelPayment` needed — crypto payments are auto-confirmed and `cancelPayment` rejects them).
 7. **Anyone** disburses accumulated protocol and platform fees
 8. **CeloMarket or the Creator** withdraws confirmed funds to the campaign owner's wallet
 9. For TimeConstrainedPaymentTreasury: the platform claims all remaining balances after the deadline + claim delay
@@ -33,15 +33,16 @@ Every payment record includes **`paymentToken`**. The treasury only accepts toke
 11. **CeloMarket** can pause and unpause the treasury during an investigation
 12. **CeloMarket or the Creator** can permanently cancel the treasury in extreme cases
 
-## NFT Handling in PaymentTreasury
+## NFT Handling
 
-Unlike the AllOrNothing and KeepWhatsRaised scenarios — where the treasury contract **is** an ERC-721 itself and exposes NFT functions directly (e.g., `treasury.ownerOf(...)`, `treasury.burn(...)`) — the **PaymentTreasury does not expose any NFT methods**. NFT minting for crypto payments is delegated to the **CampaignInfo** contract via `INFO.mintNFTForPledge(...)` internally.
+All pledge/payment NFTs across **every treasury type** (AllOrNothing, KeepWhatsRaised, PaymentTreasury) live on the **CampaignInfo** contract. No treasury contract is an ERC-721 itself — they all delegate NFT operations (`mint`, `burn`, `ownerOf`) to CampaignInfo internally.
 
 This means:
 
-- There is no `paymentTreasury.ownerOf(...)` or `paymentTreasury.approve(...)`.
-- NFT reads/writes for PaymentTreasury NFTs go through the **CampaignInfo** entity instead.
-- `claimRefundSelf(paymentId)` is the only PaymentTreasury function that interacts with NFTs — it verifies the caller is the current NFT owner, sends the refundable amount to them, and burns the NFT automatically.
+- There is no `treasury.ownerOf(...)` or `treasury.approve(...)` on **any** treasury type.
+- NFT reads (`ownerOf`, `balanceOf`, `tokenURI`, `getPledgeData`) and writes (`approve`, `setApprovalForAll`) go through the **CampaignInfo** entity: `oak.campaignInfo(address)`.
+- **Before calling any refund function** that burns an NFT (`claimRefund` on AON/KWR, `claimRefundSelf` on PaymentTreasury), the NFT owner must approve the treasury contract to manage the NFT via `campaignInfo.approve(treasuryAddress, tokenId)`. See [Step 6](./06-handle-refunds.ts) for the full code.
+- `claimRefundSelf(paymentId)` is the only PaymentTreasury function that interacts with NFTs — it looks up the current NFT owner, burns the NFT, and sends the refundable amount to that owner. Any caller can trigger it; the refund always goes to the NFT owner.
 - `claimRefund(paymentId, refundAddress)` is for **non-NFT payments** (off-chain `createPayment` where no NFT was minted) and can only be called by the platform admin.
 
 ## PaymentTreasury vs. TimeConstrainedPaymentTreasury
@@ -82,7 +83,7 @@ Which variant your platform uses depends on the treasury implementation register
 | `processCryptoPayment` | Anyone (buyer) | (no role modifier) |
 | `confirmPayment` / `confirmPaymentBatch` | Platform Admin | `onlyPlatformAdmin` |
 | `cancelPayment` | Platform Admin | `onlyPlatformAdmin` |
-| `claimRefundSelf(paymentId)` | NFT Owner (crypto payments only — verifies ownership, burns NFT) | (no role modifier) |
+| `claimRefundSelf(paymentId)` | Anyone (crypto payments only — burns NFT, refund goes to NFT owner) | (no role modifier) |
 | `claimRefund(paymentId, refundAddress)` | Platform Admin (off-chain payments only — `tokenId == 0`) | `onlyPlatformAdmin` |
 | `disburseFees` | Anyone | (no role modifier) |
 | `withdraw` | Platform Admin or Creator | `onlyPlatformAdminOrCampaignOwner` |
