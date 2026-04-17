@@ -5,9 +5,16 @@
  * open-source code review tool. They create the campaign through
  * the CampaignInfoFactory on the ArtFund platform.
  *
- * After creation, they immediately look up the deployed CampaignInfo
- * contract address using the identifier hash — this address is needed
- * for all subsequent steps (deploying the treasury, adding rewards, etc.).
+ * After creation we discover the deployed CampaignInfo address — this
+ * address is needed for all subsequent steps (deploying the treasury,
+ * adding rewards, etc.). Two approaches are shown:
+ *
+ *   1. **Receipt-based (recommended)** — decode the CampaignCreated
+ *      event from the transaction receipt. Deterministic, works
+ *      immediately regardless of RPC indexing lag.
+ *   2. **Lookup-based (convenience)** — call `identifierToCampaignInfo`.
+ *      Note: on some RPC providers the state may not be indexed
+ *      instantly after the transaction, briefly returning a zero address.
  *
  * Multi-token: the campaign `currency` resolves to accepted ERC-20
  * addresses; pledges and `withdraw(token, amount)` use tokens from that
@@ -21,6 +28,7 @@ import {
   getCurrentTimestamp,
   addDays,
   CHAIN_IDS,
+  CAMPAIGN_INFO_FACTORY_EVENTS,
 } from "@oaknetwork/contracts-sdk";
 
 const oak = createOakContractsClient({
@@ -54,7 +62,33 @@ const createTxHash = await factory.createCampaign({
   contractURI: "ipfs://QmAbc.../metadata.json",
 });
 
-await oak.waitForReceipt(createTxHash);
+const createReceipt = await oak.waitForReceipt(createTxHash);
+console.log(`Campaign created at block ${createReceipt.blockNumber}`);
 
-const campaignInfoAddress = await factory.identifierToCampaignInfo(identifierHash);
-console.log("Campaign at:", campaignInfoAddress);
+// ── Approach 1: Decode CampaignCreated from the receipt (recommended) ──
+let campaignInfoAddress: `0x${string}` | undefined;
+
+for (const log of createReceipt.logs) {
+  try {
+    const decoded = factory.events.decodeLog({
+      topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
+      data: log.data as `0x${string}`,
+    });
+
+    if (decoded.eventName === CAMPAIGN_INFO_FACTORY_EVENTS.CampaignCreated) {
+      campaignInfoAddress = decoded.args?.campaignInfoAddress as `0x${string}`;
+      break;
+    }
+  } catch {
+    // Log belongs to a different contract — skip
+  }
+}
+
+console.log("CampaignInfo (from receipt):", campaignInfoAddress);
+
+// ── Approach 2: Lookup via identifierToCampaignInfo (convenience) ──
+// Handy when you only have the identifier and did not keep the receipt.
+// On some RPC providers this may briefly return the zero address right
+// after the transaction — prefer Approach 1 when the receipt is available.
+const lookedUp = await factory.identifierToCampaignInfo(identifierHash);
+console.log("CampaignInfo (from lookup):", lookedUp);

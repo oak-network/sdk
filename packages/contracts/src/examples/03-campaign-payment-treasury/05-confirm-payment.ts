@@ -1,5 +1,5 @@
 /**
- * Step 4: Confirm the Payment (Platform Admin)
+ * Step 5: Confirm the Payment (Platform Admin)
  *
  * After Sam's tokens arrive in the treasury, CeloMarket performs its
  * off-chain verification — checking inventory, running fraud detection,

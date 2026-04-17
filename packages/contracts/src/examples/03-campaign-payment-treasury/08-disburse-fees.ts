@@ -1,5 +1,5 @@
 /**
- * Step 7: Disburse Protocol and Platform Fees (Anyone)
+ * Step 8: Disburse Protocol and Platform Fees (Anyone)
  *
  * `disburseFees()` transfers all accumulated protocol and platform
  * fees from the treasury to their respective recipients. There is

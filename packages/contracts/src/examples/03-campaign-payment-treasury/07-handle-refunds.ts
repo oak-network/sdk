@@ -1,5 +1,5 @@
 /**
- * Step 6: Handle Refunds (Platform Admin / Buyer)
+ * Step 7: Handle Refunds (Platform Admin / Buyer)
  *
  * Suppose the vase arrives damaged. Sam contacts CeloMarket's support
  * team, and they decide to issue a refund. Three distinct paths exist:

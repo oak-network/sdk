@@ -1,7 +1,7 @@
 /**
- * Step 3: Process a Crypto Payment (Buyer) — Independent On-Chain Flow
+ * Step 4: Process a Crypto Payment (Buyer) — Independent On-Chain Flow
  *
- * This is an alternative to Step 2's off-chain `createPayment` flow.
+ * This is an alternative to Step 3's off-chain `createPayment` flow.
  * `processCryptoPayment` is a standalone operation that creates the
  * payment record AND transfers ERC-20 tokens to the treasury in a
  * single transaction. It does NOT require or complete a prior

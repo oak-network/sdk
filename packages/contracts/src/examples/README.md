@@ -81,18 +81,19 @@ examples/
 │
 ├── 03-campaign-payment-treasury/    ← E-commerce payment processing
 │   ├── README.md
-│   ├── 01-setup-treasury.ts
-│   ├── 02-create-payment.ts            ← single + batch
-│   ├── 03-process-crypto-payment.ts
-│   ├── 04-confirm-payment.ts           ← single + batch
-│   ├── 05-read-payment-data.ts         ← payment details + treasury dashboard
-│   ├── 06-handle-refunds.ts            ← cancel + self/admin refund
-│   ├── 07-disburse-fees.ts
-│   ├── 08-withdraw-funds.ts
-│   ├── 09-claim-expired-funds.ts       ← TimeConstrained only
-│   ├── 10-claim-non-goal-line-items.ts
-│   ├── 11-pause-unpause-treasury.ts    ← OPTIONAL
-│   └── 12-cancel-treasury.ts           ← OPTIONAL
+│   ├── 01-create-campaign.ts
+│   ├── 02-deploy-treasury.ts
+│   ├── 03-create-payment.ts            ← single + batch
+│   ├── 04-process-crypto-payment.ts
+│   ├── 05-confirm-payment.ts           ← single + batch
+│   ├── 06-read-payment-data.ts         ← payment details + treasury dashboard
+│   ├── 07-handle-refunds.ts            ← cancel + self/admin refund
+│   ├── 08-disburse-fees.ts
+│   ├── 09-withdraw-funds.ts
+│   ├── 10-claim-expired-funds.ts       ← TimeConstrained only
+│   ├── 11-claim-non-goal-line-items.ts
+│   ├── 12-pause-unpause-treasury.ts    ← OPTIONAL
+│   └── 13-cancel-treasury.ts           ← OPTIONAL
 │
 ├── 04-event-monitoring/             ← Dashboards, analytics, real-time feeds
 │   ├── README.md

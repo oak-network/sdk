@@ -14,24 +14,25 @@ Every payment record includes **`paymentToken`**. The treasury only accepts toke
 
 ## How It Unfolds
 
-1. **CeloMarket (Platform Admin)** connects to its deployed PaymentTreasury contract and reads back the platform configuration
+1. **CeloMarket (Platform Admin / Creator)** creates a CampaignInfo contract via the CampaignInfoFactory — this holds NFT receipts for crypto payments
+2. **CeloMarket** deploys a PaymentTreasury through the TreasuryFactory, linking it to the CampaignInfo contract from Step 1
 
 **Two independent payment flows** — a platform uses one or both depending on its business model:
 
-2. **Flow A — Off-chain / fiat payment:** **CeloMarket** creates a payment record for Sam's order via `createPayment`. This records the intent on-chain (total amount, line items, external fees, expiration) but **no funds move**. A buyer pays through off-chain rails (credit card, bank transfer, etc.) and the platform later calls `confirmPayment` after verifying receipt.
-3. **Flow B — On-chain crypto payment:** **Sam (Buyer)** pays directly on-chain via `processCryptoPayment`. This is a **standalone operation** — it creates the payment record AND transfers ERC-20 tokens to the treasury in a single transaction. It does **not** require a prior `createPayment` call. An NFT is minted to the buyer as proof of payment.
+3. **Flow A — Off-chain / fiat payment:** **CeloMarket** creates a payment record for Sam's order via `createPayment`. This records the intent on-chain (total amount, line items, external fees, expiration) but **no funds move**. A buyer pays through off-chain rails (credit card, bank transfer, etc.) and the platform later calls `confirmPayment` after verifying receipt.
+4. **Flow B — On-chain crypto payment:** **Sam (Buyer)** pays directly on-chain via `processCryptoPayment`. This is a **standalone operation** — it creates the payment record AND transfers ERC-20 tokens to the treasury in a single transaction. It does **not** require a prior `createPayment` call. An NFT is minted to the buyer as proof of payment.
 
 > **These are two separate flows, not sequential steps.** `processCryptoPayment` does not "complete" a pending `createPayment` — it is an independent entry point for on-chain payments.
 
-4. **CeloMarket** verifies the order (inventory check, fraud review) and confirms the payment. Batch confirmation is available for multiple payments.
-5. **Anyone** can read payment data and treasury balances — buyer address, amount, confirmation status, expected pending amount, and line item breakdown
-6. If something goes wrong, three separate cancellation/refund paths exist: **a)** the **platform admin** cancels an unconfirmed off-chain payment via `cancelPayment` (deletes the record; no on-chain refund since no funds were transferred); **b)** the **platform admin** refunds a confirmed non-NFT payment via `claimRefund(paymentId, refundAddress)`; **c)** for crypto payments, anyone can call `claimRefundSelf` — the contract looks up the NFT owner, burns the NFT, and sends refundable line items to that owner (no `cancelPayment` needed — crypto payments are auto-confirmed and `cancelPayment` rejects them).
-7. **Anyone** disburses accumulated protocol and platform fees
-8. **CeloMarket or the Creator** withdraws confirmed funds to the campaign owner's wallet
-9. For TimeConstrainedPaymentTreasury: the platform claims all remaining balances after the deadline + claim delay
-10. **CeloMarket** claims non-goal line item accumulations (e.g., shipping fees) per token
-11. **CeloMarket** can pause and unpause the treasury during an investigation
-12. **CeloMarket or the Creator** can permanently cancel the treasury in extreme cases
+5. **CeloMarket** verifies the order (inventory check, fraud review) and confirms the payment. Batch confirmation is available for multiple payments.
+6. **Anyone** can read payment data and treasury balances — buyer address, amount, confirmation status, expected pending amount, and line item breakdown
+7. If something goes wrong, three separate cancellation/refund paths exist: **a)** the **platform admin** cancels an unconfirmed off-chain payment via `cancelPayment` (deletes the record; no on-chain refund since no funds were transferred); **b)** the **platform admin** refunds a confirmed non-NFT payment via `claimRefund(paymentId, refundAddress)`; **c)** for crypto payments, anyone can call `claimRefundSelf` — the contract looks up the NFT owner, burns the NFT, and sends refundable line items to that owner (no `cancelPayment` needed — crypto payments are auto-confirmed and `cancelPayment` rejects them).
+8. **Anyone** disburses accumulated protocol and platform fees
+9. **CeloMarket or the Creator** withdraws confirmed funds to the campaign owner's wallet
+10. For TimeConstrainedPaymentTreasury: the platform claims all remaining balances after the deadline + claim delay
+11. **CeloMarket** claims non-goal line item accumulations (e.g., shipping fees) per token
+12. **CeloMarket** can pause and unpause the treasury during an investigation
+13. **CeloMarket or the Creator** can permanently cancel the treasury in extreme cases
 
 ## NFT Handling
 
@@ -41,7 +42,7 @@ This means:
 
 - There is no `treasury.ownerOf(...)` or `treasury.approve(...)` on **any** treasury type.
 - NFT reads (`ownerOf`, `balanceOf`, `tokenURI`, `getPledgeData`) and writes (`approve`, `setApprovalForAll`) go through the **CampaignInfo** entity: `oak.campaignInfo(address)`.
-- **Before calling any refund function** that burns an NFT (`claimRefund` on AON/KWR, `claimRefundSelf` on PaymentTreasury), the NFT owner must approve the treasury contract to manage the NFT via `campaignInfo.approve(treasuryAddress, tokenId)`. See [Step 6](./06-handle-refunds.ts) for the full code.
+- **Before calling any refund function** that burns an NFT (`claimRefund` on AON/KWR, `claimRefundSelf` on PaymentTreasury), the NFT owner must approve the treasury contract to manage the NFT via `campaignInfo.approve(treasuryAddress, tokenId)`. See [Step 7](./07-handle-refunds.ts) for the full code.
 - `claimRefundSelf(paymentId)` is the only PaymentTreasury function that interacts with NFTs — it looks up the current NFT owner, burns the NFT, and sends the refundable amount to that owner. Any caller can trigger it; the refund always goes to the NFT owner.
 - `claimRefund(paymentId, refundAddress)` is for **non-NFT payments** (off-chain `createPayment` where no NFT was minted) and can only be called by the platform admin.
 
@@ -62,18 +63,19 @@ Which variant your platform uses depends on the treasury implementation register
 
 | Step | File | Role | Description | Required? |
 | --- | --- | --- | --- | --- |
-| 1 | `01-setup-treasury.ts` | Platform Admin | Connect to the PaymentTreasury and read platform config | Required |
-| 2 | `02-create-payment.ts` | Platform Admin | Flow A: Create an off-chain payment record with line items (single + batch) | Required |
-| 3 | `03-process-crypto-payment.ts` | Buyer | Flow B: Pay on-chain — creates the payment AND transfers ERC-20 tokens in one step (independent of Step 2) | Required |
-| 4 | `04-confirm-payment.ts` | Platform Admin | Confirm the payment after order verification (single + batch) | Required |
-| 5 | `05-read-payment-data.ts` | Anyone | Read payment details and treasury dashboard | Required |
-| 6 | `06-handle-refunds.ts` | Platform Admin / Buyer | Cancel a payment and claim a refund (self or admin-directed) | Required |
-| 7 | `07-disburse-fees.ts` | Anyone | Disburse accumulated protocol and platform fees | Required |
-| 8 | `08-withdraw-funds.ts` | Platform Admin or Creator | Withdraw confirmed funds to the campaign owner's wallet | Required |
-| 9 | `09-claim-expired-funds.ts` | Platform Admin | Sweep remaining balances after deadline + claim delay (TimeConstrained only) | Required |
-| 10 | `10-claim-non-goal-line-items.ts` | Platform Admin | Claim non-goal line item accumulations per token | Required |
-| 11 | `11-pause-unpause-treasury.ts` | Platform Admin | Temporarily freeze and resume treasury operations | (Optional) |
-| 12 | `12-cancel-treasury.ts` | Platform Admin or Creator | Permanently cancel a treasury | (Optional) |
+| 1 | `01-create-campaign.ts` | Platform Admin / Creator | Create a CampaignInfo contract via the factory (holds NFT receipts) | Required |
+| 2 | `02-deploy-treasury.ts` | Platform Admin / Creator | Deploy a PaymentTreasury via TreasuryFactory, linked to the CampaignInfo | Required |
+| 3 | `03-create-payment.ts` | Platform Admin | Flow A: Create an off-chain payment record with line items (single + batch) | Required |
+| 4 | `04-process-crypto-payment.ts` | Buyer | Flow B: Pay on-chain — creates the payment AND transfers ERC-20 tokens in one step (independent of Step 3) | Required |
+| 5 | `05-confirm-payment.ts` | Platform Admin | Confirm the payment after order verification (single + batch) | Required |
+| 6 | `06-read-payment-data.ts` | Anyone | Read payment details and treasury dashboard | Required |
+| 7 | `07-handle-refunds.ts` | Platform Admin / Buyer | Cancel a payment and claim a refund (self or admin-directed) | Required |
+| 8 | `08-disburse-fees.ts` | Anyone | Disburse accumulated protocol and platform fees | Required |
+| 9 | `09-withdraw-funds.ts` | Platform Admin or Creator | Withdraw confirmed funds to the campaign owner's wallet | Required |
+| 10 | `10-claim-expired-funds.ts` | Platform Admin | Sweep remaining balances after deadline + claim delay (TimeConstrained only) | Required |
+| 11 | `11-claim-non-goal-line-items.ts` | Platform Admin | Claim non-goal line item accumulations per token | Required |
+| 12 | `12-pause-unpause-treasury.ts` | Platform Admin | Temporarily freeze and resume treasury operations | (Optional) |
+| 13 | `13-cancel-treasury.ts` | Platform Admin or Creator | Permanently cancel a treasury | (Optional) |
 
 ## Role Reference (from the Smart Contract)
 

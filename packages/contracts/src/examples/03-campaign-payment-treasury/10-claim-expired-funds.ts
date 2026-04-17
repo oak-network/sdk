@@ -1,5 +1,5 @@
 /**
- * Step 9: Claim Expired Funds (Platform Admin)
+ * Step 10: Claim Expired Funds (Platform Admin)
  *
  * If a TimeConstrainedPaymentTreasury is used, the platform admin can
  * sweep all remaining balances after the campaign deadline plus the

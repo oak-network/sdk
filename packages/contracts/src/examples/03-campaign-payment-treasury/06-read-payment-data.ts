@@ -1,5 +1,5 @@
 /**
- * Step 5: Read Payment and Treasury Data (Anyone)
+ * Step 6: Read Payment and Treasury Data (Anyone)
  *
  * All payment and treasury data is stored on-chain and publicly
  * readable. No wallet connection is required — just an RPC endpoint.

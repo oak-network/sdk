@@ -1,5 +1,5 @@
 /**
- * Step 10: Claim Non-Goal Line Items (Platform Admin)
+ * Step 11: Claim Non-Goal Line Items (Platform Admin)
  *
  * Some line item types are configured as "non-goal" — they do not
  * count toward the campaign's fundraising goal. Common examples

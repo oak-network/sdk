@@ -1,5 +1,5 @@
 /**
- * Step 11: Pause and Unpause the Treasury (Platform Admin) — Optional
+ * Step 12: Pause and Unpause the Treasury (Platform Admin) — Optional
  *
  * ⚙️ THIS STEP IS OPTIONAL — use only when an investigation or
  * compliance review requires freezing all treasury activity.

@@ -1,5 +1,5 @@
 /**
- * Step 12: Cancel the Treasury (Platform Admin or Creator) — Optional
+ * Step 13: Cancel the Treasury (Platform Admin or Creator) — Optional
  *
  * ⚙️ THIS STEP IS OPTIONAL — cancellation is permanent and
  * irreversible. Use only for fraud, terms violation, or shutdown.

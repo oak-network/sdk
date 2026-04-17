@@ -1,7 +1,7 @@
 /**
- * Step 8: Withdraw Confirmed Funds (Platform Admin or Creator)
+ * Step 9: Withdraw Confirmed Funds (Platform Admin or Creator)
  *
- * After fees have been disbursed (Step 7), the platform admin or the
+ * After fees have been disbursed (Step 8), the platform admin or the
  * campaign owner withdraws all remaining confirmed funds from the
  * treasury. The funds are transferred to the campaign owner's wallet.
  *
