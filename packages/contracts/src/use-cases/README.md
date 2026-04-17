@@ -18,7 +18,7 @@ Every pledge or payment specifies **`pledgeToken` / `paymentToken`**; treasuries
 |----------|------|-------------------|----------------|
 | **Escrow** | [Healthcare Escrow](escrow/healthcare-escrow.md) | PaymentTreasury | MedConnect holds patient payments until a doctor confirms service delivery |
 | **Marketplace** | [E-Commerce Marketplace](marketplace/ecommerce-marketplace.md) | PaymentTreasury | CeloMarket locks buyer funds until seller ships; on-chain escrow with line items |
-| **Prepayment** | [Automotive Prepayment](prepayment/automotive-prepayment.md) | TimeConstrainedPaymentTreasury | Karma Automotive holds vehicle deposits with automatic expiry protection |
+| **Prepayment** | [Automotive Prepayment](prepayment/automotive-prepayment.md) | TimeConstrainedPaymentTreasury | Karma Automotive holds vehicle deposits with time-based expiry; expired funds are swept to the platform/protocol, and end-customer refunds are handled per Karma's policy |
 | **Flexible Funding** | [Community Project](flexible-funding/community-project.md) | CampaignInfoFactory + KeepWhatsRaised | TechForge runs keep-what's-raised campaigns with partial withdrawals, tips, and gateway fees |
 | **Crowdfunding** | [Creative Campaign](crowdfunding/creative-campaign.md) | CampaignInfoFactory + AllOrNothing | ArtFund runs all-or-nothing campaigns with NFT-backed pledges and reward tiers |
 
@@ -88,10 +88,18 @@ await oak.waitForReceipt(txHash);
 Batch multiple reads into a single RPC call:
 
 ```typescript
+// PaymentTreasury / KeepWhatsRaised — all three methods available
 const [raised, available, refunded] = await oak.multicall([
   () => treasury.getRaisedAmount(),
   () => treasury.getAvailableRaisedAmount(),
   () => treasury.getRefundedAmount(),
+]);
+
+// AllOrNothing — uses getRaisedAmount + getLifetimeRaisedAmount (no getAvailableRaisedAmount)
+const [raised, lifetime, refunded] = await oak.multicall([
+  () => aonTreasury.getRaisedAmount(),
+  () => aonTreasury.getLifetimeRaisedAmount(),
+  () => aonTreasury.getRefundedAmount(),
 ]);
 ```
 
@@ -101,8 +109,15 @@ Fees are always disbursed before withdrawal:
 
 ```typescript
 await treasury.disburseFees();   // protocol + platform fees distributed
-await treasury.withdraw();       // remaining funds to the campaign owner/seller
+await treasury.withdraw();       // AllOrNothing / PaymentTreasury — sends all remaining funds
 ```
+
+> **KeepWhatsRaised** uses a different withdrawal model — `withdraw(token, amount)` for partial withdrawals and `claimFund()` for the final withdrawal:
+>
+> ```typescript
+> await kwrTreasury.withdraw(USDC_TOKEN_ADDRESS, 3_000_000000n);  // partial withdrawal
+> await kwrTreasury.claimFund();  // final withdrawal after deadline
+> ```
 
 ### Signer Flexibility
 

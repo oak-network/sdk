@@ -66,6 +66,7 @@ A buyer orders wireless headphones for $79.99. CeloMarket's backend creates a pa
 ```typescript
 const orderId = toHex("order-20260415-001", { size: 32 });
 const buyerId = toHex("buyer-alex-042", { size: 32 });
+const itemId = toHex("wireless-headphones-v2", { size: 32 });
 
 const lineItems = [
   { typeId: toHex("product",    { size: 32 }), amount: 69_990000n },  // $69.99 USDC (6 decimals)
@@ -81,12 +82,12 @@ const totalAmount = 79_990000n;  // $79.99 USDC
 const expiration = BigInt(Math.floor(Date.now() / 1000) + 30 * 86400); // 30 days
 
 await treasury.simulate.createPayment(
-  orderId, buyerId, productId, USDC_TOKEN_ADDRESS,
+  orderId, buyerId, itemId, USDC_TOKEN_ADDRESS,
   totalAmount, expiration, lineItems, externalFees,
 );
 
 const txHash = await treasury.createPayment(
-  orderId, buyerId, productId, USDC_TOKEN_ADDRESS,
+  orderId, buyerId, itemId, USDC_TOKEN_ADDRESS,
   totalAmount, expiration, lineItems, externalFees,
 );
 await oak.waitForReceipt(txHash);
@@ -118,7 +119,7 @@ Now the payment can be processed:
 
 ```typescript
 const txHash = await treasury.processCryptoPayment(
-  orderId, productId, BUYER_ADDRESS, USDC_TOKEN_ADDRESS,
+  orderId, itemId, BUYER_ADDRESS, USDC_TOKEN_ADDRESS,
   totalAmount, lineItems, externalFees,
 );
 await oak.waitForReceipt(txHash);

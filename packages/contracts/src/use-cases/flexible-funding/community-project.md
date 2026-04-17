@@ -4,7 +4,7 @@
 
 **TechForge** is a technology platform that helps hardware startups raise funds from their community. Unlike all-or-nothing crowdfunding, TechForge uses a **keep-what's-raised** model: creators keep whatever they raise, even if they don't hit their goal. This works well for hardware projects where any amount of funding helps move the project forward.
 
-TechForge also lets backers **tip** creators, charges **payment gateway fees** on each pledge, and allows creators to make **partial withdrawals** during the campaign (with platform approval) to cover manufacturing costs before the deadline.
+TechForge also lets backers add **tips** to their pledges, charges **payment gateway fees** on each pledge, and allows creators to make **partial withdrawals** during the campaign (with platform approval) to cover manufacturing costs before the deadline. Tips are collected by the platform via `claimTip` and sent to the configured **platform tip recipient**.
 
 ## Why Oak?
 
@@ -312,7 +312,7 @@ await oak.waitForReceipt(txHash);
 
 ### Step 9: Platform claims tips
 
-Tips are claimed separately by the platform and forwarded to the creator.
+Tips are claimed separately by the platform. The `claimTip` function transfers accumulated tips to the **platform tip recipient** (configured during platform enlistment).
 
 ```typescript
 const txHash = await kwrTreasury.claimTip();
@@ -364,14 +364,16 @@ await kwrTreasury.updateGoalAmount(20_000_000000n);  // 20,000 USDC
 ```
 Creator (Lena)         TechForge Platform           KeepWhatsRaised Treasury
      |                        |                               |
-     |   Submit campaign      |  createCampaign(...)          |
-     |----------------------->|------------------------------>|  Campaign created
+     |   createCampaign(...)  |                               |
+     |  [Any caller]          |                               |
+     |------------------------------------------------------->|  Campaign created
      |                        |  deploy(hash, info, 1)        |
      |                        |------------------------------>|  KWR treasury deployed
      |                        |  configureTreasury(...)       |
      |                        |------------------------------>|  Delays, fees configured
-     |   Add rewards          |  addRewards(...)              |
-     |----------------------->|------------------------------>|  Reward tiers set
+     |   addRewards(...)      |                               |
+     |  [Campaign Owner]      |                               |
+     |------------------------------------------------------->|  Reward tiers set
      |                        |                               |
 Backers pledge + tip          |                               |
      |  pledgeForAReward()    |                               |

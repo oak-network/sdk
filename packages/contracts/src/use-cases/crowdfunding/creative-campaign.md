@@ -34,8 +34,8 @@ Raised balances and refunds are tracked **per token**; amounts use **that token�
 
 | Role | Who | On-Chain Functions |
 |------|-----|--------------------|
-| **Platform Admin** | ArtFund backend | `createCampaign`, `deploy` (treasury), `pauseTreasury`, `unpauseTreasury`, `cancelTreasury` |
-| **Creator (Campaign Owner)** | Maya (indie filmmaker) | `addRewards`, `removeReward`, `cancelTreasury` |
+| **Platform Admin** | ArtFund backend | `deploy` (treasury), `pauseTreasury`, `unpauseTreasury`, `cancelTreasury` |
+| **Creator (Campaign Owner)** | Maya (indie filmmaker) | `createCampaign`, `addRewards`, `removeReward`, `cancelTreasury` |
 | **Backer** | Community supporters | ERC-20 `approve`, `pledgeForAReward`, `pledgeWithoutAReward`, `claimRefund` |
 | **Protocol Admin** | Oak protocol | Receives protocol fees (via `disburseFees`) |
 | **Any caller** | Anyone | `disburseFees`, `withdraw`, all read functions (`getReward`, `getRaisedAmount`, `paused`, etc.) |
@@ -44,13 +44,13 @@ Raised balances and refunds are tracked **per token**; amounts use **that token�
 
 ### Step 1: Creator submits campaign — create on-chain
 
-> **Role: Platform Admin** — only the enlisted platform can create campaigns through the factory.
+> **Role: Any caller** — `createCampaign` is permissionless; the factory validates that the selected platform(s) are enlisted and that campaign timing constraints are met.
 
 Maya wants to fund her documentary "Voices of the Valley." She needs 10,000 USDC and sets a 30-day deadline. ArtFund's backend creates the campaign on-chain.
 
 ```typescript
 import {
-  createOakContractsClient, CHAIN_IDS, toHex, keccak256, id, addDays,
+  createOakContractsClient, CHAIN_IDS, toHex, keccak256,
 } from "@oaknetwork/contracts-sdk";
 import type { CreateCampaignParams } from "@oaknetwork/contracts-sdk";
 
@@ -188,7 +188,7 @@ ArtFund can verify a reward tier's configuration, and Maya can remove one that's
 ```typescript
 // Read a specific reward tier
 const reward = await aonTreasury.getReward(toHex("signed-poster", { size: 32 }));
-// reward.rewardValue    — minimum pledge amount (in 18-decimal normalized form)
+// reward.rewardValue    — minimum pledge amount (in the campaign token's native decimals)
 // reward.isRewardTier   — true for tiered rewards
 // reward.itemId         — physical/digital item IDs included
 // reward.itemValue      — declared value of each item
@@ -314,7 +314,7 @@ await oak.waitForReceipt(txHash);
 
 ### Step 8 (Failure): Goal not met — backers claim refunds
 
-> **Role: Any caller** — `claimRefund` is permissionless, but the refund is always sent to the current NFT owner. Backers can also claim refunds before the deadline if they change their mind.
+> **Role: Any caller** — `claimRefund` is permissionless, but the refund is always sent to the current NFT owner.
 
 If the deadline passes and the goal was not reached, each backer can claim a refund by providing their pledge NFT token ID. The NFT is burned during the refund.
 
@@ -378,11 +378,13 @@ Each pledge NFT stores on-chain metadata accessible through CampaignInfo:
 
 ```typescript
 const pledgeData = await campaign.getPledgeData(tokenId);
-// pledgeData.backer     — backer wallet address
-// pledgeData.reward     — selected reward (bytes32)
-// pledgeData.amount     — pledge amount
-// pledgeData.treasury   — treasury address
+// pledgeData.backer       — backer wallet address
+// pledgeData.reward       — selected reward (bytes32)
+// pledgeData.treasury     — treasury address
 // pledgeData.tokenAddress — ERC-20 token used
+// pledgeData.amount       — pledge amount
+// pledgeData.shippingFee  — shipping fee (0n if none)
+// pledgeData.tipAmount    — tip amount (0n if none)
 
 const nftOwner = await campaign.ownerOf(tokenId);
 const tokenURI = await campaign.tokenURI(tokenId);
@@ -393,21 +395,22 @@ const tokenURI = await campaign.tokenURI(tokenId);
 ```
 Creator (Maya)          ArtFund (Platform Admin)       Blockchain
      |                        |                            |
-     |   Submit campaign      |                            |
-     |----------------------->|  createCampaign(...)       |
-     |                        |--------------------------->|  CampaignInfo deployed
+     |   createCampaign(...)  |                            |
+     |  [Any caller]          |                            |
+     |---------------------------------------------------->|  CampaignInfo deployed
      |                        |                            |
      |                        |  deploy(platformHash,      |
      |                        |    campaignInfo, 0)         |
      |                        |--------------------------->|  AllOrNothing treasury deployed
      |                        |                            |
-     |   Add rewards          |  addRewards(...)           |
+     |   addRewards(...)      |                            |
      |  [Campaign Owner]      |                            |
-     |----------------------->|--------------------------->|  Reward tiers registered
+     |---------------------------------------------------->|  Reward tiers registered
      |                        |                            |
-     |   Read/remove reward   |  getReward() /             |
-     |  [Anyone / Owner]      |  removeReward()            |
-     |----------------------->|--------------------------->|  Reward read or removed
+     |   getReward() /         |                            |
+     |   removeReward()        |                            |
+     |  [Anyone / Owner]      |                            |
+     |---------------------------------------------------->|  Reward read or removed
      |                        |                            |
 Backers                       |                            |
      |   ERC-20 approve()     |                            |
@@ -419,10 +422,13 @@ Backers                       |                            |
      |   pledgeWithoutReward()|                            |
      |----------------------->|--------------------------->|  NFT minted, funds locked
      |                        |                            |
-     |  [Platform Admin or    |  pauseTreasury() /         |
-     |   Campaign Owner]      |  unpauseTreasury() /       |
-     |                        |  cancelTreasury()          |
-     |                        |--------------------------->|  Treasury state updated
+     |  [Platform Admin]      |  pauseTreasury() /         |
+     |                        |  unpauseTreasury()         |
+     |                        |--------------------------->|  Treasury paused/unpaused
+     |                        |                            |
+     |  [Platform Admin or    |  cancelTreasury()          |
+     |   Campaign Owner]      |                            |
+     |                        |--------------------------->|  Treasury cancelled
      |                        |                            |
      |              --- DEADLINE REACHED ---               |
      |                        |                            |

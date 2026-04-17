@@ -207,7 +207,7 @@ await treasury.cancelPayment(paymentId);
 await treasury.claimRefund(paymentId, SARAH_WALLET_ADDRESS);
 ```
 
-**For crypto payments (NFT was minted via `processCryptoPayment` or `confirmPayment` with buyerAddress):**
+**For crypto payments (NFT was minted via `processCryptoPayment`):**
 
 ```typescript
 // Anyone can trigger the refund — funds go to the current NFT owner, and the NFT is burned
