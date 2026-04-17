@@ -269,45 +269,5 @@ export function createKeepWhatsRaisedWrites(
         args: [goalAmount],
       });
     },
-    async approve(to: Address, tokenId: bigint, options?: CallSignerOptions) {
-      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      return signer.writeContract({
-        ...contract,
-        chain,
-        account,
-        functionName: "approve",
-        args: [to, tokenId],
-      });
-    },
-    async setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions) {
-      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      return signer.writeContract({
-        ...contract,
-        chain,
-        account,
-        functionName: "setApprovalForAll",
-        args: [operator, approved],
-      });
-    },
-    async safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
-      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      return signer.writeContract({
-        ...contract,
-        chain,
-        account,
-        functionName: "safeTransferFrom",
-        args: [from, to, tokenId],
-      });
-    },
-    async transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions) {
-      const signer = requireSigner(options?.signer ?? walletClient); const account = requireAccount(signer);
-      return signer.writeContract({
-        ...contract,
-        chain,
-        account,
-        functionName: "transferFrom",
-        args: [from, to, tokenId],
-      });
-    },
   };
 }
