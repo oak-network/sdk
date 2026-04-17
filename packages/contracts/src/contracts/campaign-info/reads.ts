@@ -142,5 +142,11 @@ export function createCampaignInfoReads(
     async supportsInterface(interfaceId: Bytes4) {
       return publicClient.readContract({ ...contract, functionName: "supportsInterface", args: [interfaceId] });
     },
+    async getApproved(tokenId: bigint) {
+      return publicClient.readContract({ ...contract, functionName: "getApproved", args: [tokenId] });
+    },
+    async isApprovedForAll(owner: Address, operator: Address) {
+      return publicClient.readContract({ ...contract, functionName: "isApprovedForAll", args: [owner, operator] });
+    },
   };
 }

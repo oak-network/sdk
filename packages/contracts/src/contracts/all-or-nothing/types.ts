@@ -1,5 +1,5 @@
 import type { Address, Hex } from "../../lib";
-import type { Bytes4, TieredReward } from "../../types/structs";
+import type { TieredReward } from "../../types/structs";
 import type { DecodedEventLog, EventFilterOptions, EventWatchHandler, RawLog, SimulationResult } from "../../types/events";
 import type { CallSignerOptions } from "../../client/types";
 
@@ -21,22 +21,6 @@ export interface AllOrNothingReads {
   paused(): Promise<boolean>;
   /** Returns true if the treasury has been cancelled. */
   cancelled(): Promise<boolean>;
-  /** Returns the NFT balance for the given owner address. */
-  balanceOf(owner: Address): Promise<bigint>;
-  /** Returns the owner of a pledge NFT by token ID. */
-  ownerOf(tokenId: bigint): Promise<Address>;
-  /** Returns the token URI for a pledge NFT. */
-  tokenURI(tokenId: bigint): Promise<string>;
-  /** Returns the ERC-721 collection name. */
-  name(): Promise<string>;
-  /** Returns the ERC-721 collection symbol. */
-  symbol(): Promise<string>;
-  /** Returns the approved address for a token ID. */
-  getApproved(tokenId: bigint): Promise<Address>;
-  /** Returns true if operator is approved for all tokens of owner. */
-  isApprovedForAll(owner: Address, operator: Address): Promise<boolean>;
-  /** Returns true if the contract implements the given ERC-165 interface. */
-  supportsInterface(interfaceId: Bytes4): Promise<boolean>;
 }
 
 /** Write methods for an AllOrNothing treasury contract instance. */
@@ -61,16 +45,6 @@ export interface AllOrNothingWrites {
   disburseFees(options?: CallSignerOptions): Promise<Hex>;
   /** Withdraws raised funds (campaign succeeded). */
   withdraw(options?: CallSignerOptions): Promise<Hex>;
-  /** Burns a pledge NFT. */
-  burn(tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
-  /** Approves an address to transfer a specific pledge NFT. */
-  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
-  /** Sets or revokes operator approval for all tokens. */
-  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<Hex>;
-  /** Safely transfers a pledge NFT. */
-  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
-  /** Transfers a pledge NFT without ERC-721 receiver check. */
-  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<Hex>;
 }
 
 /** Simulate counterparts for AllOrNothing write methods. */
@@ -95,16 +69,6 @@ export interface AllOrNothingSimulate {
   disburseFees(options?: CallSignerOptions): Promise<SimulationResult>;
   /** Simulates withdraw; returns a SimulationResult on success, throws a typed error on revert. */
   withdraw(options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates burn; returns a SimulationResult on success, throws a typed error on revert. */
-  burn(tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates approve; returns a SimulationResult on success, throws a typed error on revert. */
-  approve(to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates setApprovalForAll; returns a SimulationResult on success, throws a typed error on revert. */
-  setApprovalForAll(operator: Address, approved: boolean, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates safeTransferFrom; returns a SimulationResult on success, throws a typed error on revert. */
-  safeTransferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
-  /** Simulates transferFrom; returns a SimulationResult on success, throws a typed error on revert. */
-  transferFrom(from: Address, to: Address, tokenId: bigint, options?: CallSignerOptions): Promise<SimulationResult>;
 }
 
 /** Event helpers for an AllOrNothing treasury contract instance. */
@@ -127,14 +91,8 @@ export interface AllOrNothingEvents {
   getUnpausedLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded Cancelled event logs. */
   getCancelledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
-  /** Returns decoded Transfer event logs. */
-  getTransferLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Returns decoded SuccessConditionNotFulfilled event logs. */
   getSuccessConditionNotFulfilledLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
-  /** Returns decoded Approval event logs. */
-  getApprovalLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
-  /** Returns decoded ApprovalForAll event logs. */
-  getApprovalForAllLogs(options?: EventFilterOptions): Promise<readonly DecodedEventLog[]>;
   /** Decodes a raw log entry against all known AllOrNothing events. */
   decodeLog(log: RawLog): DecodedEventLog;
   /** Watches for Receipt events in real time. Returns an unwatch function. */
@@ -155,14 +113,8 @@ export interface AllOrNothingEvents {
   watchUnpaused(onLogs: EventWatchHandler): () => void;
   /** Watches for Cancelled events in real time. Returns an unwatch function. */
   watchCancelled(onLogs: EventWatchHandler): () => void;
-  /** Watches for Transfer events in real time. Returns an unwatch function. */
-  watchTransfer(onLogs: EventWatchHandler): () => void;
   /** Watches for SuccessConditionNotFulfilled events in real time. Returns an unwatch function. */
   watchSuccessConditionNotFulfilled(onLogs: EventWatchHandler): () => void;
-  /** Watches for Approval events in real time. Returns an unwatch function. */
-  watchApproval(onLogs: EventWatchHandler): () => void;
-  /** Watches for ApprovalForAll events in real time. Returns an unwatch function. */
-  watchApprovalForAll(onLogs: EventWatchHandler): () => void;
 }
 
 /** Full AllOrNothing treasury entity combining reads, writes, simulate, and events. */

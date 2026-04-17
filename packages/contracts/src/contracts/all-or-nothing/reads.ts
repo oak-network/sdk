@@ -1,7 +1,7 @@
 import type { Address, Hex, PublicClient } from "../../lib";
 import { ALL_OR_NOTHING_ABI } from "./abi";
 import type { AllOrNothingReads } from "./types";
-import type { Bytes4, TieredReward } from "../../types/structs";
+import type { TieredReward } from "../../types/structs";
 
 /**
  * Builds read methods for an AllOrNothing treasury contract instance.
@@ -43,30 +43,6 @@ export function createAllOrNothingReads(
     },
     async cancelled() {
       return publicClient.readContract({ ...contract, functionName: "cancelled" });
-    },
-    async balanceOf(owner: Address) {
-      return publicClient.readContract({ ...contract, functionName: "balanceOf", args: [owner] });
-    },
-    async ownerOf(tokenId: bigint) {
-      return publicClient.readContract({ ...contract, functionName: "ownerOf", args: [tokenId] });
-    },
-    async tokenURI(tokenId: bigint) {
-      return publicClient.readContract({ ...contract, functionName: "tokenURI", args: [tokenId] });
-    },
-    async name() {
-      return publicClient.readContract({ ...contract, functionName: "name" });
-    },
-    async symbol() {
-      return publicClient.readContract({ ...contract, functionName: "symbol" });
-    },
-    async getApproved(tokenId: bigint) {
-      return publicClient.readContract({ ...contract, functionName: "getApproved", args: [tokenId] });
-    },
-    async isApprovedForAll(owner: Address, operator: Address) {
-      return publicClient.readContract({ ...contract, functionName: "isApprovedForAll", args: [owner, operator] });
-    },
-    async supportsInterface(interfaceId: Bytes4) {
-      return publicClient.readContract({ ...contract, functionName: "supportsInterface", args: [interfaceId] });
     },
   };
 }

@@ -109,17 +109,8 @@ export function createAllOrNothingEvents(
     async getCancelledLogs(options) {
       return fetchEventLogs(publicClient, address, "Cancelled", options);
     },
-    async getTransferLogs(options) {
-      return fetchEventLogs(publicClient, address, "Transfer", options);
-    },
     async getSuccessConditionNotFulfilledLogs(options) {
       return fetchEventLogs(publicClient, address, "SuccessConditionNotFulfilled", options);
-    },
-    async getApprovalLogs(options) {
-      return fetchEventLogs(publicClient, address, "Approval", options);
-    },
-    async getApprovalForAllLogs(options) {
-      return fetchEventLogs(publicClient, address, "ApprovalForAll", options);
     },
     decodeLog(log) {
       return decode({ topics: [...log.topics] as Hex[], data: log.data });
@@ -151,17 +142,8 @@ export function createAllOrNothingEvents(
     watchCancelled(onLogs) {
       return createWatcher(publicClient, address, "Cancelled", onLogs);
     },
-    watchTransfer(onLogs) {
-      return createWatcher(publicClient, address, "Transfer", onLogs);
-    },
     watchSuccessConditionNotFulfilled(onLogs) {
       return createWatcher(publicClient, address, "SuccessConditionNotFulfilled", onLogs);
-    },
-    watchApproval(onLogs) {
-      return createWatcher(publicClient, address, "Approval", onLogs);
-    },
-    watchApprovalForAll(onLogs) {
-      return createWatcher(publicClient, address, "ApprovalForAll", onLogs);
     },
   };
 }
