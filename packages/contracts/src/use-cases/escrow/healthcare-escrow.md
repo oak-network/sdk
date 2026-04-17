@@ -141,7 +141,7 @@ MedConnect supports two payment methods — they are **not** sequential steps:
 
 > **Role: Platform Admin** — only the platform admin can create payment records.
 
-MedConnect creates a payment record on-chain. **No funds move** — Sarah pays through off-chain rails (credit card, insurance billing, etc.) and MedConnect calls `confirmPayment` after verifying receipt.
+MedConnect creates a payment record on-chain. The **`createPayment` transaction does not pull ERC-20 from the buyer’s wallet** — it only records the obligation and pending accounting. Sarah pays through off-chain rails (credit card, insurance billing, etc.). Before MedConnect can call `confirmPayment`, **the treasury must actually hold enough of the payment token on-chain** (for example the platform deposits USDC after fiat settlement). The contract checks the treasury’s ERC-20 balance when confirming; if the tokens are not there, `confirmPayment` reverts.
 
 ```typescript
 import { toHex } from "@oaknetwork/contracts-sdk";
@@ -177,7 +177,22 @@ const txHash = await treasury.createPayment(
 await oak.waitForReceipt(txHash);
 ```
 
-At this point the payment record exists on-chain, but **no funds have moved yet**. Sarah pays through off-chain channels.
+At this point the payment record exists on-chain and pending amounts are tracked, but **no ERC-20 was transferred in this transaction**. Sarah completes payment off-chain; your operations then **fund the treasury** with the agreed token amount before you confirm (how you bridge or deposit is product-specific).
+
+##### Confirm payment (platform admin)
+
+> **Role: Platform Admin** — only the platform admin can call `confirmPayment` for payments created with `createPayment`.
+
+Dr. Rivera completes the consultation and marks it as delivered. After off-chain verification **and** once the treasury holds the required ERC-20 balance, the backend calls `confirmPayment` to move accounting from pending to confirmed (and optionally mint an NFT if you pass Sarah’s wallet as `buyerAddress`).
+
+```typescript
+await treasury.simulate.confirmPayment(paymentId, SARAH_WALLET_ADDRESS);
+
+const txHash = await treasury.confirmPayment(paymentId, SARAH_WALLET_ADDRESS);
+await oak.waitForReceipt(txHash);
+```
+
+The payment status is now **confirmed**. Funds are ready for fee disbursement and withdrawal.
 
 #### Flow B: On-chain crypto payment (`processCryptoPayment`)
 
@@ -212,24 +227,7 @@ const txHash = await treasury.processCryptoPayment(
 await oak.waitForReceipt(txHash);
 ```
 
-Funds are now **locked in the treasury**. Sarah cannot withdraw them, and neither can Dr. Rivera — only the platform can release them by confirming delivery.
-
-### Step 4: Doctor confirms service delivery
-
-> **Role: Platform Admin** — only the platform admin can confirm payments.
-
-Dr. Rivera completes the consultation and marks it as delivered in the MedConnect dashboard. The backend calls `confirmPayment` to release the escrowed funds.
-
-```typescript
-await treasury.simulate.confirmPayment(paymentId, SARAH_WALLET_ADDRESS);
-
-const txHash = await treasury.confirmPayment(paymentId, SARAH_WALLET_ADDRESS);
-await oak.waitForReceipt(txHash);
-```
-
-The payment status is now **confirmed**. Funds are settled and ready for fee disbursement and withdrawal.
-
-### Step 5: Read the final treasury state
+### Step 4: Read the final treasury state
 
 > **Role: Any caller** — all read functions are public.
 
@@ -244,7 +242,7 @@ const [raised, available, lifetime, refunded] = await oak.multicall([
 ]);
 ```
 
-### Step 6: Disburse fees
+### Step 5: Disburse fees
 
 > **Role: Any caller** — `disburseFees` is permissionless. Fees are sent to the Protocol Admin and Platform Admin automatically.
 
@@ -255,7 +253,7 @@ const txHash = await treasury.disburseFees();
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 7: Withdraw settled funds
+### Step 6: Withdraw settled funds
 
 > **Role: Platform Admin or Campaign Owner** — either party can trigger withdrawal. Funds are always sent to the campaign owner (Dr. Rivera's clinic).
 
@@ -272,7 +270,7 @@ await oak.waitForReceipt(txHash);
 
 **A) Cancel an unconfirmed off-chain payment (before `confirmPayment`):**
 
-> **Role: Platform Admin** — `cancelPayment` works only on unconfirmed, non-expired, non-crypto payments. No on-chain funds were transferred for off-chain payments, so the on-chain record is simply deleted. Any off-chain refund is handled by MedConnect outside the contract.
+> **Role: Platform Admin** — `cancelPayment` works only on unconfirmed, non-expired, non-crypto payments. The transaction **removes the pending payment record** from contract accounting; it **does not** automatically return ERC-20 that may already sit in the treasury—handle any token recovery operationally if you deposited before cancelling. Off-chain refunds (card reversal, etc.) are handled by MedConnect outside this call.
 
 ```typescript
 await treasury.cancelPayment(paymentId);
@@ -299,7 +297,7 @@ await campaign.approve(TREASURY_ADDRESS, tokenId);
 await treasury.claimRefundSelf(paymentId);
 ```
 
-### Step 8: Claim non-goal line items
+### Step 7: Claim non-goal line items
 
 > **Role: Platform Admin** — only the platform admin can claim non-goal line items.
 
@@ -310,7 +308,7 @@ const txHash = await treasury.claimNonGoalLineItems(USDC_TOKEN_ADDRESS);
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 9: Pause, unpause, or cancel the treasury
+### Step 8: Pause, unpause, or cancel the treasury
 
 **Pause the treasury:**
 
@@ -406,11 +404,19 @@ Patient (Sarah)                  MedConnect (Platform Admin)      PaymentTreasur
        |                                |                               |
        |                                |  createPayment(...)           |
        |                                |  [Platform Admin]             |
-       |                                |------------------------------>|  Payment recorded (no funds)
+       |                                |------------------------------>|  Payment recorded (no pull from buyer)
        |                                |                               |
        |   Pays off-chain               |                               |
        |   (insurance, credit card)     |                               |
        |------------------------------->|                               |
+       |                                |                               |
+       |   Tokens sent to treasury      |  (deposit / bridge / ops)     |
+       |                                |------------------------------>|  ERC-20 balance must cover confirm
+       |                                |                               |
+       |                     Doctor confirms delivery                   |
+       |                                |  confirmPayment(...)          |
+       |                                |  [Platform Admin]             |
+       |                                |------------------------------>|  Pending → confirmed (Flow A only)
        |                                |                               |
        |         --- FLOW B: On-chain crypto payment ---                |
        |                                |                               |
@@ -419,14 +425,9 @@ Patient (Sarah)                  MedConnect (Platform Admin)      PaymentTreasur
        |                                |                               |
        |                                |  processCryptoPayment(...)    |
        |                                |  [Any caller]                 |
-       |                                |------------------------------>|  Payment created + funds locked
+       |                                |------------------------------>|  Pull tokens, already confirmed + NFT
        |                                |                               |
-       |         --- Both flows continue here ---                       |
-       |                                |                               |
-       |                     Doctor confirms delivery                   |
-       |                                |  confirmPayment(...)          |
-       |                                |  [Platform Admin]             |
-       |                                |------------------------------>|  Funds settled
+       |         --- Both flows (after Flow A confirm or Flow B) ---    |
        |                                |                               |
        |                                |  claimNonGoalLineItems()      |
        |                                |  [Platform Admin]             |
@@ -449,8 +450,10 @@ Patient (Sarah)                  MedConnect (Platform Admin)      PaymentTreasur
 ## Key Takeaways
 
 - **ERC-20 approval is required** — the buyer must `approve` the treasury contract before `processCryptoPayment` can transfer tokens
+- **`createPayment` path** — the `createPayment` transaction does not pull ERC-20 from the buyer; fund the treasury before `confirmPayment` (the contract checks balance on confirm)
+- **`processCryptoPayment` path** — pulls tokens and confirms in one transaction; use `disburseFees` / `withdraw` afterward—do not call `confirmPayment` for these payments
 - **Multi-token** — `paymentToken` must be on the campaign’s accepted list; balances and refunds are tracked per ERC-20 (each token’s decimals)
-- **Funds are never at risk** — they stay locked in the smart contract until service is confirmed
+- **Funds stay in the treasury** — held under contract rules until withdrawal, disbursement, or refund flows
 - **Role-based access** — `createPayment`/`confirmPayment`/`cancelPayment` are platform-admin-only; `processCryptoPayment` and `disburseFees` are permissionless; `withdraw` requires admin or owner
 - **Three cancellation/refund paths** — `cancelPayment` deletes unconfirmed off-chain records (no on-chain refund); `claimRefund(paymentId, address)` refunds confirmed non-NFT payments (platform admin); `claimRefundSelf(paymentId)` refunds crypto/NFT payments directly (NFT owner, no prior cancel needed; burns pledge NFT — requires prior ERC-721 approval on the CampaignInfo contract)
 - **Line items** allow granular tracking (consultation vs. lab work) with configurable goal-counting, fees, and refund rules

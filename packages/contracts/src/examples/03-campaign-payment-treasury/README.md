@@ -4,9 +4,9 @@
 
 **CeloMarket** is an online marketplace where independent artisans sell handcrafted goods. Unlike the crowdfunding scenarios (Scenarios 1 and 2), CeloMarket does not run time-bound campaigns with pledges and rewards. Instead, it processes individual **e-commerce transactions** — a buyer selects a product, pays with cryptocurrency, and the platform fulfills the order.
 
-CeloMarket uses the **PaymentTreasury** model, which works like a traditional payment processor but entirely on-chain. Every payment is broken down into **line items** (product price, shipping, tax) and follows a two-step flow: the buyer pays, and the platform confirms after verifying the order.
+CeloMarket uses the **PaymentTreasury** model, which works like a traditional payment processor but entirely on-chain. Every payment is broken down into **line items** (product price, shipping, tax) and follows a two-step flow for the off-chain path: the buyer pays, the treasury is funded, and the platform confirms after verifying the order. Direct on-chain checkout uses `processCryptoPayment` instead.
 
-In this scenario, a buyer named **Sam** purchases a handcrafted ceramic vase for **$120** with **$15 shipping**. The payment flows through the treasury, gets confirmed by the platform, and the funds become available for withdrawal.
+In this scenario, a buyer named **Sam** purchases a handcrafted ceramic vase for **$120** with **$15 shipping**. The payment flows through the treasury, gets confirmed by the platform (off-chain path) or settles in one transaction (`processCryptoPayment`), and the funds become available for withdrawal after fees are disbursed.
 
 ## Multi-token support
 
@@ -19,20 +19,19 @@ Every payment record includes **`paymentToken`**. The treasury only accepts toke
 
 **Two independent payment flows** — a platform uses one or both depending on its business model:
 
-3. **Flow A — Off-chain / fiat payment:** **CeloMarket** creates a payment record for Sam's order via `createPayment`. This records the intent on-chain (total amount, line items, external fees, expiration) but **no funds move**. A buyer pays through off-chain rails (credit card, bank transfer, etc.) and the platform later calls `confirmPayment` after verifying receipt.
-4. **Flow B — On-chain crypto payment:** **Sam (Buyer)** pays directly on-chain via `processCryptoPayment`. This is a **standalone operation** — it creates the payment record AND transfers ERC-20 tokens to the treasury in a single transaction. It does **not** require a prior `createPayment` call. An NFT is minted to the buyer as proof of payment.
+3. **Flow A — Off-chain / fiat payment:** **CeloMarket** creates a payment record via `createPayment`, Sam pays through off-chain rails, the treasury is funded with the payment token, then CeloMarket calls `confirmPayment` after verifying receipt.
+4. **Flow B — On-chain crypto payment:** **Sam (Buyer)** pays via `processCryptoPayment` in one transaction (no prior `createPayment`). An NFT is minted as proof of payment.
 
 > **These are two separate flows, not sequential steps.** `processCryptoPayment` does not "complete" a pending `createPayment` — it is an independent entry point for on-chain payments.
 
-5. **CeloMarket** verifies the order (inventory check, fraud review) and confirms the payment. Batch confirmation is available for multiple payments.
-6. **Anyone** can read payment data and treasury balances — buyer address, amount, confirmation status, expected pending amount, and line item breakdown
-7. If something goes wrong, three separate cancellation/refund paths exist: **a)** the **platform admin** cancels an unconfirmed off-chain payment via `cancelPayment` (deletes the record; no on-chain refund since no funds were transferred); **b)** the **platform admin** refunds a confirmed non-NFT payment via `claimRefund(paymentId, refundAddress)`; **c)** for crypto payments, anyone can call `claimRefundSelf` — the contract looks up the NFT owner, burns the NFT, and sends refundable line items to that owner (no `cancelPayment` needed — crypto payments are auto-confirmed and `cancelPayment` rejects them).
-8. **Anyone** disburses accumulated protocol and platform fees
-9. **CeloMarket or the Creator** withdraws confirmed funds to the campaign owner's wallet
-10. For TimeConstrainedPaymentTreasury: the platform claims all remaining balances after the deadline + claim delay
-11. **CeloMarket** claims non-goal line item accumulations (e.g., shipping fees) per token
-12. **CeloMarket** can pause and unpause the treasury during an investigation
-13. **CeloMarket or the Creator** can permanently cancel the treasury in extreme cases
+5. **Anyone** can read payment data and treasury balances — buyer address, amount, confirmation status, expected pending amount, and line item breakdown
+6. If something goes wrong, three separate cancellation/refund paths exist: **a)** the **platform admin** cancels an unconfirmed off-chain payment via `cancelPayment` (clears pending accounting; **does not** automatically return ERC-20 already sent to the treasury—handle recovery operationally); **b)** the **platform admin** refunds a confirmed non-NFT payment via `claimRefund(paymentId, refundAddress)`; **c)** for crypto payments, anyone can call `claimRefundSelf` — the contract looks up the NFT owner, burns the NFT, and sends refundable line items to that owner (no `cancelPayment` needed — crypto payments are auto-confirmed and `cancelPayment` rejects them).
+7. **Anyone** disburses accumulated protocol and platform fees
+8. **CeloMarket or the Creator** withdraws confirmed funds to the campaign owner's wallet
+9. For TimeConstrainedPaymentTreasury: the platform claims all remaining balances after the deadline + claim delay
+10. **CeloMarket** claims non-goal line item accumulations (e.g., shipping fees) per token
+11. **CeloMarket** can pause and unpause the treasury during an investigation
+12. **CeloMarket or the Creator** can permanently cancel the treasury in extreme cases
 
 ## NFT Handling
 
@@ -65,9 +64,9 @@ Which variant your platform uses depends on the treasury implementation register
 | --- | --- | --- | --- | --- |
 | 1 | `01-create-campaign.ts` | Platform Admin / Creator | Create a CampaignInfo contract via the factory (holds NFT receipts) | Required |
 | 2 | `02-deploy-treasury.ts` | Platform Admin / Creator | Deploy a PaymentTreasury via TreasuryFactory, linked to the CampaignInfo | Required |
-| 3 | `03-create-payment.ts` | Platform Admin | Flow A: Create an off-chain payment record with line items (single + batch) | Required |
-| 4 | `04-process-crypto-payment.ts` | Buyer | Flow B: Pay on-chain — creates the payment AND transfers ERC-20 tokens in one step (independent of Step 3) | Required |
-| 5 | `05-confirm-payment.ts` | Platform Admin | Confirm the payment after order verification (single + batch) | Required |
+| 3 | `03-create-payment.ts` | Platform Admin | Flow A: Create an off-chain payment record with line items (single + batch) | Required for Flow A |
+| 4 | `04-process-crypto-payment.ts` | Buyer | Flow B: Pay on-chain — creates the payment, pulls ERC-20, confirms, mints NFT in one tx (independent of Step 3) | Required for Flow B |
+| 5 | `05-confirm-payment.ts` | Platform Admin | Flow A only: Confirm after tokens are in the treasury (single + batch). Omit if using Flow B | Required for Flow A |
 | 6 | `06-read-payment-data.ts` | Anyone | Read payment details and treasury dashboard | Required |
 | 7 | `07-handle-refunds.ts` | Platform Admin / Buyer | Cancel a payment and claim a refund (self or admin-directed) | Required |
 | 8 | `08-disburse-fees.ts` | Anyone | Disburse accumulated protocol and platform fees | Required |
@@ -83,7 +82,7 @@ Which variant your platform uses depends on the treasury implementation register
 | --- | --- | --- |
 | `createPayment` / `createPaymentBatch` | Platform Admin | `onlyPlatformAdmin` |
 | `processCryptoPayment` | Anyone (buyer) | (no role modifier) |
-| `confirmPayment` / `confirmPaymentBatch` | Platform Admin | `onlyPlatformAdmin` |
+| `confirmPayment` / `confirmPaymentBatch` | Platform Admin | `onlyPlatformAdmin` (for `createPayment` records only) |
 | `cancelPayment` | Platform Admin | `onlyPlatformAdmin` |
 | `claimRefundSelf(paymentId)` | Anyone (crypto payments only — burns NFT, refund goes to NFT owner) | (no role modifier) |
 | `claimRefund(paymentId, refundAddress)` | Platform Admin (off-chain payments only — `tokenId == 0`) | `onlyPlatformAdmin` |

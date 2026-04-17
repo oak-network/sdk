@@ -145,7 +145,7 @@ Karma supports two payment methods — they are **not** sequential steps:
 
 > **Role: Platform Admin** — only the platform admin can create payment records. Must be called within the time window (`launchTime` to `deadline + bufferTime`).
 
-Karma's system creates a payment record on-chain. **No funds move** — James pays through off-chain rails (wire transfer, dealership financing, etc.) and Karma calls `confirmPayment` after verifying receipt.
+Karma's system creates a payment record on-chain. The **`createPayment` transaction does not pull ERC-20 from the buyer’s wallet** — it records the order and pending accounting. James pays through off-chain rails (wire transfer, dealership financing, etc.). Before `confirmPayment`, **the treasury must hold enough of the payment token on-chain** (for example the platform deposits stablecoins after settlement). The contract checks the treasury balance when confirming.
 
 ```typescript
 const orderId = toHex("karma-order-GS6-2026-0415", { size: 32 });
@@ -176,6 +176,20 @@ const txHash = await treasury.createPayment(
   totalAmount, expiration, lineItems, externalFees,
 );
 await oak.waitForReceipt(txHash);
+```
+
+After `createPayment`, **fund the treasury** with the agreed token amount before calling `confirmPayment` (operational path is product-specific).
+
+##### Confirm after delivery (platform admin)
+
+> **Role: Platform Admin** — `confirmPayment` must still be within the launch…deadline+buffer window.
+
+The GS-6 is manufactured and delivered to James. After the treasury holds the required tokens and Karma verifies delivery (still within the time window):
+
+```typescript
+await treasury.simulate.confirmPayment(orderId, JAMES_WALLET_ADDRESS);
+const confirmTx = await treasury.confirmPayment(orderId, JAMES_WALLET_ADDRESS);
+await oak.waitForReceipt(confirmTx);
 ```
 
 #### Flow B: On-chain crypto payment (`processCryptoPayment`)
@@ -210,8 +224,6 @@ const txHash = await treasury.processCryptoPayment(
 await oak.waitForReceipt(txHash);
 ```
 
-Funds are now **locked in the time-constrained treasury**. The clock is ticking toward the 6-month delivery deadline.
-
 ### Step 4: Monitor the order status
 
 > **Role: Any caller** — all read functions are public.
@@ -221,8 +233,9 @@ Karma's dashboard tracks the prepayment and treasury health.
 ```typescript
 // Read the specific order
 const paymentData = await treasury.getPaymentData(orderId);
-// paymentData.isConfirmed === false (not yet delivered)
-// paymentData.expiration — the delivery deadline
+// Flow A (createPayment): paymentData.isConfirmed === false until Flow A confirm in Step 3
+// Flow B (processCryptoPayment): paymentData.isConfirmed === true after Step 3 Flow B
+// paymentData.expiration — the delivery deadline (Flow A); crypto payments use expiration 0 on-chain
 
 // Treasury-level metrics
 const [raised, available, expected] = await oak.multicall([
@@ -232,23 +245,14 @@ const [raised, available, expected] = await oak.multicall([
 ]);
 ```
 
-### Step 5 (Success): Vehicle delivered — confirm and withdraw
+### Step 5 (Success): Vehicle delivered — disburse and withdraw
 
-> **Role: Platform Admin** for `confirmPayment` (must still be within the launch…deadline+buffer window). **Any caller** for `disburseFees` (after `launchTime`). **Platform Admin or Campaign Owner** for `withdraw` (after `launchTime`).
-
-The GS-6 is manufactured and delivered to James. Karma's system confirms delivery.
+> **Any caller** for `disburseFees` (after `launchTime`). **Platform Admin or Campaign Owner** for `withdraw` (after `launchTime`). For **Flow A**, you already called `confirmPayment` under Step 3 after delivery; for **Flow B**, the payment was confirmed when `processCryptoPayment` ran—do not call `confirmPayment` here.
 
 ```typescript
-// Confirm delivery
-await treasury.simulate.confirmPayment(orderId, JAMES_WALLET_ADDRESS);
-const confirmTx = await treasury.confirmPayment(orderId, JAMES_WALLET_ADDRESS);
-await oak.waitForReceipt(confirmTx);
-
-// Disburse protocol and platform fees
 const feeTx = await treasury.disburseFees();
 await oak.waitForReceipt(feeTx);
 
-// Withdraw settled funds to the dealer (campaign owner)
 const withdrawTx = await treasury.withdraw();
 await oak.waitForReceipt(withdrawTx);
 ```
@@ -271,7 +275,7 @@ This is the core value of the **TimeConstrainedPaymentTreasury** — the **claim
 
 **A) Cancel unconfirmed off-chain payment (before `confirmPayment`):**
 
-> **Role: Platform Admin** for `cancelPayment` (within the launch…deadline+buffer window).
+> **Role: Platform Admin** for `cancelPayment` (within the launch…deadline+buffer window). This clears pending accounting only; **it does not automatically return ERC-20** already sent to the treasury—handle recovery operationally if you deposited before cancelling.
 
 ```typescript
 await treasury.cancelPayment(orderId);
@@ -359,11 +363,20 @@ Customer (James)            Karma (Platform Admin)         TimeConstrainedTreasu
        |                         |                                |
        |                         |  createPayment(...)            |
        |                         |  [Platform Admin, in window]   |
-       |                         |------------------------------->|  Order recorded (no funds)
+       |                         |------------------------------->|  Order recorded (no pull from buyer)
        |                         |                                |
        |   Pays off-chain        |                                |
        |   (wire, financing)     |                                |
        |------------------------>|                                |
+       |                         |                                |
+       |   Tokens to treasury    |  (deposit / bridge / ops)      |
+       |                         |------------------------------->|  Balance must cover confirm
+       |                         |                                |
+       |              --- SUCCESS PATH (Flow A) ---               |
+       |                         |                                |
+       |   Vehicle delivered     |  confirmPayment(...)           |
+       |                         |  [Platform Admin, in window]   |
+       |                         |------------------------------->|  Pending → confirmed
        |                         |                                |
        |         --- FLOW B: On-chain crypto payment ---          |
        |                         |                                |
@@ -372,16 +385,9 @@ Customer (James)            Karma (Platform Admin)         TimeConstrainedTreasu
        |                         |                                |
        |                         |  processCryptoPayment(...)     |
        |                         |  [Any caller, in window]       |
-       |                         |------------------------------->|  Payment created + funds locked
+       |                         |------------------------------->|  Pull + confirmed + NFT
        |                         |                                |
-       |         --- Both flows continue here ---                 |
-       |                         |                                |
-       |              --- SUCCESS PATH ---                        |
-       |                         |                                |
-       |   Vehicle delivered     |  confirmPayment(...)           |
-       |                         |  [Platform Admin, in window]   |
-       |                         |------------------------------->|  Funds settled
-       |                         |                                |
+       |              --- Fees & withdraw (both flows) ---        |
        |                         |  disburseFees()                |
        |                         |  [Any caller, after launch]    |
        |                         |------------------------------->|  Fees → Protocol + Platform
@@ -406,6 +412,8 @@ Customer (James)            Karma (Platform Admin)         TimeConstrainedTreasu
 ## Key Takeaways
 
 - **ERC-20 approval is required** — James must `approve` the treasury before `processCryptoPayment` can pull tokens
+- **`createPayment` path** — fund the treasury before `confirmPayment` (`createPayment` does not pull from the buyer)
+- **`processCryptoPayment` path** — do not call `confirmPayment` afterward; use `disburseFees` / `withdraw` when appropriate
 - **Multi-token** — use any **accepted** `paymentToken` for the campaign; balances and sweeps are per ERC-20
 - **Time gates are enforced on-chain** — create/confirm/cancel/pay paths must occur within `launchTime` … `deadline + bufferTime`; refunds, fee disbursement, withdrawal, non-goal claims, and expired sweeps require time **after** `launchTime`
 - **Same SDK interface** as PaymentTreasury — `oak.paymentTreasury()` works for both; behavior differs in the deployed contract bytecode

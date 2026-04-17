@@ -139,7 +139,7 @@ CeloMarket supports two payment methods. A platform uses one or both depending o
 
 > **Role: Platform Admin** — only the platform admin can create payment records.
 
-A buyer orders wireless headphones for $79.99. CeloMarket's backend creates a payment record on-chain. **No funds move** — the buyer pays through off-chain rails (credit card, bank transfer, etc.) and CeloMarket calls `confirmPayment` after verifying receipt.
+A buyer orders wireless headphones for $79.99. CeloMarket's backend creates a payment record on-chain. The **`createPayment` transaction does not pull ERC-20 from the buyer’s wallet** — it records the order and pending accounting. The buyer pays through off-chain rails (credit card, bank transfer, etc.). Before `confirmPayment`, **the treasury must hold enough of the payment token on-chain** (for example after fiat settlement the platform deposits USDC). The contract checks the treasury balance when confirming.
 
 ```typescript
 const orderId = toHex("order-20260415-001", { size: 32 });
@@ -168,6 +168,31 @@ const txHash = await treasury.createPayment(
   orderId, buyerId, itemId, USDC_TOKEN_ADDRESS,
   totalAmount, expiration, lineItems, externalFees,
 );
+await oak.waitForReceipt(txHash);
+```
+
+After `createPayment`, **fund the treasury** with the agreed token amount before calling `confirmPayment` (operational path is product-specific).
+
+##### Confirm after shipment (platform admin)
+
+> **Role: Platform Admin** — `confirmPayment` applies only to payments created with `createPayment`.
+
+The seller uploads a shipping proof (tracking number). After verification **and** once the treasury holds the required ERC-20, CeloMarket confirms the payment on-chain.
+
+```typescript
+await treasury.simulate.confirmPayment(orderId, BUYER_ADDRESS);
+
+const txHash = await treasury.confirmPayment(orderId, BUYER_ADDRESS);
+await oak.waitForReceipt(txHash);
+```
+
+For batch order processing (e.g. end-of-day settlement):
+
+```typescript
+const orderIds = [orderId1, orderId2, orderId3];
+const buyerAddresses = [buyer1, buyer2, buyer3];
+
+const txHash = await treasury.confirmPaymentBatch(orderIds, buyerAddresses);
 await oak.waitForReceipt(txHash);
 ```
 
@@ -203,32 +228,7 @@ const txHash = await treasury.processCryptoPayment(
 await oak.waitForReceipt(txHash);
 ```
 
-Funds are now **locked** — the seller cannot access them until CeloMarket confirms shipment.
-
-### Step 4: Seller ships — platform confirms payment
-
-> **Role: Platform Admin** — only the platform admin can confirm payments.
-
-The seller uploads a shipping proof (tracking number). CeloMarket's backend verifies and confirms the payment.
-
-```typescript
-await treasury.simulate.confirmPayment(orderId, BUYER_ADDRESS);
-
-const txHash = await treasury.confirmPayment(orderId, BUYER_ADDRESS);
-await oak.waitForReceipt(txHash);
-```
-
-For batch order processing (e.g. end-of-day settlement):
-
-```typescript
-const orderIds = [orderId1, orderId2, orderId3];
-const buyerAddresses = [buyer1, buyer2, buyer3];
-
-const txHash = await treasury.confirmPaymentBatch(orderIds, buyerAddresses);
-await oak.waitForReceipt(txHash);
-```
-
-### Step 5: Read order state — dashboard view
+### Step 4: Read order state — dashboard view
 
 > **Role: Any caller** — all read functions are public.
 
@@ -248,7 +248,7 @@ const [raised, available, refunded, expected] = await oak.multicall([
 ]);
 ```
 
-### Step 6: Fee disbursement
+### Step 5: Fee disbursement
 
 > **Role: Any caller** — `disburseFees` is permissionless. Fees are sent to the Protocol Admin and Platform Admin automatically.
 
@@ -259,7 +259,7 @@ const txHash = await treasury.disburseFees();
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 7: Seller withdrawal
+### Step 6: Seller withdrawal
 
 > **Role: Platform Admin or Campaign Owner** — either party can trigger withdrawal. Funds are always sent to the campaign owner (the seller).
 
@@ -276,7 +276,7 @@ await oak.waitForReceipt(txHash);
 
 **A) Cancel an unconfirmed off-chain payment (before `confirmPayment`):**
 
-> **Role: Platform Admin** — `cancelPayment` works only on unconfirmed, non-expired, non-crypto payments. No on-chain funds were transferred for off-chain payments, so the on-chain record is simply deleted. Any off-chain refund (credit card reversal, etc.) is handled by the platform outside the contract.
+> **Role: Platform Admin** — `cancelPayment` works only on unconfirmed, non-expired, non-crypto payments. The transaction **drops pending accounting**; it **does not** automatically return ERC-20 already sent to the treasury—recover tokens operationally if needed. Off-chain refunds (credit card reversal, etc.) are handled outside this call.
 
 ```typescript
 await treasury.cancelPayment(orderId);
@@ -365,11 +365,19 @@ Buyer (Alex)              CeloMarket (Platform Admin)        Blockchain
      |                          |                                |
      |                          |   createPayment()              |
      |                          |   [Platform Admin]             |
-     |                          |------------------------------->|  Order recorded (no funds)
+     |                          |------------------------------->|  Order recorded (no pull from buyer)
      |                          |                                |
      |   Buyer pays off-chain   |                                |
      |   (credit card, etc.)    |                                |
      |------------------------->|                                |
+     |                          |                                |
+     |   Tokens to treasury     |   (deposit / bridge / ops)     |
+     |                          |------------------------------->|  Balance must cover confirm
+     |                          |                                |
+     |                   Seller ships product                    |
+     |                          |   confirmPayment()             |
+     |                          |   [Platform Admin]             |
+     |                          |------------------------------->|  Flow A: pending → confirmed
      |                          |                                |
      |            --- FLOW B: On-chain crypto payment ---        |
      |                          |                                |
@@ -378,14 +386,9 @@ Buyer (Alex)              CeloMarket (Platform Admin)        Blockchain
      |                          |                                |
      |                          |   processCryptoPayment()       |
      |                          |   [Any caller]                 |
-     |                          |------------------------------->|  Payment created + funds locked
+     |                          |------------------------------->|  Pull + confirmed + NFT
      |                          |                                |
-     |            --- Both flows continue here ---               |
-     |                          |                                |
-     |                   Seller ships product                    |
-     |                          |   confirmPayment()             |
-     |                          |   [Platform Admin]             |
-     |                          |------------------------------->|  Funds settled
+     |            --- Both flows (after Flow A confirm or Flow B) --- |
      |                          |                                |
      |                          |   claimNonGoalLineItems()      |
      |                          |   [Platform Admin]             |
@@ -408,6 +411,8 @@ Buyer (Alex)              CeloMarket (Platform Admin)        Blockchain
 ## Key Takeaways
 
 - **ERC-20 approval is required** — the buyer must `approve` the treasury contract before `processCryptoPayment` can transfer tokens
+- **`createPayment` path** — `createPayment` does not pull tokens from the buyer; fund the treasury before `confirmPayment`
+- **`processCryptoPayment` path** — confirms in one transaction; then `disburseFees` / `withdraw`—do not call `confirmPayment` for these payments
 - **Multi-token** — orders can settle in any **accepted** `paymentToken`; treasury accounting is per token address
 - **Role-based access** — `createPayment`/`confirmPayment`/`cancelPayment` are platform-admin-only; `processCryptoPayment` and `disburseFees` are permissionless; `withdraw` requires admin or owner
 - **Three cancellation/refund paths** — `cancelPayment` deletes unconfirmed off-chain records (no on-chain refund); `claimRefund(paymentId, address)` refunds confirmed non-NFT payments (platform admin); `claimRefundSelf(paymentId)` refunds crypto/NFT payments directly (NFT owner, no prior cancel needed; requires prior ERC-721 approval on CampaignInfo)
@@ -416,4 +421,4 @@ Buyer (Alex)              CeloMarket (Platform Admin)        Blockchain
 - **Batch operations** (`createPaymentBatch`, `confirmPaymentBatch`) enable efficient end-of-day settlement
 - **Pause / cancel controls** — platform admin can pause; either admin or owner can permanently cancel
 - **Fiat-to-fiat for users** — buyers and sellers deal in USD; crypto conversion is abstracted away
-- **Buyer protection** — funds only released after shipment confirmation, with a full refund path
+- **Buyer protection** — funds stay in the treasury under contract rules until withdrawal; refunds use `cancelPayment`, `claimRefund`, or `claimRefundSelf` as applicable
