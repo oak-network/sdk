@@ -318,8 +318,13 @@ await oak.waitForReceipt(txHash);
 
 If the deadline passes and the goal was not reached, each backer can claim a refund by providing their pledge NFT token ID. The NFT is burned during the refund.
 
+Before calling `claimRefund`, the backer must approve the treasury to manage their pledge NFT. The AllOrNothing treasury **is** the ERC-721 contract itself, so `approve` is called directly on the treasury entity:
+
 ```typescript
-// Each backer calls claimRefund with their pledge NFT token ID
+// Approve the treasury to burn this pledge NFT
+await aonTreasury.approve(AON_TREASURY_ADDRESS, tokenId);
+
+// Claim the refund — burns the NFT and returns pledged tokens
 const txHash = await aonTreasury.claimRefund(tokenId);
 await oak.waitForReceipt(txHash);
 // Backer receives their pledge amount back; NFT is burned
