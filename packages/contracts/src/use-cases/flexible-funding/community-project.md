@@ -332,13 +332,14 @@ await oak.waitForReceipt(txHash);
 
 If a backer wants a refund, they can claim one — but only after the deadline + the configured refund delay (14 days in this example).
 
-Before calling `claimRefund`, the backer must approve the treasury to manage their pledge NFT. The KWR treasury **is** the ERC-721 contract itself, so `approve` is called directly on the treasury entity:
+Before calling `claimRefund`, the backer must approve the treasury to manage their pledge NFT. Pledge NFTs live on the **CampaignInfo** contract, so `approve` is called on the CampaignInfo entity:
 
 ```typescript
 // After deadline + 14-day refund delay
 
-// Approve the treasury to burn this pledge NFT
-await kwrTreasury.approve(KWR_TREASURY_ADDRESS, backerTokenId);
+// Approve the treasury to burn this pledge NFT (NFTs live on CampaignInfo)
+const campaign = oak.campaignInfo(CAMPAIGN_INFO_ADDRESS);
+await campaign.approve(KWR_TREASURY_ADDRESS, backerTokenId);
 
 // Claim the refund — burns the NFT and returns pledged tokens
 const txHash = await kwrTreasury.claimRefund(backerTokenId);

@@ -192,26 +192,36 @@ const txHash = await treasury.withdraw();
 await oak.waitForReceipt(txHash);
 ```
 
-### Alternative: Buyer refund before shipment
+### Alternative: Cancellation and refund flows
 
-> **Role: Platform Admin** for `cancelPayment` and `claimRefund(paymentId, refundAddress)`. **Buyer (NFT owner)** for `claimRefundSelf(paymentId)` (crypto / NFT payments).
+> Three distinct paths exist depending on payment state and type:
 
-If the buyer cancels before the seller ships, CeloMarket cancels the payment and the buyer gets a refund.
+**A) Cancel an unconfirmed off-chain payment (before `confirmPayment`):**
 
-**For off-chain payments (no NFT minted):**
+> **Role: Platform Admin** — `cancelPayment` works only on unconfirmed, non-expired, non-crypto payments. No on-chain funds were transferred for off-chain payments, so the on-chain record is simply deleted. Any off-chain refund (credit card reversal, etc.) is handled by the platform outside the contract.
 
 ```typescript
-// Platform cancels the unconfirmed payment
 await treasury.cancelPayment(orderId);
+```
 
-// Platform initiates refund to the buyer's address
+**B) Refund a confirmed off-chain payment (non-NFT):**
+
+> **Role: Platform Admin** — `claimRefund(paymentId, refundAddress)` refunds a confirmed payment where no NFT was minted (`confirmPayment` was called without a `buyerAddress`, or `buyerAddress` was `address(0)`). The contract verifies the payment is confirmed and has `tokenId == 0`.
+
+```typescript
 await treasury.claimRefund(orderId, BUYER_ADDRESS);
 ```
 
-**For crypto payments (NFT was minted):**
+**C) Refund a crypto payment (NFT was minted):**
+
+> **Role: Any caller (NFT owner)** — `claimRefundSelf(paymentId)` is for crypto payments (auto-confirmed on creation). The contract looks up the NFT owner, burns the NFT, and sends the refundable amount to that owner. No prior `cancelPayment` is needed — crypto payments cannot be cancelled via `cancelPayment`.
+
+Before calling `claimRefundSelf`, the NFT owner must approve the treasury to manage the NFT. All pledge NFTs live on the **CampaignInfo** contract (not the treasury itself), so approval uses the CampaignInfo SDK entity:
 
 ```typescript
-// Anyone can trigger the refund — funds go to the current NFT owner, and the NFT is burned
+const campaign = oak.campaignInfo(CAMPAIGN_INFO_ADDRESS);
+await campaign.approve(TREASURY_ADDRESS, tokenId);
+
 await treasury.claimRefundSelf(orderId);
 ```
 
@@ -322,7 +332,7 @@ Buyer (Alex)              CeloMarket (Platform Admin)        Blockchain
 - **ERC-20 approval is required** — the buyer must `approve` the treasury contract before `processCryptoPayment` can transfer tokens
 - **Multi-token** — orders can settle in any **accepted** `paymentToken`; treasury accounting is per token address
 - **Role-based access** — `createPayment`/`confirmPayment`/`cancelPayment` are platform-admin-only; `processCryptoPayment` and `disburseFees` are permissionless; `withdraw` requires admin or owner
-- **Two refund models** — `claimRefund(paymentId, address)` for non-NFT payments (platform admin only) and `claimRefundSelf(paymentId)` for NFT payments (signer must be NFT owner)
+- **Three cancellation/refund paths** — `cancelPayment` deletes unconfirmed off-chain records (no on-chain refund); `claimRefund(paymentId, address)` refunds confirmed non-NFT payments (platform admin); `claimRefundSelf(paymentId)` refunds crypto/NFT payments directly (NFT owner, no prior cancel needed; requires prior ERC-721 approval on CampaignInfo)
 - **Line items** separate product cost, shipping, and commission with configurable goal-counting, fees, and refund rules
 - **Non-goal line items** (e.g., platform commission) can be claimed separately via `claimNonGoalLineItems`
 - **Batch operations** (`createPaymentBatch`, `confirmPaymentBatch`) enable efficient end-of-day settlement

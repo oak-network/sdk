@@ -318,11 +318,12 @@ await oak.waitForReceipt(txHash);
 
 If the deadline passes and the goal was not reached, each backer can claim a refund by providing their pledge NFT token ID. The NFT is burned during the refund.
 
-Before calling `claimRefund`, the backer must approve the treasury to manage their pledge NFT. The AllOrNothing treasury **is** the ERC-721 contract itself, so `approve` is called directly on the treasury entity:
+Before calling `claimRefund`, the backer must approve the treasury to manage their pledge NFT. Pledge NFTs live on the **CampaignInfo** contract, so `approve` is called on the CampaignInfo entity:
 
 ```typescript
-// Approve the treasury to burn this pledge NFT
-await aonTreasury.approve(AON_TREASURY_ADDRESS, tokenId);
+// Approve the treasury to burn this pledge NFT (NFTs live on CampaignInfo)
+const campaign = oak.campaignInfo(CAMPAIGN_INFO_ADDRESS);
+await campaign.approve(AON_TREASURY_ADDRESS, tokenId);
 
 // Claim the refund — burns the NFT and returns pledged tokens
 const txHash = await aonTreasury.claimRefund(tokenId);
@@ -372,11 +373,13 @@ const isCancelled = await aonTreasury.cancelled();
 
 > **Role: Any caller** — all read functions are public.
 
-Pledge NFTs are standard ERC-721 tokens minted by the CampaignInfo contract. Backers can transfer or manage them using standard ERC-721 operations (`safeTransferFrom`, `approve`, `setApprovalForAll`). If a pledge NFT is transferred, the new owner becomes eligible to claim the refund (on failure) or holds the reward entitlement.
+Pledge NFTs are standard ERC-721 tokens minted by the CampaignInfo contract — **not** by the treasury. All NFT operations (`ownerOf`, `approve`, `balanceOf`, `tokenURI`, etc.) go through the CampaignInfo entity. Backers can manage them using `campaignInfo.approve(...)` and `campaignInfo.setApprovalForAll(...)`. If a pledge NFT is transferred, the new owner becomes eligible to claim the refund (on failure) or holds the reward entitlement.
 
 Each pledge NFT stores on-chain metadata accessible through CampaignInfo:
 
 ```typescript
+const campaign = oak.campaignInfo(CAMPAIGN_INFO_ADDRESS);
+
 const pledgeData = await campaign.getPledgeData(tokenId);
 // pledgeData.backer       — backer wallet address
 // pledgeData.reward       — selected reward (bytes32)

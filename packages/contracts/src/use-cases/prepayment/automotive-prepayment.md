@@ -201,19 +201,24 @@ This is the core value of the **TimeConstrainedPaymentTreasury** — the **claim
 await treasury.cancelPayment(orderId);
 ```
 
-**B) Refund after confirmation — non-NFT payment (no pledge NFT minted):**
+**B) Refund a confirmed off-chain payment (non-NFT):**
 
-> **Role: Platform Admin** for `claimRefund(paymentId, refundAddress)` (after `launchTime`).
+> **Role: Platform Admin** for `claimRefund(paymentId, refundAddress)` (after `launchTime`). This refunds a confirmed payment where no NFT was minted. The contract verifies the payment is confirmed and has `tokenId == 0`.
 
 ```typescript
 await treasury.claimRefund(orderId, JAMES_WALLET_ADDRESS);
 ```
 
-**C) Refund after confirmation — NFT-backed crypto payment:**
+**C) Refund — NFT-backed crypto payment:**
 
-> **Role: Buyer (NFT owner)** — `claimRefundSelf(paymentId)` burns the NFT and sends the refund to the **current NFT owner** (after `launchTime`).
+> **Role: Any caller (NFT owner)** — `claimRefundSelf(paymentId)` looks up the current NFT owner, burns the NFT, and sends the refundable amount to that owner (after `launchTime`). No prior `cancelPayment` is needed — crypto payments cannot be cancelled via `cancelPayment` (they are auto-confirmed on creation).
+
+Before calling `claimRefundSelf`, the NFT owner must approve the treasury to manage the NFT. All pledge NFTs live on the **CampaignInfo** contract (not the treasury itself), so approval uses the CampaignInfo SDK entity:
 
 ```typescript
+const campaign = oak.campaignInfo(CAMPAIGN_INFO_ADDRESS);
+await campaign.approve(TIME_CONSTRAINED_TREASURY_ADDRESS, tokenId);
+
 await treasury.claimRefundSelf(orderId);
 ```
 
@@ -330,7 +335,7 @@ Customer (James)            Karma (Platform Admin)         TimeConstrainedTreasu
 - **Same SDK interface** as PaymentTreasury — `oak.paymentTreasury()` works for both; behavior differs in the deployed contract bytecode
 - **`claimExpiredFunds()`** is platform-admin-only and only after `deadline + platformClaimDelay`; on-chain recipients are the platform and protocol admins — align customer refunds with your product policy
 - **Role-based access** — matches PaymentTreasury for admin-only writes; `withdraw` is platform admin or campaign owner; `disburseFees` is permissionless
-- **Two refund models** — `claimRefund(paymentId, address)` (platform admin, non-NFT) vs `claimRefundSelf(paymentId)` (signer must be NFT owner)
+- **Three cancellation/refund paths** — `cancelPayment` deletes unconfirmed off-chain records (no on-chain refund); `claimRefund(paymentId, address)` refunds confirmed non-NFT payments (platform admin); `claimRefundSelf(paymentId)` refunds crypto/NFT payments directly (NFT owner, no prior cancel needed; requires prior ERC-721 approval on CampaignInfo)
 - **High-value transactions** benefit from deterministic rules instead of informal wire holds
 - **Line items** provide a clear audit trail (base price vs. options vs. delivery)
 - **Batch, pause, cancel, and `claimNonGoalLineItems`** behave like PaymentTreasury but inherit the same time checks from `TimeConstrainedPaymentTreasury`
