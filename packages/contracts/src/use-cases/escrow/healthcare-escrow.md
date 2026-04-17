@@ -16,7 +16,11 @@ MedConnect needs a trustless escrow mechanism that:
 
 ## Oak Contract Used
 
-**PaymentTreasury** — a smart contract that holds funds until the platform confirms service delivery. Supports line items, external fees, and refund flows.
+| Contract | Purpose |
+|----------|---------|
+| **CampaignInfoFactory** | Creates the CampaignInfo contract that holds NFT receipts and the accepted token list |
+| **TreasuryFactory** | Deploys the PaymentTreasury clone linked to the CampaignInfo |
+| **PaymentTreasury** | Holds patient funds until the platform confirms service delivery. Supports line items, external fees, and refund flows |
 
 ### Multi-token support
 
@@ -34,14 +38,17 @@ Payments specify **`paymentToken`**; the contract reverts unless **`CampaignInfo
 
 ## Integration Flow
 
-### Step 1: Connect to the deployed PaymentTreasury
+### Step 1: Create a CampaignInfo contract
 
-> **Role: Any caller** — connecting and reading treasury state is public.
+> **Role: Any caller** — `createCampaign` is permissionless.
 
-MedConnect has a PaymentTreasury deployed for its healthcare escrow pool. The backend connects using the SDK.
+Before deploying a PaymentTreasury, MedConnect needs a CampaignInfo contract. This holds NFT receipts for crypto payments and defines the accepted token list.
 
 ```typescript
-import { createOakContractsClient, CHAIN_IDS } from "@oaknetwork/contracts-sdk";
+import {
+  createOakContractsClient, keccak256, toHex,
+  getCurrentTimestamp, addDays, CHAIN_IDS, CAMPAIGN_INFO_FACTORY_EVENTS,
+} from "@oaknetwork/contracts-sdk";
 
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
@@ -49,14 +56,82 @@ const oak = createOakContractsClient({
   privateKey: process.env.PLATFORM_PRIVATE_KEY as `0x${string}`,
 });
 
-const treasury = oak.paymentTreasury(TREASURY_ADDRESS);
+const factory = oak.campaignInfoFactory(CAMPAIGN_INFO_FACTORY_ADDRESS);
 
-// Verify the treasury is operational
-const isPaused = await treasury.paused();
-const isCancelled = await treasury.cancelled();
+const platformHash = keccak256(toHex("medconnect"));
+const identifierHash = keccak256(toHex("medconnect-escrow-2026"));
+const now = getCurrentTimestamp();
+
+const txHash = await factory.createCampaign({
+  creator: PLATFORM_ADMIN_ADDRESS,
+  identifierHash,
+  selectedPlatformHash: [platformHash],
+  campaignData: {
+    launchTime: now,
+    deadline: addDays(now, 365),
+    goalAmount: 0n,
+    currency: toHex("USD", { size: 32 }),
+  },
+  nftName: "MedConnect Receipts",
+  nftSymbol: "MCR",
+  nftImageURI: "ipfs://QmXyz.../medconnect-receipt.png",
+  contractURI: "ipfs://QmXyz.../metadata.json",
+});
+
+const receipt = await oak.waitForReceipt(txHash);
+
+let campaignInfoAddress: `0x${string}` | undefined;
+for (const log of receipt.logs) {
+  try {
+    const decoded = factory.events.decodeLog({
+      topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
+      data: log.data as `0x${string}`,
+    });
+    if (decoded.eventName === CAMPAIGN_INFO_FACTORY_EVENTS.CampaignCreated) {
+      campaignInfoAddress = decoded.args?.campaignInfoAddress as `0x${string}`;
+      break;
+    }
+  } catch { /* log from a different contract */ }
+}
 ```
 
-### Step 2: Patient books appointment — two independent payment flows
+### Step 2: Deploy the PaymentTreasury
+
+> **Role: Any caller** — `deploy` on TreasuryFactory is permissionless (the implementation must have been registered and approved during platform onboarding).
+
+MedConnect deploys a PaymentTreasury linked to the CampaignInfo from Step 1.
+
+```typescript
+import { TREASURY_FACTORY_EVENTS } from "@oaknetwork/contracts-sdk";
+
+const treasuryFactory = oak.treasuryFactory(TREASURY_FACTORY_ADDRESS);
+
+const deployTxHash = await treasuryFactory.deploy(
+  platformHash,
+  campaignInfoAddress!,
+  2n, // PaymentTreasury implementation ID
+);
+
+const deployReceipt = await oak.waitForReceipt(deployTxHash);
+
+let treasuryAddress: `0x${string}` | undefined;
+for (const log of deployReceipt.logs) {
+  try {
+    const decoded = treasuryFactory.events.decodeLog({
+      topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
+      data: log.data as `0x${string}`,
+    });
+    if (decoded.eventName === TREASURY_FACTORY_EVENTS.TreasuryDeployed) {
+      treasuryAddress = decoded.args?.treasuryAddress as `0x${string}`;
+      break;
+    }
+  } catch { /* log from a different contract */ }
+}
+
+const treasury = oak.paymentTreasury(treasuryAddress!);
+```
+
+### Step 3: Patient books appointment — two independent payment flows
 
 Sarah books a cardiology consultation with Dr. Rivera. The appointment costs 150 USDC broken down into two line items: consultation (120 USDC) and lab work (30 USDC).
 
@@ -139,7 +214,7 @@ await oak.waitForReceipt(txHash);
 
 Funds are now **locked in the treasury**. Sarah cannot withdraw them, and neither can Dr. Rivera — only the platform can release them by confirming delivery.
 
-### Step 3: Doctor confirms service delivery
+### Step 4: Doctor confirms service delivery
 
 > **Role: Platform Admin** — only the platform admin can confirm payments.
 
@@ -154,7 +229,7 @@ await oak.waitForReceipt(txHash);
 
 The payment status is now **confirmed**. Funds are settled and ready for fee disbursement and withdrawal.
 
-### Step 4: Read the final treasury state
+### Step 5: Read the final treasury state
 
 > **Role: Any caller** — all read functions are public.
 
@@ -169,7 +244,7 @@ const [raised, available, lifetime, refunded] = await oak.multicall([
 ]);
 ```
 
-### Step 5: Disburse fees
+### Step 6: Disburse fees
 
 > **Role: Any caller** — `disburseFees` is permissionless. Fees are sent to the Protocol Admin and Platform Admin automatically.
 
@@ -180,7 +255,7 @@ const txHash = await treasury.disburseFees();
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 6: Withdraw settled funds
+### Step 7: Withdraw settled funds
 
 > **Role: Platform Admin or Campaign Owner** — either party can trigger withdrawal. Funds are always sent to the campaign owner (Dr. Rivera's clinic).
 
@@ -224,7 +299,7 @@ await campaign.approve(TREASURY_ADDRESS, tokenId);
 await treasury.claimRefundSelf(paymentId);
 ```
 
-### Step 7: Claim non-goal line items
+### Step 8: Claim non-goal line items
 
 > **Role: Platform Admin** — only the platform admin can claim non-goal line items.
 
@@ -235,7 +310,7 @@ const txHash = await treasury.claimNonGoalLineItems(USDC_TOKEN_ADDRESS);
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 8: Pause, unpause, or cancel the treasury
+### Step 9: Pause, unpause, or cancel the treasury
 
 **Pause the treasury:**
 

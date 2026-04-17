@@ -16,7 +16,11 @@ Karma Automotive needs:
 
 ## Oak Contract Used
 
-**TimeConstrainedPaymentTreasury** — identical to PaymentTreasury in its SDK interface (both use `oak.paymentTreasury()`), but the smart contract enforces launch-time and deadline constraints on-chain. After the deadline passes and the claim delay expires, `claimExpiredFunds` becomes callable.
+| Contract | Purpose |
+|----------|---------|
+| **CampaignInfoFactory** | Creates the CampaignInfo contract that holds NFT receipts and the accepted token list |
+| **TreasuryFactory** | Deploys the TimeConstrainedPaymentTreasury clone linked to the CampaignInfo |
+| **TimeConstrainedPaymentTreasury** | Identical to PaymentTreasury in its SDK interface (both use `oak.paymentTreasury()`), but enforces launch-time and deadline constraints on-chain. After the deadline passes and the claim delay expires, `claimExpiredFunds` becomes callable |
 
 ### Multi-token support
 
@@ -37,14 +41,17 @@ Like **PaymentTreasury**, the time-constrained variant is **multi-token**: **`pa
 
 ## Integration Flow
 
-### Step 1: Connect to the TimeConstrainedPaymentTreasury
+### Step 1: Create a CampaignInfo contract
 
-> **Role: Any caller** — connecting and reading treasury state is public.
+> **Role: Any caller** — `createCampaign` is permissionless.
 
-Karma's order management system connects to their deployed treasury.
+Before deploying a TimeConstrainedPaymentTreasury, Karma needs a CampaignInfo contract. This holds NFT receipts for crypto payments and defines the accepted token list.
 
 ```typescript
-import { createOakContractsClient, CHAIN_IDS, toHex } from "@oaknetwork/contracts-sdk";
+import {
+  createOakContractsClient, keccak256, toHex,
+  getCurrentTimestamp, addDays, CHAIN_IDS, CAMPAIGN_INFO_FACTORY_EVENTS,
+} from "@oaknetwork/contracts-sdk";
 
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
@@ -52,14 +59,83 @@ const oak = createOakContractsClient({
   privateKey: process.env.KARMA_PLATFORM_KEY as `0x${string}`,
 });
 
-// TimeConstrainedPaymentTreasury uses the same SDK entity as PaymentTreasury
-const treasury = oak.paymentTreasury(TIME_CONSTRAINED_TREASURY_ADDRESS);
+const factory = oak.campaignInfoFactory(CAMPAIGN_INFO_FACTORY_ADDRESS);
 
-const isPaused = await treasury.paused();
-const isCancelled = await treasury.cancelled();
+const platformHash = keccak256(toHex("karma-automotive"));
+const identifierHash = keccak256(toHex("karma-gs6-preorders-2026"));
+const now = getCurrentTimestamp();
+
+const txHash = await factory.createCampaign({
+  creator: KARMA_ADMIN_ADDRESS,
+  identifierHash,
+  selectedPlatformHash: [platformHash],
+  campaignData: {
+    launchTime: now,
+    deadline: addDays(now, 180),    // 6-month delivery window
+    goalAmount: 0n,
+    currency: toHex("USD", { size: 32 }),
+  },
+  nftName: "Karma GS-6 Deposits",
+  nftSymbol: "KGS6",
+  nftImageURI: "ipfs://QmXyz.../karma-gs6.png",
+  contractURI: "ipfs://QmXyz.../metadata.json",
+});
+
+const receipt = await oak.waitForReceipt(txHash);
+
+let campaignInfoAddress: `0x${string}` | undefined;
+for (const log of receipt.logs) {
+  try {
+    const decoded = factory.events.decodeLog({
+      topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
+      data: log.data as `0x${string}`,
+    });
+    if (decoded.eventName === CAMPAIGN_INFO_FACTORY_EVENTS.CampaignCreated) {
+      campaignInfoAddress = decoded.args?.campaignInfoAddress as `0x${string}`;
+      break;
+    }
+  } catch { /* log from a different contract */ }
+}
 ```
 
-### Step 2: Customer orders a vehicle — two independent payment flows
+### Step 2: Deploy the TimeConstrainedPaymentTreasury
+
+> **Role: Any caller** — `deploy` on TreasuryFactory is permissionless (the implementation must have been registered and approved during platform onboarding).
+
+Karma deploys a TimeConstrainedPaymentTreasury linked to the CampaignInfo from Step 1. The time constraints (launch time and deadline) are enforced on-chain by the contract.
+
+```typescript
+import { TREASURY_FACTORY_EVENTS } from "@oaknetwork/contracts-sdk";
+
+const treasuryFactory = oak.treasuryFactory(TREASURY_FACTORY_ADDRESS);
+
+const deployTxHash = await treasuryFactory.deploy(
+  platformHash,
+  campaignInfoAddress!,
+  3n, // TimeConstrainedPaymentTreasury implementation ID
+);
+
+const deployReceipt = await oak.waitForReceipt(deployTxHash);
+
+let treasuryAddress: `0x${string}` | undefined;
+for (const log of deployReceipt.logs) {
+  try {
+    const decoded = treasuryFactory.events.decodeLog({
+      topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
+      data: log.data as `0x${string}`,
+    });
+    if (decoded.eventName === TREASURY_FACTORY_EVENTS.TreasuryDeployed) {
+      treasuryAddress = decoded.args?.treasuryAddress as `0x${string}`;
+      break;
+    }
+  } catch { /* log from a different contract */ }
+}
+
+// TimeConstrainedPaymentTreasury uses the same SDK entity as PaymentTreasury
+const treasury = oak.paymentTreasury(treasuryAddress!);
+```
+
+### Step 3: Customer orders a vehicle — two independent payment flows
 
 James orders a Karma GS-6 electric sedan with the Performance Package. The total prepayment is $52,500 broken down into line items.
 
@@ -136,7 +212,7 @@ await oak.waitForReceipt(txHash);
 
 Funds are now **locked in the time-constrained treasury**. The clock is ticking toward the 6-month delivery deadline.
 
-### Step 3: Monitor the order status
+### Step 4: Monitor the order status
 
 > **Role: Any caller** — all read functions are public.
 
@@ -156,7 +232,7 @@ const [raised, available, expected] = await oak.multicall([
 ]);
 ```
 
-### Step 4 (Success): Vehicle delivered — confirm and withdraw
+### Step 5 (Success): Vehicle delivered — confirm and withdraw
 
 > **Role: Platform Admin** for `confirmPayment` (must still be within the launch…deadline+buffer window). **Any caller** for `disburseFees` (after `launchTime`). **Platform Admin or Campaign Owner** for `withdraw` (after `launchTime`).
 
@@ -177,7 +253,7 @@ const withdrawTx = await treasury.withdraw();
 await oak.waitForReceipt(withdrawTx);
 ```
 
-### Step 4 (Failure): Claim window after deadline — platform sweeps expired funds
+### Step 5 (Failure): Claim window after deadline — platform sweeps expired funds
 
 > **Role: Platform Admin** — only the platform admin can call `claimExpiredFunds`. Callable only after `campaignDeadline + platformClaimDelay`, and only after `launchTime` (time-constrained variant).
 

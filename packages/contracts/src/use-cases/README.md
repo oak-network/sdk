@@ -16,9 +16,9 @@ Every pledge or payment specifies **`pledgeToken` / `paymentToken`**; treasuries
 
 | Use Case | Demo | Contract(s) Used | Business Story |
 |----------|------|-------------------|----------------|
-| **Escrow** | [Healthcare Escrow](escrow/healthcare-escrow.md) | PaymentTreasury | MedConnect holds patient payments until a doctor confirms service delivery |
-| **Marketplace** | [E-Commerce Marketplace](marketplace/ecommerce-marketplace.md) | PaymentTreasury | CeloMarket locks buyer funds until seller ships; on-chain escrow with line items |
-| **Prepayment** | [Automotive Prepayment](prepayment/automotive-prepayment.md) | TimeConstrainedPaymentTreasury | Karma Automotive holds vehicle deposits with time-based expiry; expired funds are swept to the platform/protocol, and end-customer refunds are handled per Karma's policy |
+| **Escrow** | [Healthcare Escrow](escrow/healthcare-escrow.md) | CampaignInfoFactory + PaymentTreasury | MedConnect holds patient payments until a doctor confirms service delivery |
+| **Marketplace** | [E-Commerce Marketplace](marketplace/ecommerce-marketplace.md) | CampaignInfoFactory + PaymentTreasury | CeloMarket locks buyer funds until seller ships; on-chain escrow with line items |
+| **Prepayment** | [Automotive Prepayment](prepayment/automotive-prepayment.md) | CampaignInfoFactory + TimeConstrainedPaymentTreasury | Karma Automotive holds vehicle deposits with time-based expiry; expired funds are swept to the platform/protocol, and end-customer refunds are handled per Karma's policy |
 | **Flexible Funding** | [Community Project](flexible-funding/community-project.md) | CampaignInfoFactory + KeepWhatsRaised | TechForge runs keep-what's-raised campaigns with partial withdrawals, tips, and gateway fees |
 | **Crowdfunding** | [Creative Campaign](crowdfunding/creative-campaign.md) | CampaignInfoFactory + AllOrNothing | ArtFund runs all-or-nothing campaigns with NFT-backed pledges and reward tiers |
 
@@ -38,20 +38,20 @@ Each guide follows the same structure:
 
 Understanding which Oak contract to use for your business:
 
-### PaymentTreasury
+### CampaignInfoFactory + PaymentTreasury
 
 Best for: **escrow**, **marketplace**, **service payments**
 
-Funds are held until the platform confirms delivery/service. Supports line items, external fees, batch operations, and refund flows.
+Create a CampaignInfo contract first (holds NFT receipts, accepted token list), then deploy a PaymentTreasury via TreasuryFactory. Funds are held until the platform confirms delivery/service. Supports line items, external fees, batch operations, and refund flows.
 
 - [Healthcare Escrow](escrow/healthcare-escrow.md) — service escrow
 - [E-Commerce Marketplace](marketplace/ecommerce-marketplace.md) — product escrow with line items
 
-### TimeConstrainedPaymentTreasury
+### CampaignInfoFactory + TimeConstrainedPaymentTreasury
 
 Best for: **prepayments**, **deposits**, **time-bound commitments**
 
-Same interface as PaymentTreasury, but with on-chain time windows. After the campaign deadline plus the platform claim delay, the platform admin can call `claimExpiredFunds()` to sweep idle balances on-chain (recipients are defined by the contract); align end-customer refunds with your product policy.
+Same setup and interface as PaymentTreasury, but with on-chain time windows. After the campaign deadline plus the platform claim delay, the platform admin can call `claimExpiredFunds()` to sweep idle balances on-chain (recipients are defined by the contract); align end-customer refunds with your product policy.
 
 - [Automotive Prepayment](prepayment/automotive-prepayment.md) — vehicle deposit with 6-month delivery window
 

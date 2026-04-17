@@ -13,10 +13,12 @@ CeloMarket needs:
 - **Fee transparency** — protocol and platform fees are tracked and disbursed on-chain
 - **Fiat-to-fiat UX** — end users see USD prices; crypto conversion happens behind the scenes
 
-## Oak Contract Used
+## Oak Contracts Used
 
 | Contract | Purpose |
 |----------|---------|
+| **CampaignInfoFactory** | Creates the CampaignInfo contract that holds NFT receipts and the accepted token list |
+| **TreasuryFactory** | Deploys the PaymentTreasury clone linked to the CampaignInfo |
 | **PaymentTreasury** | Holds buyer funds until delivery is confirmed |
 
 ## Multi-token support
@@ -35,14 +37,17 @@ CeloMarket needs:
 
 ## Integration Flow
 
-### Step 1: Connect to the PaymentTreasury
+### Step 1: Create a CampaignInfo contract
 
-> **Role: Any caller** — connecting and reading state is public.
+> **Role: Any caller** — `createCampaign` is permissionless.
 
-CeloMarket's backend connects to the deployed PaymentTreasury contract.
+Before deploying a PaymentTreasury, CeloMarket needs a CampaignInfo contract. This holds NFT receipts for crypto payments and defines the accepted token list.
 
 ```typescript
-import { createOakContractsClient, CHAIN_IDS, toHex } from "@oaknetwork/contracts-sdk";
+import {
+  createOakContractsClient, keccak256, toHex,
+  getCurrentTimestamp, addDays, CHAIN_IDS, CAMPAIGN_INFO_FACTORY_EVENTS,
+} from "@oaknetwork/contracts-sdk";
 
 const oak = createOakContractsClient({
   chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
@@ -50,10 +55,83 @@ const oak = createOakContractsClient({
   privateKey: process.env.PLATFORM_PRIVATE_KEY as `0x${string}`,
 });
 
-const treasury = oak.paymentTreasury(TREASURY_ADDRESS);
+const factory = oak.campaignInfoFactory(CAMPAIGN_INFO_FACTORY_ADDRESS);
+
+const platformHash = keccak256(toHex("celomarket"));
+const identifierHash = keccak256(toHex("celomarket-storefront-2026"));
+const now = getCurrentTimestamp();
+
+const txHash = await factory.createCampaign({
+  creator: PLATFORM_ADMIN_ADDRESS,
+  identifierHash,
+  selectedPlatformHash: [platformHash],
+  campaignData: {
+    launchTime: now,
+    deadline: addDays(now, 365),
+    goalAmount: 0n,
+    currency: toHex("USD", { size: 32 }),
+  },
+  nftName: "CeloMarket Receipts",
+  nftSymbol: "CMR",
+  nftImageURI: "ipfs://QmXyz.../celomarket-receipt.png",
+  contractURI: "ipfs://QmXyz.../metadata.json",
+});
+
+const receipt = await oak.waitForReceipt(txHash);
+
+// Decode the CampaignCreated event from the receipt (recommended)
+let campaignInfoAddress: `0x${string}` | undefined;
+for (const log of receipt.logs) {
+  try {
+    const decoded = factory.events.decodeLog({
+      topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
+      data: log.data as `0x${string}`,
+    });
+    if (decoded.eventName === CAMPAIGN_INFO_FACTORY_EVENTS.CampaignCreated) {
+      campaignInfoAddress = decoded.args?.campaignInfoAddress as `0x${string}`;
+      break;
+    }
+  } catch { /* log from a different contract */ }
+}
 ```
 
-### Step 2: Buyer places order — two independent payment flows
+### Step 2: Deploy the PaymentTreasury
+
+> **Role: Any caller** — `deploy` on TreasuryFactory is permissionless (the implementation must have been registered and approved during platform onboarding).
+
+CeloMarket deploys a PaymentTreasury linked to the CampaignInfo from Step 1.
+
+```typescript
+import { TREASURY_FACTORY_EVENTS } from "@oaknetwork/contracts-sdk";
+
+const treasuryFactory = oak.treasuryFactory(TREASURY_FACTORY_ADDRESS);
+
+const deployTxHash = await treasuryFactory.deploy(
+  platformHash,
+  campaignInfoAddress!,
+  2n, // PaymentTreasury implementation ID
+);
+
+const deployReceipt = await oak.waitForReceipt(deployTxHash);
+
+let treasuryAddress: `0x${string}` | undefined;
+for (const log of deployReceipt.logs) {
+  try {
+    const decoded = treasuryFactory.events.decodeLog({
+      topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
+      data: log.data as `0x${string}`,
+    });
+    if (decoded.eventName === TREASURY_FACTORY_EVENTS.TreasuryDeployed) {
+      treasuryAddress = decoded.args?.treasuryAddress as `0x${string}`;
+      break;
+    }
+  } catch { /* log from a different contract */ }
+}
+
+const treasury = oak.paymentTreasury(treasuryAddress!);
+```
+
+### Step 3: Buyer places order — two independent payment flows
 
 CeloMarket supports two payment methods. A platform uses one or both depending on its business model — they are **not** sequential steps.
 
@@ -127,7 +205,7 @@ await oak.waitForReceipt(txHash);
 
 Funds are now **locked** — the seller cannot access them until CeloMarket confirms shipment.
 
-### Step 3: Seller ships — platform confirms payment
+### Step 4: Seller ships — platform confirms payment
 
 > **Role: Platform Admin** — only the platform admin can confirm payments.
 
@@ -150,7 +228,7 @@ const txHash = await treasury.confirmPaymentBatch(orderIds, buyerAddresses);
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 4: Read order state — dashboard view
+### Step 5: Read order state — dashboard view
 
 > **Role: Any caller** — all read functions are public.
 
@@ -170,7 +248,7 @@ const [raised, available, refunded, expected] = await oak.multicall([
 ]);
 ```
 
-### Step 5: Fee disbursement
+### Step 6: Fee disbursement
 
 > **Role: Any caller** — `disburseFees` is permissionless. Fees are sent to the Protocol Admin and Platform Admin automatically.
 
@@ -181,7 +259,7 @@ const txHash = await treasury.disburseFees();
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 6: Seller withdrawal
+### Step 7: Seller withdrawal
 
 > **Role: Platform Admin or Campaign Owner** — either party can trigger withdrawal. Funds are always sent to the campaign owner (the seller).
 
