@@ -1,5 +1,11 @@
 ---
 
+## 1.2.0
+### Minor Changes
+
+### Minor Changes
+- Add missing events, reads, errors, type-safe constants, simulation results, transaction preparation, and getReceipt; update event log fetching documentation and improve code consistency
+
 ## 1.1.1
 ### Patch Changes
 
