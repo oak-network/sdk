@@ -17,7 +17,7 @@ Every pledge or payment specifies **`pledgeToken` / `paymentToken`**; treasuries
 | Use Case | Demo | Contract(s) Used | Business Story |
 |----------|------|-------------------|----------------|
 | **Escrow** | [Healthcare Escrow](escrow/healthcare-escrow.md) | PaymentTreasury | MedConnect holds patient payments until a doctor confirms service delivery |
-| **Marketplace** | [E-Commerce Marketplace](marketplace/ecommerce-marketplace.md) | PaymentTreasury + ItemRegistry | CeloMarket locks buyer funds until seller ships; physical items tracked on-chain |
+| **Marketplace** | [E-Commerce Marketplace](marketplace/ecommerce-marketplace.md) | PaymentTreasury | CeloMarket locks buyer funds until seller ships; on-chain escrow with line items |
 | **Prepayment** | [Automotive Prepayment](prepayment/automotive-prepayment.md) | TimeConstrainedPaymentTreasury | Karma Automotive holds vehicle deposits with automatic expiry protection |
 | **Flexible Funding** | [Community Project](flexible-funding/community-project.md) | CampaignInfoFactory + KeepWhatsRaised | TechForge runs keep-what's-raised campaigns with partial withdrawals, tips, and gateway fees |
 | **Crowdfunding** | [Creative Campaign](crowdfunding/creative-campaign.md) | CampaignInfoFactory + AllOrNothing | ArtFund runs all-or-nothing campaigns with NFT-backed pledges and reward tiers |
@@ -45,7 +45,7 @@ Best for: **escrow**, **marketplace**, **service payments**
 Funds are held until the platform confirms delivery/service. Supports line items, external fees, batch operations, and refund flows.
 
 - [Healthcare Escrow](escrow/healthcare-escrow.md) — service escrow
-- [E-Commerce Marketplace](marketplace/ecommerce-marketplace.md) — product escrow with ItemRegistry
+- [E-Commerce Marketplace](marketplace/ecommerce-marketplace.md) — product escrow with line items
 
 ### TimeConstrainedPaymentTreasury
 
@@ -70,14 +70,6 @@ Best for: **crowdfunding**, **fundraising**, **community-driven projects**
 Creates a campaign with a goal and deadline. Pledges mint NFTs. If the goal is met, the creator withdraws. If not, backers get full refunds. Supports reward tiers with physical/digital items.
 
 - [Creative Campaign](crowdfunding/creative-campaign.md) — indie film funding with reward tiers
-
-### ItemRegistry
-
-Best for: **physical goods**, **product catalogs**, **shipping/compliance**
-
-Stores physical item attributes (weight, dimensions, category) on-chain. Useful for dispute resolution, customs declarations, and shipping calculations.
-
-- [E-Commerce Marketplace](marketplace/ecommerce-marketplace.md) — product registration alongside PaymentTreasury
 
 ## Common Patterns Across All Demos
 

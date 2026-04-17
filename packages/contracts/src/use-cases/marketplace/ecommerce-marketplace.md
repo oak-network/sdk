@@ -9,17 +9,15 @@
 CeloMarket needs:
 
 - **Buyer protection** — funds locked until shipment is confirmed
-- **Physical item tracking** — product dimensions, weight, and category stored on-chain via ItemRegistry
 - **Multi-line-item orders** — product cost, shipping fee, and platform commission as separate line items
 - **Fee transparency** — protocol and platform fees are tracked and disbursed on-chain
 - **Fiat-to-fiat UX** — end users see USD prices; crypto conversion happens behind the scenes
 
-## Oak Contracts Used
+## Oak Contract Used
 
 | Contract | Purpose |
 |----------|---------|
 | **PaymentTreasury** | Holds buyer funds until delivery is confirmed |
-| **ItemRegistry** | Stores physical product metadata (weight, dimensions, category) |
 
 ## Multi-token support
 
@@ -32,17 +30,16 @@ CeloMarket needs:
 | **Platform Admin** | CeloMarket backend | `createPayment`, `createPaymentBatch`, `confirmPayment`, `confirmPaymentBatch`, `cancelPayment`, `claimRefund(paymentId, address)` (non-NFT), `claimExpiredFunds`, `claimNonGoalLineItems`, `pauseTreasury`, `unpauseTreasury`, `cancelTreasury` |
 | **Platform Admin or Campaign Owner** | CeloMarket or seller | `withdraw`, `cancelTreasury` |
 | **Buyer** | End customer | ERC-20 `approve`, `processCryptoPayment`, `claimRefundSelf(paymentId)` (NFT payments) |
-| **Seller** | Independent merchant | `addItem`, `addItemsBatch` (ItemRegistry) |
 | **Protocol Admin** | Oak protocol | Receives protocol fees (via `disburseFees`) |
-| **Any caller** | Anyone | `disburseFees`, all read functions (`getPaymentData`, `getRaisedAmount`, `getItem`, `paused`, etc.) |
+| **Any caller** | Anyone | `disburseFees`, all read functions (`getPaymentData`, `getRaisedAmount`, `paused`, etc.) |
 
 ## Integration Flow
 
-### Step 1: Connect to PaymentTreasury and ItemRegistry
+### Step 1: Connect to the PaymentTreasury
 
 > **Role: Any caller** — connecting and reading state is public.
 
-CeloMarket's backend connects to both contracts.
+CeloMarket's backend connects to the deployed PaymentTreasury contract.
 
 ```typescript
 import { createOakContractsClient, CHAIN_IDS, toHex } from "@oaknetwork/contracts-sdk";
@@ -54,54 +51,9 @@ const oak = createOakContractsClient({
 });
 
 const treasury = oak.paymentTreasury(TREASURY_ADDRESS);
-const registry = oak.itemRegistry(ITEM_REGISTRY_ADDRESS);
 ```
 
-### Step 2: Seller lists a product — register in ItemRegistry
-
-> **Role: Seller** — the item registry owner (typically the seller or platform) registers items.
-
-When a seller lists a new product, CeloMarket registers its physical attributes in the ItemRegistry. This data can be used for shipping calculations, customs declarations, and dispute resolution.
-
-```typescript
-const productId = toHex("wireless-headphones-v2", { size: 32 });
-
-const item = {
-  actualWeight: 250n,                              // 250 grams
-  height: 200n,                                     // 200mm
-  width: 180n,                                      // 180mm
-  length: 80n,                                      // 80mm
-  category: toHex("electronics", { size: 32 }),
-  declaredCurrency: toHex("USD", { size: 32 }),
-};
-
-await registry.simulate.addItem(productId, item);
-const txHash = await registry.addItem(productId, item);
-await oak.waitForReceipt(txHash);
-```
-
-For bulk listings, use batch registration:
-
-```typescript
-const productIds = [
-  toHex("headphones-black", { size: 32 }),
-  toHex("headphones-white", { size: 32 }),
-];
-
-const items = [
-  { actualWeight: 250n, height: 200n, width: 180n, length: 80n,
-    category: toHex("electronics", { size: 32 }),
-    declaredCurrency: toHex("USD", { size: 32 }) },
-  { actualWeight: 250n, height: 200n, width: 180n, length: 80n,
-    category: toHex("electronics", { size: 32 }),
-    declaredCurrency: toHex("USD", { size: 32 }) },
-];
-
-const txHash = await registry.addItemsBatch(productIds, items);
-await oak.waitForReceipt(txHash);
-```
-
-### Step 3: Buyer places order — two independent payment flows
+### Step 2: Buyer places order — two independent payment flows
 
 CeloMarket supports two payment methods. A platform uses one or both depending on its business model — they are **not** sequential steps.
 
@@ -174,7 +126,7 @@ await oak.waitForReceipt(txHash);
 
 Funds are now **locked** — the seller cannot access them until CeloMarket confirms shipment.
 
-### Step 4: Seller ships — platform confirms payment
+### Step 3: Seller ships — platform confirms payment
 
 > **Role: Platform Admin** — only the platform admin can confirm payments.
 
@@ -197,7 +149,7 @@ const txHash = await treasury.confirmPaymentBatch(orderIds, buyerAddresses);
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 5: Read order state — dashboard view
+### Step 4: Read order state — dashboard view
 
 > **Role: Any caller** — all read functions are public.
 
@@ -217,7 +169,7 @@ const [raised, available, refunded, expected] = await oak.multicall([
 ]);
 ```
 
-### Step 6: Fee disbursement
+### Step 5: Fee disbursement
 
 > **Role: Any caller** — `disburseFees` is permissionless. Fees are sent to the Protocol Admin and Platform Admin automatically.
 
@@ -228,7 +180,7 @@ const txHash = await treasury.disburseFees();
 await oak.waitForReceipt(txHash);
 ```
 
-### Step 7: Seller withdrawal
+### Step 6: Seller withdrawal
 
 > **Role: Platform Admin or Campaign Owner** — either party can trigger withdrawal. Funds are always sent to the campaign owner (the seller).
 
@@ -312,17 +264,6 @@ await oak.waitForReceipt(txHash);
 const isCancelled = await treasury.cancelled();
 ```
 
-### Reading product data for disputes
-
-> **Role: Any caller** — `getItem` is a public read function.
-
-If a dispute arises (e.g. wrong item shipped), CeloMarket can verify the registered product attributes:
-
-```typescript
-const registeredItem = await registry.getItem(SELLER_ADDRESS, productId);
-// registeredItem.actualWeight, registeredItem.height, registeredItem.category, etc.
-```
-
 ## Architecture Diagram
 
 ```
@@ -330,9 +271,6 @@ Buyer (Alex)              CeloMarket (Platform Admin)        Blockchain
      |                          |                                |
      |   Browse & order         |                                |
      |------------------------->|                                |
-     |                          |   addItem() [ItemRegistry]     |
-     |                          |   [Seller]                     |
-     |                          |------------------------------->|  Product registered
      |                          |                                |
      |            --- FLOW A: Off-chain / fiat payment ---       |
      |                          |                                |
@@ -382,7 +320,6 @@ Buyer (Alex)              CeloMarket (Platform Admin)        Blockchain
 
 - **ERC-20 approval is required** — the buyer must `approve` the treasury contract before `processCryptoPayment` can transfer tokens
 - **Multi-token** — orders can settle in any **accepted** `paymentToken`; treasury accounting is per token address
-- **ItemRegistry** provides on-chain proof of product attributes for dispute resolution and compliance
 - **Role-based access** — `createPayment`/`confirmPayment`/`cancelPayment` are platform-admin-only; `processCryptoPayment` and `disburseFees` are permissionless; `withdraw` requires admin or owner
 - **Two refund models** — `claimRefund(paymentId, address)` for non-NFT payments (platform admin only) and `claimRefundSelf(paymentId)` for NFT payments (signer must be NFT owner)
 - **Line items** separate product cost, shipping, and commission with configurable goal-counting, fees, and refund rules
