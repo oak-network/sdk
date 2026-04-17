@@ -11,6 +11,12 @@
  * This means a backer can call it themselves, or a platform bot could
  * trigger refunds on behalf of all backers.
  *
+ * Prerequisite: the backer must approve the treasury contract to
+ * manage their pledge NFT before calling `claimRefund`. The treasury
+ * is an ERC-721 itself, so `approve` is called directly on the
+ * treasury entity (not on a separate NFT contract). Use `approve`
+ * for a single token or `setApprovalForAll` for all tokens at once.
+ *
  * The contract does two things in a single transaction:
  *
  *   1. Burns the pledge NFT (the token is permanently destroyed)
@@ -37,6 +43,12 @@ if (!pledgeTokenIdEnv) {
   throw new Error("ALEX_PLEDGE_TOKEN_ID is required (pledge NFT tokenId from Step 6).");
 }
 const tokenId = BigInt(pledgeTokenIdEnv);
+
+// Approve the treasury to burn this pledge NFT.
+// The AllOrNothing treasury IS the ERC-721, so approve is called on the treasury itself.
+const approveTxHash = await treasury.approve(treasuryAddress, tokenId);
+await alexOak.waitForReceipt(approveTxHash);
+
 const refundTxHash = await treasury.claimRefund(tokenId);
 const refundReceipt = await alexOak.waitForReceipt(refundTxHash);
 console.log(`Refund claimed at block ${refundReceipt.blockNumber}`);

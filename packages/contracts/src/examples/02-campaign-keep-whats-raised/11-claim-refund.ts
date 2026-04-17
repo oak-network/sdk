@@ -6,6 +6,12 @@
  * the NFT and returns the pledged tokens (minus any payment fees)
  * to the NFT owner's wallet in a single transaction.
  *
+ * Prerequisite: the backer must approve the treasury contract to
+ * manage their pledge NFT before calling `claimRefund`. The KWR
+ * treasury is an ERC-721 itself, so `approve` is called directly on
+ * the treasury entity (not on a separate NFT contract). Use `approve`
+ * for a single token or `setApprovalForAll` for all tokens at once.
+ *
  * Refund eligibility timing:
  *
  *   - If the campaign is NOT cancelled: refunds are available after
@@ -33,6 +39,12 @@ if (!pledgeTokenIdEnv) {
   throw new Error("BACKER_PLEDGE_TOKEN_ID is required (pledge NFT tokenId from Step 5).");
 }
 const tokenId = BigInt(pledgeTokenIdEnv);
+
+// Approve the treasury to burn this pledge NFT.
+// The KWR treasury IS the ERC-721, so approve is called on the treasury itself.
+const approveTxHash = await treasury.approve(treasuryAddress, tokenId);
+await backerOak.waitForReceipt(approveTxHash);
+
 const refundTxHash = await treasury.claimRefund(tokenId);
 const refundReceipt = await backerOak.waitForReceipt(refundTxHash);
 console.log(`Refund claimed at block ${refundReceipt.blockNumber}`);
