@@ -80,6 +80,39 @@ describe("prepareContractWrite", () => {
 
     expect(result.value).toBe(500n);
   });
+
+  it("defaults args to [] when not provided", async () => {
+    const NO_ARG_ABI = [
+      {
+        type: "function" as const,
+        name: "ping",
+        stateMutability: "nonpayable" as const,
+        inputs: [],
+        outputs: [],
+      },
+    ] as const;
+
+    const pub = {
+      estimateContractGas: jest.fn().mockResolvedValue(21000n),
+    } as unknown as PublicClient;
+
+    const mockChain = { id: 1, name: "test" } as Chain;
+
+    const result = await prepareContractWrite(pub, {
+      address: ADDR,
+      abi: NO_ARG_ABI,
+      functionName: "ping",
+      account: ADDR,
+      chain: mockChain,
+    });
+
+    expect(result.to).toBe(ADDR);
+    expect(result.data).toMatch(/^0x/);
+    expect(result.value).toBe(0n);
+    expect(result.gas).toBe(21000n);
+    const callArgs = (pub.estimateContractGas as jest.Mock).mock.calls[0][0];
+    expect(callArgs.args).toBeUndefined();
+  });
 });
 
 describe("toPreparedTransaction", () => {
