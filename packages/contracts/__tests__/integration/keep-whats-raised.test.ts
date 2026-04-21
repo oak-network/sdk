@@ -57,12 +57,35 @@ describe("KeepWhatsRaised — writes (may revert)", () => {
 });
 
 describe("KeepWhatsRaised — simulate (may throw)", () => {
+  it("simulate.pauseTreasury", async () => { try { await kwr.simulate.pauseTreasury(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.unpauseTreasury", async () => { try { await kwr.simulate.unpauseTreasury(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.cancelTreasury", async () => { try { await kwr.simulate.cancelTreasury(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.configureTreasury", async () => {
+    try {
+      await kwr.simulate.configureTreasury(
+        { minimumWithdrawalForFeeExemption: 0n, withdrawalDelay: 0n, refundDelay: 0n, configLockPeriod: 0n, isColombianCreator: false },
+        { launchTime: 9999999999n, deadline: 9999999999n, goalAmount: 1000n, currency: BYTES32_ZERO },
+        { flatFeeKey: BYTES32_ZERO, cumulativeFlatFeeKey: BYTES32_ZERO, grossPercentageFeeKeys: [] },
+        { flatFeeValue: 0n, cumulativeFlatFeeValue: 0n, grossPercentageFeeValues: [] },
+      );
+    } catch { /* expected */ }
+  });
+  it("simulate.addRewards", async () => {
+    try { await kwr.simulate.addRewards([BYTES32_ZERO], [{ rewardValue: 100n, isRewardTier: false, itemId: [], itemValue: [], itemQuantity: [] }]); } catch { /* expected */ }
+  });
+  it("simulate.removeReward", async () => { try { await kwr.simulate.removeReward(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.approveWithdrawal", async () => { try { await kwr.simulate.approveWithdrawal(); } catch { /* expected */ } });
+  it("simulate.setPaymentGatewayFee", async () => { try { await kwr.simulate.setPaymentGatewayFee(BYTES32_ZERO, 0n); } catch { /* expected */ } });
   it("simulate.pledgeForAReward", async () => { try { await kwr.simulate.pledgeForAReward(BYTES32_ZERO, ZERO_ADDR, ZERO_ADDR, 0n, [BYTES32_ZERO]); } catch { /* expected */ } });
   it("simulate.pledgeWithoutAReward", async () => { try { await kwr.simulate.pledgeWithoutAReward(BYTES32_ZERO, ZERO_ADDR, ZERO_ADDR, 100n, 0n); } catch { /* expected */ } });
   it("simulate.claimRefund", async () => { try { await kwr.simulate.claimRefund(0n); } catch { /* expected */ } });
+  it("simulate.claimTip", async () => { try { await kwr.simulate.claimTip(); } catch { /* expected */ } });
+  it("simulate.claimFund", async () => { try { await kwr.simulate.claimFund(); } catch { /* expected */ } });
   it("simulate.disburseFees", async () => { try { await kwr.simulate.disburseFees(); } catch { /* expected */ } });
   it("simulate.withdraw", async () => { try { await kwr.simulate.withdraw(ZERO_ADDR, 0n); } catch { /* expected */ } });
   it("simulate.setFeeAndPledge", async () => { try { await kwr.simulate.setFeeAndPledge(BYTES32_ZERO, ZERO_ADDR, ZERO_ADDR, 100n, 0n, 0n, [BYTES32_ZERO], true); } catch { /* expected */ } });
+  it("simulate.updateDeadline", async () => { try { await kwr.simulate.updateDeadline(9999999999n); } catch { /* expected */ } });
+  it("simulate.updateGoalAmount", async () => { try { await kwr.simulate.updateGoalAmount(1000n); } catch { /* expected */ } });
 });
 
 describe("KeepWhatsRaised — events", () => {

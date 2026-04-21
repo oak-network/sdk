@@ -131,11 +131,65 @@ describe("entity factory methods", () => {
     expect(entity.events).toBeDefined();
   });
 
+  it("itemRegistry returns entity", () => {
+    const entity = client.itemRegistry("0x0000000000000000000000000000000000000001");
+    expect(typeof entity.getItem).toBe("function");
+    expect(typeof entity.addItem).toBe("function");
+    expect(typeof entity.addItemsBatch).toBe("function");
+    expect(entity.simulate).toBeDefined();
+    expect(entity.events).toBeDefined();
+  });
 });
 
-describe("waitForReceipt", () => {
-  it("is a function on the client", () => {
-    const client = getTestClient();
+describe("createOakContractsClient — read-only config", () => {
+  const readOnlyClient = createOakContractsClient({
+    chainId: CHAIN_IDS.CELO_TESTNET_SEPOLIA,
+    rpcUrl: cfg.rpcUrl,
+  });
+
+  it("has publicClient", () => {
+    expect(readOnlyClient.publicClient).toBeDefined();
+  });
+
+  it("walletClient is null", () => {
+    expect(readOnlyClient.walletClient).toBeNull();
+  });
+
+  it("resolves chain correctly", () => {
+    expect(readOnlyClient.config.chain.id).toBe(CHAIN_IDS.CELO_TESTNET_SEPOLIA);
+  });
+
+  it("read-only entity can perform reads", async () => {
+    const gp = readOnlyClient.globalParams(cfg.addresses.globalParams);
+    const count = await gp.getNumberOfListedPlatforms();
+    expect(typeof count).toBe("bigint");
+  });
+
+  it("read-only entity throws on write attempt", async () => {
+    const gp = readOnlyClient.globalParams(cfg.addresses.globalParams);
+    await expect(gp.enlistPlatform(
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "0x0000000000000000000000000000000000000001",
+      100n,
+      "0x0000000000000000000000000000000000000001",
+    )).rejects.toThrow();
+  });
+});
+
+describe("waitForReceipt / getReceipt", () => {
+  const client = getTestClient();
+
+  it("waitForReceipt is a function", () => {
     expect(typeof client.waitForReceipt).toBe("function");
+  });
+
+  it("getReceipt is a function", () => {
+    expect(typeof client.getReceipt).toBe("function");
+  });
+
+  it("getReceipt returns null for a non-existent hash", async () => {
+    const fakeHash = "0x0000000000000000000000000000000000000000000000000000000000000001" as `0x${string}`;
+    const receipt = await client.getReceipt(fakeHash);
+    expect(receipt).toBeNull();
   });
 });

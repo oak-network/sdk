@@ -267,6 +267,12 @@ describe("GlobalParams — simulate (may throw)", () => {
   it("simulate.addToRegistry", async () => {
     try { await gp.simulate.addToRegistry(BYTES32_ZERO, BYTES32_ZERO); } catch { /* expected */ }
   });
+  it("simulate.transferOwnership", async () => {
+    try { await gp.simulate.transferOwnership(ZERO_ADDR); } catch { /* expected */ }
+  });
+  it("simulate.renounceOwnership", async () => {
+    try { await gp.simulate.renounceOwnership(); } catch { /* expected */ }
+  });
 });
 
 describe("GlobalParams — events", () => {

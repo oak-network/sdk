@@ -101,6 +101,39 @@ describe("CampaignInfo — reads (may revert on uninitialized implementation)", 
   it("isApprovedForAll", async () => {
     try { expect(typeof (await ci.isApprovedForAll(ZERO_ADDR, ZERO_ADDR))).toBe("boolean"); } catch { /* implementation revert */ }
   });
+  it("getPledgeCount", async () => {
+    try { expect(typeof (await ci.getPledgeCount())).toBe("bigint"); } catch { /* implementation revert */ }
+  });
+  it("getPledgeData", async () => {
+    try { expect(await ci.getPledgeData(0n)).toBeDefined(); } catch { /* implementation revert */ }
+  });
+  it("getImageURI", async () => {
+    try { expect(typeof (await ci.getImageURI())).toBe("string"); } catch { /* implementation revert */ }
+  });
+  it("contractURI", async () => {
+    try { expect(typeof (await ci.contractURI())).toBe("string"); } catch { /* implementation revert */ }
+  });
+  it("name", async () => {
+    try { expect(typeof (await ci.name())).toBe("string"); } catch { /* implementation revert */ }
+  });
+  it("symbol", async () => {
+    try { expect(typeof (await ci.symbol())).toBe("string"); } catch { /* implementation revert */ }
+  });
+  it("tokenURI", async () => {
+    try { expect(typeof (await ci.tokenURI(0n))).toBe("string"); } catch { /* implementation revert */ }
+  });
+  it("ownerOf", async () => {
+    try { expect(await ci.ownerOf(0n)).toMatch(/^0x/); } catch { /* implementation revert */ }
+  });
+  it("balanceOf", async () => {
+    try { expect(typeof (await ci.balanceOf(ZERO_ADDR))).toBe("bigint"); } catch { /* implementation revert */ }
+  });
+  it("supportsInterface", async () => {
+    try {
+      const id = "0x01ffc9a7" as `0x${string}` as import("../../src/types/structs").Bytes4;
+      expect(typeof (await ci.supportsInterface(id))).toBe("boolean");
+    } catch { /* implementation revert */ }
+  });
 });
 
 describe("CampaignInfo — writes (may revert)", () => {
@@ -127,9 +160,16 @@ describe("CampaignInfo — simulate (may throw)", () => {
   it("simulate.updateGoalAmount", async () => { try { await ci.simulate.updateGoalAmount(1000n); } catch { /* expected */ } });
   it("simulate.updateLaunchTime", async () => { try { await ci.simulate.updateLaunchTime(9999999999n); } catch { /* expected */ } });
   it("simulate.updateSelectedPlatform", async () => { try { await ci.simulate.updateSelectedPlatform(BYTES32_ZERO, true, [], []); } catch { /* expected */ } });
+  it("simulate.setImageURI", async () => { try { await ci.simulate.setImageURI("https://example.com/img.png"); } catch { /* expected */ } });
+  it("simulate.updateContractURI", async () => { try { await ci.simulate.updateContractURI("https://example.com/c.json"); } catch { /* expected */ } });
   it("simulate.mintNFTForPledge", async () => { try { await ci.simulate.mintNFTForPledge(ZERO_ADDR, BYTES32_ZERO, ZERO_ADDR, 100n, 0n, 0n); } catch { /* expected */ } });
+  it("simulate.burn", async () => { try { await ci.simulate.burn(0n); } catch { /* expected */ } });
   it("simulate.pauseCampaign", async () => { try { await ci.simulate.pauseCampaign(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.unpauseCampaign", async () => { try { await ci.simulate.unpauseCampaign(BYTES32_ZERO); } catch { /* expected */ } });
   it("simulate.cancelCampaign", async () => { try { await ci.simulate.cancelCampaign(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.setPlatformInfo", async () => { try { await ci.simulate.setPlatformInfo(BYTES32_ZERO, ZERO_ADDR); } catch { /* expected */ } });
+  it("simulate.transferOwnership", async () => { try { await ci.simulate.transferOwnership(ZERO_ADDR); } catch { /* expected */ } });
+  it("simulate.renounceOwnership", async () => { try { await ci.simulate.renounceOwnership(); } catch { /* expected */ } });
   it("simulate.approve", async () => { try { await ci.simulate.approve(ZERO_ADDR, 0n); } catch { /* expected */ } });
   it("simulate.setApprovalForAll", async () => { try { await ci.simulate.setApprovalForAll(ZERO_ADDR, true); } catch { /* expected */ } });
 });

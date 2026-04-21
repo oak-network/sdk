@@ -123,6 +123,22 @@ describe("CampaignInfoFactory — simulate (may throw)", () => {
       /* expected */
     }
   });
+
+  it("simulate.transferOwnership", async () => {
+    try {
+      await cif.simulate.transferOwnership("0x0000000000000000000000000000000000000001");
+    } catch {
+      /* expected */
+    }
+  });
+
+  it("simulate.renounceOwnership", async () => {
+    try {
+      await cif.simulate.renounceOwnership();
+    } catch {
+      /* expected */
+    }
+  });
 });
 
 describe("CampaignInfoFactory — events", () => {

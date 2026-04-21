@@ -35,6 +35,15 @@ describe("AllOrNothing — writes (may revert)", () => {
 });
 
 describe("AllOrNothing — simulate (may throw)", () => {
+  it("simulate.pauseTreasury", async () => { try { await aon.simulate.pauseTreasury(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.unpauseTreasury", async () => { try { await aon.simulate.unpauseTreasury(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.cancelTreasury", async () => { try { await aon.simulate.cancelTreasury(BYTES32_ZERO); } catch { /* expected */ } });
+  it("simulate.addRewards", async () => {
+    try {
+      await aon.simulate.addRewards([BYTES32_ZERO], [{ rewardValue: 100n, isRewardTier: false, itemId: [], itemValue: [], itemQuantity: [] }]);
+    } catch { /* expected */ }
+  });
+  it("simulate.removeReward", async () => { try { await aon.simulate.removeReward(BYTES32_ZERO); } catch { /* expected */ } });
   it("simulate.pledgeForAReward", async () => { try { await aon.simulate.pledgeForAReward(ZERO_ADDR, ZERO_ADDR, 0n, [BYTES32_ZERO]); } catch { /* expected */ } });
   it("simulate.pledgeWithoutAReward", async () => { try { await aon.simulate.pledgeWithoutAReward(ZERO_ADDR, ZERO_ADDR, 100n); } catch { /* expected */ } });
   it("simulate.claimRefund", async () => { try { await aon.simulate.claimRefund(0n); } catch { /* expected */ } });
