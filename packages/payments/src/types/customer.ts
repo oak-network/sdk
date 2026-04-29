@@ -3,6 +3,20 @@ import { ApiResponse } from "./common";
 export namespace Customer {
   export type DocumentType = "personal_tax_id" | "company_tax_id";
 
+  export type Status =
+    | "INITIATED"
+    | "APPROVED"
+    | "REJECTED"
+    | "IN_REVIEW"
+    | "INCOMPLETE"
+    | "NOT_STARTED"
+    | "DOCUMENT_REQUIRED"
+    | "PENDING"
+    | "PROCESSING"
+    | "DOCUMENT_PENDING"
+    | "DOCUMENT_APPROVED"
+    | "AWAITING_CONFIRMATION";
+
   export interface Base {
     email: string;
     document_number?: string;

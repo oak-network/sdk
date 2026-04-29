@@ -21,6 +21,19 @@ export namespace Provider {
 
   export type TargetRole = "subaccount" | "customer" | "connected_account";
 
+  export type PlatformStatus =
+    | "NOT_SUBMITTED"
+    | "SUBMITTED"
+    | "AWAITING_CONFIRMATION"
+    | "PROCESSING"
+    | "APPROVED"
+    | "REJECTED"
+    | "RESTRICTED"
+    | "CANCELLED"
+    | "ERROR";
+
+  export type KycLevel = "1" | "2";
+
   // ----------------------
   // Schema
   // ----------------------

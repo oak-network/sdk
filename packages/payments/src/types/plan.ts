@@ -72,5 +72,7 @@ export namespace Plan {
   export interface ListQuery {
     page_no?: number;
     per_page?: number;
+    active?: boolean;
+    expired?: boolean;
   }
 }

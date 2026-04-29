@@ -137,6 +137,8 @@ export namespace Webhook {
   export interface ListNotificationsQuery {
     limit?: number;
     offset?: number;
+    reference_id?: string;
+    reference_module?: string;
   }
 
   export interface ListNotificationsData {

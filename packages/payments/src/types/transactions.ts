@@ -12,8 +12,10 @@ export namespace Transaction {
     type_list?: string; // e.g. "installment_payment"
     status?: string; // comma-separated, e.g. "created,processing"
     payment_method?: string; // e.g. "pix"
-    dateFrom?: string; // e.g. "2025-07-02"
-    dateTo?: string; // e.g. "2025-07-02"
+    date_from?: string; // e.g. "2025-07-02"
+    date_to?: string; // e.g. "2025-07-02"
+    provider?: string; // comma-separated, e.g. "stripe,pagar_me"
+    strict?: boolean;
     source_currency?: string; // e.g. "brla"
     destination_currency?: string; // e.g. "brl"
   }

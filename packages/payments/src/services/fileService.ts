@@ -17,7 +17,7 @@ export interface FileService {
 export const createFileService = (client: OakClient): FileService => ({
   async upload(files: unknown): Promise<Result<File.UploadResponse>> {
     return withAuth(client, (token) =>
-      httpClient.post<File.UploadResponse>(
+      httpClient.postMultipart<File.UploadResponse>(
         buildUrl(client.config.baseUrl, "api/v1/files"),
         files,
         {

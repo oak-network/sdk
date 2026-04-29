@@ -2,23 +2,29 @@ import { ApiResponse } from "./common";
 
 export namespace PaymentMethod {
   export type MethodType =
-    | "BANK"
-    | "CARD"
-    | "PLAID"
-    | "VIRTUAL_ACCOUNT"
-    | "LIQUIDATION_ADDRESS"
-    | "TRADING_WALLET"
-    | "CUSTOMER_WALLET"
-    | "PIX"
-    | "EVM_ADDRESS";
+    | "bank"
+    | "card"
+    | "plaid"
+    | "virtual_account"
+    | "liquidation_address"
+    | "trading_wallet"
+    | "customer_wallet"
+    | "pix"
+    | "evm_address";
 
   export type PaymentMethodKind =
-    | "PIX"
-    | "BOLETO"
-    | "CARD"
-    | "BANK_TRANSFER"
-    | "BANK"
-    | "CASH_PAYMENT";
+    | "pix"
+    | "boleto"
+    | "card"
+    | "bank_transfer"
+    | "bank"
+    | "cash_payment";
+
+  export type BankAccountType =
+    | "payment"
+    | "checking"
+    | "savings"
+    | "virtual_account";
 
   export interface BridgeBankAccount {
     type: MethodType;

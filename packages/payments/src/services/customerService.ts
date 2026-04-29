@@ -1,5 +1,4 @@
 import type { Customer, OakClient, Result } from "../types";
-import { err } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { buildQueryString } from "./helpers";
 import { withAuth } from "../utils/withAuth";
@@ -110,20 +109,17 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     id: string,
     sync: Customer.Sync,
   ): Promise<Result<Customer.SyncResponse>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.post<Customer.SyncResponse>(
-      `${client.config.baseUrl}/api/v1/customers/${id}/sync`,
-      sync,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.post<Customer.SyncResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", id, "sync"),
+        sync,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 
@@ -132,7 +128,7 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     files: unknown,
   ): Promise<Result<Customer.FilesResponse>> {
     return withAuth(client, (token) =>
-      httpClient.post<Customer.FilesResponse>(
+      httpClient.postMultipart<Customer.FilesResponse>(
         buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "files"),
         files,
         {
@@ -175,21 +171,18 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     customer_id: string,
     filter: Customer.BalanceFilter,
   ): Promise<Result<Customer.BalanceResponse>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
     const queryString = buildQueryString(filter);
 
-    return httpClient.get<Customer.BalanceResponse>(
-      `${client.config.baseUrl}/api/v1/customers/${customer_id}/balances${queryString}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.get<Customer.BalanceResponse>(
+        `${buildUrl(client.config.baseUrl, "api/v1/customers", customer_id, "balances")}${queryString}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 });
