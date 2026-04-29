@@ -1,5 +1,13 @@
 # @oaknetwork/payments-sdk
 
+## 1.2.0
+
+### Minor Changes
+
+### Minor Changes
+
+- Update payment sdk with the recent changes from Crowdsplit
+
 ## 1.1.0
 
 ### Minor Changes
