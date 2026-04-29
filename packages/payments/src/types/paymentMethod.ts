@@ -138,6 +138,31 @@ export namespace PaymentMethod {
     metadata?: Record<string, string>;
   }
 
+  export interface PlaidResponseData {
+    id: string;
+    type: MethodType;
+    link_token: string;
+    callback_url: string;
+    link_token_expires_at: string;
+    metadata?: Record<string, string>;
+  }
+
+  export interface TradingWallet {
+    type: MethodType;
+    provider: string; // from PLATFORMS keys
+    metadata?: Record<string, any>;
+  }
+
+  export interface TradingWalletResponseData {
+    id: string;
+    type: MethodType;
+    status: string;
+    wallet_details: {
+      address: string;
+    };
+    metadata?: Record<string, any>;
+  }
+
   export interface BridgeVirtualAccount {
     type: MethodType;
     provider: string; // from PLATFORMS keys
@@ -171,7 +196,8 @@ export namespace PaymentMethod {
     | BridgeLiquidationAddress
     | OakPix
     | BridgePlaid
-    | BridgeVirtualAccount;
+    | BridgeVirtualAccount
+    | TradingWallet;
 
   export type ResponseData = Request & {
     id: string;

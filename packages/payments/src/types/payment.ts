@@ -151,7 +151,28 @@ export namespace Payment {
     metadata?: Record<string, string>;
   }
 
-  export type Request = MercadoPagoRequest | PagarMeRequest | StripeRequest;
+  export interface PagarMePixRequest {
+    provider: "pagar_me";
+    source: {
+      amount: number;
+      currency: "brl";
+      customer: {
+        id: string;
+      };
+      payment_method: {
+        type: "pix";
+        expiry_date: string; // ISO date, must be in the future
+      };
+    };
+    confirm?: boolean;
+    metadata?: Record<string, string>;
+  }
+
+  export type Request =
+    | MercadoPagoRequest
+    | PagarMeRequest
+    | PagarMePixRequest
+    | StripeRequest;
 
   // ----------------------------------------
   // Payment responses (create / confirm / cancel)

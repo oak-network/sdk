@@ -56,7 +56,7 @@ export namespace Buy {
 
   export interface BrlaPaymentMethod {
     id?: string;
-    type?: "WALLET";
+    type?: "wallet";
     wallet_details?: {
       address: string;
     };
