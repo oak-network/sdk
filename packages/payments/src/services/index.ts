@@ -36,3 +36,6 @@ export type { SubscriptionService } from "./subscriptionService";
 
 export { createDisputeService } from "./disputeService";
 export type { DisputeService } from "./disputeService";
+
+export { createPayoutService } from "./payoutService";
+export type { PayoutService } from "./payoutService";
