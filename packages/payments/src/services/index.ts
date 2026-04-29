@@ -40,23 +40,8 @@ export type { DisputeService } from "./disputeService";
 export { createPayoutService } from "./payoutService";
 export type { PayoutService } from "./payoutService";
 
-export { createWalletService } from "./walletService";
-export type { WalletService } from "./walletService";
-
-export { createMerchantService } from "./merchantService";
-export type { MerchantService } from "./merchantService";
-
 export { createFileService } from "./fileService";
 export type { FileService } from "./fileService";
 
 export { createTaxService } from "./taxService";
 export type { TaxService } from "./taxService";
-
-export { createProviderProxyService } from "./providerProxyService";
-export type { ProviderProxyService } from "./providerProxyService";
-
-export { createPixService } from "./pixService";
-export type { PixService } from "./pixService";
-
-export { createSandboxService } from "./sandboxService";
-export type { SandboxService } from "./sandboxService";
