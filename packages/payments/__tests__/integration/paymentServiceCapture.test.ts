@@ -6,9 +6,7 @@ import {
 } from '../../src';
 import { PaymentService } from '../../src/services/paymentService';
 import { CustomerService } from '../../src/services/customerService';
-import { getConfigFromEnv } from '../config';
-
-const INTEGRATION_TEST_TIMEOUT = 30000;
+import { getConfigFromEnv, INTEGRATION_TEST_TIMEOUT } from '../config';
 
 /**
  * Build a Stripe card payment request with manual capture.

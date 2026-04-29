@@ -35,8 +35,8 @@ export function verifyWebhookSignature(
 
     if (signature.startsWith("t=")) {
       const parts = signature.split(",");
-      timestamp = parts[0]?.replace("t=", "") ?? "";
-      v1Signature = parts[1]?.replace("v1=", "") ?? "";
+      timestamp = (parts[0]?.replace("t=", "") ?? "").trim();
+      v1Signature = (parts[1]?.replace("v1=", "") ?? "").trim();
     } else {
       // Fallback: treat as raw signature (legacy)
       timestamp = "";

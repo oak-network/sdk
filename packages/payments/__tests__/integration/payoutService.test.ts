@@ -1,8 +1,6 @@
 import { createOakClient, createPayoutService } from '../../src';
 import { PayoutService } from '../../src/services/payoutService';
-import { getConfigFromEnv } from '../config';
-
-const INTEGRATION_TEST_TIMEOUT = 30000;
+import { getConfigFromEnv, INTEGRATION_TEST_TIMEOUT } from '../config';
 
 describe('PayoutService - Integration', () => {
   let payouts: PayoutService;

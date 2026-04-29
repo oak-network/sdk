@@ -64,20 +64,15 @@ export const createSubscriptionService = (
   async list(
     params: Subscription.ListQuery,
   ): Promise<Result<Subscription.ListResponse>> {
-    const { customer_id, ...queryParams } = params;
-    const queryString = buildQueryString(
-      Object.keys(queryParams).length > 0 ? queryParams : undefined,
-    );
+    const queryString = buildQueryString(params);
     return withAuth(client, (token) =>
       httpClient.get<Subscription.ListResponse>(
         `${buildUrl(client.config.baseUrl, "api/v1/subscription/list")}${queryString}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
           },
           retryOptions: client.retryOptions,
-          body: JSON.stringify({ customer_id }),
         },
       ),
     );

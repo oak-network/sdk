@@ -22,13 +22,16 @@ export interface CustomerService {
     filter: Customer.BalanceFilter,
   ): Promise<Result<Customer.BalanceResponse>>;
 
+  /** Upload files for a customer (multipart/form-data). */
   uploadFiles(
     customerId: string,
     files: unknown,
   ): Promise<Result<Customer.FilesResponse>>;
 
+  /** List files for a customer. */
   getFiles(customerId: string): Promise<Result<Customer.FilesResponse>>;
 
+  /** Populate KYC data for a customer on a specific provider platform. */
   populatePlatform(
     customerId: string,
     data: Customer.PlatformRequest,

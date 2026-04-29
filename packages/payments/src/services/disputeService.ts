@@ -4,12 +4,16 @@ import { withAuth } from "../utils/withAuth";
 import { buildUrl } from "../utils/buildUrl";
 
 export interface DisputeService {
+  /** List all disputes for the merchant. */
   list(): Promise<Result<Dispute.ListResponse>>;
+  /** Update evidence for a dispute. */
   updateEvidence(
     disputeId: string,
     evidence: Dispute.EvidenceRequest,
   ): Promise<Result<Dispute.UpdateResponse>>;
+  /** Submit a dispute for review. */
   submit(disputeId: string): Promise<Result<Dispute.SubmitResponse>>;
+  /** Close a dispute. */
   close(disputeId: string): Promise<Result<Dispute.CloseResponse>>;
 }
 

@@ -29,9 +29,7 @@ import { SubscriptionService } from '../../src/services/subscriptionService';
 import { DisputeService } from '../../src/services/disputeService';
 import { PayoutService } from '../../src/services/payoutService';
 import { PaymentService } from '../../src/services/paymentService';
-import { getConfigFromEnv } from '../config';
-
-const INTEGRATION_TEST_TIMEOUT = 30000;
+import { getConfigFromEnv, INTEGRATION_TEST_TIMEOUT } from '../config';
 
 describe('All New Services - Integration', () => {
   let customers: CustomerService;

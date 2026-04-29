@@ -1,8 +1,6 @@
 import { createOakClient, createDisputeService } from '../../src';
 import { DisputeService } from '../../src/services/disputeService';
-import { getConfigFromEnv } from '../config';
-
-const INTEGRATION_TEST_TIMEOUT = 30000;
+import { getConfigFromEnv, INTEGRATION_TEST_TIMEOUT } from '../config';
 
 describe('DisputeService - Integration', () => {
   let disputes: DisputeService;

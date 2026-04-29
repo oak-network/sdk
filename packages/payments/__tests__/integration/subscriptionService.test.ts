@@ -5,9 +5,7 @@ import {
 } from '../../src';
 import { SubscriptionService } from '../../src/services/subscriptionService';
 import { PlanService } from '../../src/services/planService';
-import { getConfigFromEnv } from '../config';
-
-const INTEGRATION_TEST_TIMEOUT = 30000;
+import { getConfigFromEnv, INTEGRATION_TEST_TIMEOUT } from '../config';
 
 describe('SubscriptionService - Integration', () => {
   let subscriptions: SubscriptionService;
