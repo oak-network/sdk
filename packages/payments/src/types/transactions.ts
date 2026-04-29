@@ -89,6 +89,14 @@ export namespace Transaction {
   // ----------------------
   // Model
   // ----------------------
+  export interface Installment {
+    uid: string;
+    amount: number;
+    settlement_date: string;
+    status: string;
+    sequence: number;
+  }
+
   export interface Item {
     id: string;
     status: Status | string;
@@ -98,6 +106,7 @@ export namespace Transaction {
     confirm: boolean;
     metadata?: Payment.Metadata;
     provider: string;
+    installments?: Installment[];
     created_at: string;
     updated_at: string;
   }

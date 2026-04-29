@@ -9,5 +9,27 @@ export namespace Payout {
     metadata?: Record<string, string>;
   }
 
-  export type Response = ApiResponse<unknown>;
+  export interface PayoutData {
+    id: string;
+    status: string;
+    type: string;
+    provider: string;
+    source: {
+      amount: number;
+      currency: string;
+      customer?: { id: string };
+    };
+    destination?: {
+      customer?: { id: string };
+      payment_method?: {
+        id: string;
+        type: string;
+      };
+    };
+    metadata?: Record<string, string>;
+    created_at: string;
+    updated_at: string;
+  }
+
+  export type Response = ApiResponse<PayoutData>;
 }

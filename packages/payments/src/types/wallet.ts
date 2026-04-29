@@ -1,5 +1,14 @@
 import { ApiResponse } from "./common";
 
 export namespace Wallet {
-  export type BalanceResponse = ApiResponse<unknown>;
+  export interface TokenBalance {
+    tokenName: string;
+    amount: number;
+  }
+
+  export interface BalanceData {
+    balance: TokenBalance[];
+  }
+
+  export type BalanceResponse = ApiResponse<BalanceData>;
 }

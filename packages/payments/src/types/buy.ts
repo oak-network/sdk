@@ -54,7 +54,30 @@ export namespace Buy {
     metadata?: Metadata;
   }
 
-  export type Request = Bridge;
+  export interface BrlaPaymentMethod {
+    id?: string;
+    type?: "WALLET";
+    wallet_details?: {
+      address: string;
+    };
+  }
+
+  export interface Brla {
+    provider: "brla";
+    source: {
+      amount: number;
+      currency: "brl";
+      customer_id?: string;
+    };
+    destination: {
+      currency: "brla";
+      customer_id?: string;
+      payment_method: BrlaPaymentMethod;
+    };
+    metadata?: Metadata;
+  }
+
+  export type Request = Bridge | Brla;
 
   export type Response = ApiResponse<Transaction>;
 }

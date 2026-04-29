@@ -51,6 +51,9 @@ export namespace Customer {
     customer_wallet?: string | null;
     trading_wallet?: string | null;
     account_type?: string | null;
+    additional_info?: Record<string, unknown> | null;
+    synced?: boolean | null;
+    synced_at?: string | null;
   }
 
   type Provider =
