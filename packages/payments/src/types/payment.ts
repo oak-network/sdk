@@ -48,7 +48,7 @@ export namespace Payment {
     payment_method: PaymentMethod;
     installments?: number;
     float_rate?: number;
-    capture_method: "automatic";
+    capture_method: "automatic" | "manual";
     fraud_check?: FraudCheck;
   }
 
