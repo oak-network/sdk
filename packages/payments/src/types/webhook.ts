@@ -2,6 +2,23 @@ import { ApiResponse } from "./common";
 
 export namespace Webhook {
   // ----------------------
+  // Categories
+  // ----------------------
+  export type Category =
+    | "payment_lifecycle"
+    | "provider_registration_lifecycle"
+    | "payment_method_lifecycle"
+    | "transfer_lifecycle"
+    | "buy_lifecycle"
+    | "sell_lifecycle"
+    | "payout_lifecycle"
+    | "dispute_lifecycle"
+    | "refund_lifecycle"
+    | "OTHER"
+    | "externally_lifecycle"
+    | "customer_sync_lifecycle";
+
+  // ----------------------
   // Data
   // ----------------------
   export interface Data {
@@ -31,25 +48,18 @@ export namespace Webhook {
   // Notifications
   // ----------------------
   export type EventType =
-    | "payment.processing"
-    | "payment.succeeded"
-    | "payment.captured"
-    | "payment.failed"
-    | "payment.awaiting_confirmation"
-    | "payment.cancelled"
-    | "payment.refunded"
-    | "payment.updated"
-    | "refund.created"
-    | "refund.updated"
-    | "refund.failed"
-    | "refund.succeeded"
+    // Customer lifecycle
     | "customer.verified"
     | "customer.processing"
     | "customer.action_required"
     | "customer.rejected"
     | "customer.created"
     | "customer.updated"
-    | "customer.sync"
+    // Customer sync lifecycle
+    | "customer.sync.started"
+    | "customer.sync.succeeded"
+    | "customer.sync.failed"
+    // Provider registration lifecycle
     | "provider_registration.submitted"
     | "provider_registration.approved"
     | "provider_registration.restricted"
@@ -59,42 +69,68 @@ export namespace Webhook {
     | "provider_registration.action_required"
     | "provider_registration.documents_uploaded"
     | "provider_registration.verification_expired"
+    // Payment lifecycle
+    | "payment.processing"
+    | "payment.succeeded"
+    | "payment.captured"
+    | "payment.failed"
+    | "payment.awaiting_confirmation"
+    | "payment.cancelled"
+    | "payment.refunded"
+    | "payment.updated"
+    // Payment refund sub-events
+    | "payment.refund.created"
+    | "payment.refund.updated"
+    | "payment.refund.failed"
+    // Refund lifecycle
+    | "refund.failed"
+    | "refund.succeeded"
+    // Payment method lifecycle
     | "payment_method.verified"
     | "payment_method.approved"
     | "payment_method.rejected"
     | "payment_method.created"
     | "payment_method.updated"
+    // Transaction lifecycle
     | "transaction.updated"
     | "transaction.sc_updated"
-    | "dispute.created"
-    | "dispute.updated"
-    | "dispute.closed"
-    | "dispute.funds_reinstated"
-    | "dispute.funds_withdrawn"
+    // Dispute lifecycle
+    | "payment.disputed"
+    | "payment.dispute.updated"
+    | "payment.dispute.closed"
+    | "payment.dispute.funds_reinstated"
+    | "payment.dispute.funds_withdrawn"
+    // Payout lifecycle
     | "payout.succeeded"
+    // Installment payment lifecycle
+    | "payment.installment.succeeded"
+    | "payment.installment.failed"
+    // KYC lifecycle
     | "kyc.approved"
     | "kyc.rejected"
     | "kyc.action_required"
-    | "external_deposit.received"
-    | "external_deposit.pending"
-    | "external_deposit.completed"
-    | "external_deposit.succeeded"
-    | "external_deposit.virtual_account_funded"
+    // External deposit lifecycle
+    | "external.deposit.received"
+    | "external.deposit.awaiting_confirmation"
+    | "external.deposit.completed"
+    | "external.deposit.succeeded"
+    | "external.virtual_account.funded"
+    // Transfer lifecycle
     | "transfer.succeeded"
     | "transfer.failed"
+    // Sell lifecycle
     | "sell.succeeded"
     | "sell.failed"
+    // Buy lifecycle
     | "buy.succeeded"
     | "buy.completed"
-    | "buy.awaiting_confirmation"
-    | "installment_payment.succeeded"
-    | "installment_payment.failed";
+    | "buy.awaiting_confirmation";
 
   export interface Notification {
     id: string;
     is_acknowledged: boolean;
     event: EventType | string | null;
-    category: string | null;
+    category: Category | string | null;
     data: any;
   }
 

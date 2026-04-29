@@ -22,7 +22,7 @@ export namespace Payment {
   export interface FraudCheckConfig {
     threshold?: "low" | "medium" | "high";
     sequence?: "fraud_before_auth" | "fraud_after_auth";
-    action_on_fail?: "retain_auth" | "cancel_auth";
+    action_on_fail?: "RETAIN_AUTH" | "CANCEL_AUTH";
   }
 
   export interface FraudCheck {
@@ -163,7 +163,7 @@ export namespace Payment {
     metadata?: Record<string, string>;
     id: string;
     status: string;
-    type: "payment";
+    type: string;
     created_at: string;
     updated_at: string;
     provider_response?: ProviderResponse;

@@ -11,7 +11,7 @@ export namespace Subscription {
     payment_method_id: string;
     payment_method_type: "CARD" | "PIX" | "BOLETO";
     payment_method_provider: "PAGAR_ME" | "FACILITA_PAY" | "BRLA";
-    fee_bearer: "connected_account";
+    fee_bearer: "connected_account" | "platform";
   }
 
   // ----------------------

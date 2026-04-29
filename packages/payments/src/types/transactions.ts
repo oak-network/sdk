@@ -32,12 +32,68 @@ export namespace Transaction {
     | "canceled";
 
   // ----------------------
+  // Type
+  // ----------------------
+  export type TransactionType =
+    | "pledge"
+    | "payment"
+    | "pay_out"
+    | "batch_transfer"
+    | "transfer"
+    | "buy"
+    | "sell"
+    | "cancel"
+    | "refund"
+    | "payment_method_verification"
+    | "pledge_with_installment"
+    | "recurring_payment"
+    | "installment_payment"
+    | "external";
+
+  // ----------------------
+  // Sub-status
+  // ----------------------
+  export type SubStatus =
+    | "payment_intent_created"
+    | "awaiting_user_initiation"
+    | "instant_payment_completed"
+    | "on_ramp_successful"
+    | "awaiting_capture"
+    | "captured"
+    | "authorized"
+    | "collateral_account"
+    | "transfer_initiated"
+    | "transfer_completed"
+    | "collateral_added"
+    | "payment_completed"
+    | "fraud_check_approved"
+    | "fraud_check_pending"
+    | "fraud_check_cancelled"
+    | "capture_failed"
+    | "on_ramp_failed"
+    | "transfer_failed"
+    | "instant_payment_failed"
+    | "payment_failed"
+    | "collateral_add_failed"
+    | "authorization_failed"
+    | "fraud_check_failed"
+    | "capture_cancelled"
+    | "capture_cancellation_failed"
+    | "funds_scheduled"
+    | "funds_received"
+    | "payment_submitted"
+    | "payment_processed"
+    | "requires_action"
+    | "off_ramp_failed";
+
+  // ----------------------
   // Model
   // ----------------------
   export interface Item {
     id: string;
     status: Status | string;
-    type: string;
+    sub_status?: SubStatus | string | null;
+    type: TransactionType | string;
     source: Payment.Source;
     confirm: boolean;
     metadata?: Payment.Metadata;
