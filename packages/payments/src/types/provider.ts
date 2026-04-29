@@ -13,11 +13,7 @@ export namespace Provider {
     | "brla"
     | "facilita_pay"
     | "inter_bank"
-    | "wallet_service"
-    | "crowd_split"
-    | "konduto"
-    | "cel_coin"
-    | "cel_baas";
+    | "konduto";
 
   export type TargetRole = "subaccount" | "customer" | "connected_account";
 
