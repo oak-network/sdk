@@ -168,8 +168,11 @@ export const httpClient = {
    * @param config - HTTP client configuration
    * @returns Result containing parsed response or error
    */
-  async get<T>(url: string, config: HttpClientConfig): Promise<Result<T, OakError>> {
-    return request<T>(url, config, { method: "GET" });
+  async get<T>(url: string, config: HttpClientConfig & { body?: string }): Promise<Result<T, OakError>> {
+    return request<T>(url, config, {
+      method: "GET",
+      ...(config.body ? { body: config.body } : {}),
+    });
   },
   /**
    * @typeParam T - Expected response body type
