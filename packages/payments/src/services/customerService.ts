@@ -22,6 +22,18 @@ export interface CustomerService {
     customer_id: string,
     filter: Customer.BalanceFilter,
   ): Promise<Result<Customer.BalanceResponse>>;
+
+  uploadFiles(
+    customerId: string,
+    files: unknown,
+  ): Promise<Result<Customer.FilesResponse>>;
+
+  getFiles(customerId: string): Promise<Result<Customer.FilesResponse>>;
+
+  populatePlatform(
+    customerId: string,
+    data: Customer.PlatformRequest,
+  ): Promise<Result<Customer.PlatformResponse>>;
 }
 
 /**
@@ -112,6 +124,50 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
         },
         retryOptions: client.retryOptions,
       },
+    );
+  },
+
+  async uploadFiles(
+    customerId: string,
+    files: unknown,
+  ): Promise<Result<Customer.FilesResponse>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Customer.FilesResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "files"),
+        files,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          retryOptions: client.retryOptions,
+        },
+      ),
+    );
+  },
+
+  async getFiles(customerId: string): Promise<Result<Customer.FilesResponse>> {
+    return withAuth(client, (token) =>
+      httpClient.get<Customer.FilesResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "files"),
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          retryOptions: client.retryOptions,
+        },
+      ),
+    );
+  },
+
+  async populatePlatform(
+    customerId: string,
+    data: Customer.PlatformRequest,
+  ): Promise<Result<Customer.PlatformResponse>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Customer.PlatformResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "platforms"),
+        data,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          retryOptions: client.retryOptions,
+        },
+      ),
     );
   },
 

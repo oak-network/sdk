@@ -89,6 +89,14 @@ export namespace Customer {
     document_type?: string;
     country_code?: string;
   }
+  export type FilesResponse = ApiResponse<unknown>;
+  export type PlatformResponse = ApiResponse<unknown>;
+
+  export interface PlatformRequest {
+    provider: string;
+    [key: string]: unknown;
+  }
+
   export interface BalanceFilter {
     provider: string;
     role: string;

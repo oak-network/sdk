@@ -39,3 +39,12 @@ export type { DisputeService } from "./disputeService";
 
 export { createPayoutService } from "./payoutService";
 export type { PayoutService } from "./payoutService";
+
+export { createWalletService } from "./walletService";
+export type { WalletService } from "./walletService";
+
+export { createMerchantService } from "./merchantService";
+export type { MerchantService } from "./merchantService";
+
+export { createFileService } from "./fileService";
+export type { FileService } from "./fileService";

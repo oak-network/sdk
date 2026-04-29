@@ -17,3 +17,6 @@ export * from "./refund";
 export * from "./subscription";
 export * from "./dispute";
 export * from "./payout";
+export * from "./wallet";
+export * from "./merchant";
+export * from "./file";
