@@ -138,7 +138,7 @@ export namespace Customer {
         as_of: string;
         totals: {
           currency: string;
-          amount: number;
+          available: number;
           pending: number;
           reserved: number;
           instant_payouts: number;
