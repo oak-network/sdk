@@ -15,3 +15,4 @@ export * from "./buy";
 export * from "./result";
 export * from "./refund";
 export * from "./subscription";
+export * from "./dispute";

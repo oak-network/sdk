@@ -33,3 +33,6 @@ export type { RefundService } from "./refundService";
 
 export { createSubscriptionService } from "./subscriptionService";
 export type { SubscriptionService } from "./subscriptionService";
+
+export { createDisputeService } from "./disputeService";
+export type { DisputeService } from "./disputeService";
