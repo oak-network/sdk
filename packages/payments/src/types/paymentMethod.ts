@@ -1,8 +1,33 @@
 import { ApiResponse } from "./common";
 
 export namespace PaymentMethod {
+  export type MethodType =
+    | "bank"
+    | "card"
+    | "plaid"
+    | "virtual_account"
+    | "liquidation_address"
+    | "trading_wallet"
+    | "customer_wallet"
+    | "pix"
+    | "evm_address";
+
+  export type PaymentMethodKind =
+    | "pix"
+    | "boleto"
+    | "card"
+    | "bank_transfer"
+    | "bank"
+    | "cash_payment";
+
+  export type BankAccountType =
+    | "payment"
+    | "checking"
+    | "savings"
+    | "virtual_account";
+
   export interface BridgeBankAccount {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider?: string; // from PLATFORMS keys
     currency?: string; // from CURRENCY keys (lowercase)
     bank_name: string;
@@ -22,7 +47,7 @@ export namespace PaymentMethod {
   }
 
   export interface OakBankAccount {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider?: string; // from PLATFORMS keys
     bank_branch_code: string;
     bank_account_number: string; // pattern: digits only
@@ -34,7 +59,7 @@ export namespace PaymentMethod {
   }
 
   export interface StripeBankAccount {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider?: string; // from PLATFORMS keys
     currency?: string; // from CURRENCY keys
     bank_name: string;
@@ -47,7 +72,7 @@ export namespace PaymentMethod {
   }
 
   export interface MercadoPagoCard {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider: string; // from PLATFORMS keys
     card_details: {
       card_token: string;
@@ -56,7 +81,7 @@ export namespace PaymentMethod {
   }
 
   export interface PagarMeCard {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider: string; // from PLATFORMS keys
     card_token: string;
     billing_address: {
@@ -72,13 +97,13 @@ export namespace PaymentMethod {
   }
 
   export interface StripeCard {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider: string; // from PLATFORMS keys
     metadata?: Record<string, any>;
   }
 
   export interface OakCustomerWallet {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider?: string; // from PLATFORMS keys
     evm_address: string; // validated as checksummed Ethereum address
     chain: string; // from WALLET_CHAIN keys
@@ -87,7 +112,7 @@ export namespace PaymentMethod {
   }
 
   export interface BridgeLiquidationAddress {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider: string; // from PLATFORMS keys
     source_currency: string; // from ASSET_TYPE keys
     destination_currency: string; // from CURRENCY keys
@@ -101,20 +126,45 @@ export namespace PaymentMethod {
   }
 
   export interface OakPix {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider?: string; // from PLATFORMS keys
     pix_string: string;
     metadata?: Record<string, any>;
   }
 
   export interface BridgePlaid {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider: string; // from PLATFORMS keys
     metadata?: Record<string, string>;
   }
 
+  export interface PlaidResponseData {
+    id: string;
+    type: MethodType;
+    link_token: string;
+    callback_url: string;
+    link_token_expires_at: string;
+    metadata?: Record<string, string>;
+  }
+
+  export interface TradingWallet {
+    type: MethodType;
+    provider: string; // from PLATFORMS keys
+    metadata?: Record<string, any>;
+  }
+
+  export interface TradingWalletResponseData {
+    id: string;
+    type: MethodType;
+    status: string;
+    wallet_details: {
+      address: string;
+    };
+    metadata?: Record<string, any>;
+  }
+
   export interface BridgeVirtualAccount {
-    type: string; // from SUBJECT_PAYMENT_METHOD_TYPE keys
+    type: MethodType;
     provider: string; // from PLATFORMS keys
     source_currency: string; // from CURRENCY keys
     destination_currency: string; // from ASSET_TYPE keys
@@ -146,7 +196,8 @@ export namespace PaymentMethod {
     | BridgeLiquidationAddress
     | OakPix
     | BridgePlaid
-    | BridgeVirtualAccount;
+    | BridgeVirtualAccount
+    | TradingWallet;
 
   export type ResponseData = Request & {
     id: string;

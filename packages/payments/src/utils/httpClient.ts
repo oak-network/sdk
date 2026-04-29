@@ -7,6 +7,7 @@ export interface HttpClientConfig {
   headers?: Record<string, string>;
   retryOptions: RetryOptions;
   signal?: AbortSignal;
+  isMultipart?: boolean;
 }
 
 /**
@@ -28,11 +29,16 @@ const oakVersion = process.env.OAK_VERSION ?? getPackageVersion() ?? "unknown";
  * @param headers - Optional custom headers to merge
  * @returns Merged headers with defaults
  */
-const mergeHeaders = (headers?: Record<string, string>) => ({
-  "Content-Type": "application/json",
-  "Oak-Version": oakVersion,
-  ...(headers ?? {}),
-});
+const mergeHeaders = (headers?: Record<string, string>, isMultipart?: boolean) => {
+  const base: Record<string, string> = {
+    "Oak-Version": oakVersion,
+    ...(headers ?? {}),
+  };
+  if (!isMultipart) {
+    base["Content-Type"] = "application/json";
+  }
+  return base;
+};
 
 type ParseResult = 
   | { success: true; data: unknown; error?: undefined }
@@ -110,7 +116,7 @@ const request = async <T>(
       try {
         response = await fetch(url, {
           ...init,
-          headers: mergeHeaders(config.headers),
+          headers: mergeHeaders(config.headers, config.isMultipart),
           signal: config.signal,
         });
       } catch (error) {
@@ -160,6 +166,23 @@ export const httpClient = {
     return request<T>(url, config, {
       method: "POST",
       body: JSON.stringify(data),
+    });
+  },
+  /**
+   * @typeParam T - Expected response body type
+   * @param url - Request URL
+   * @param data - FormData or other multipart body
+   * @param config - HTTP client configuration (isMultipart should be true)
+   * @returns Result containing parsed response or error
+   */
+  async postMultipart<T>(
+    url: string,
+    data: unknown,
+    config: HttpClientConfig
+  ): Promise<Result<T, OakError>> {
+    return request<T>(url, { ...config, isMultipart: true }, {
+      method: "POST",
+      body: data as BodyInit,
     });
   },
   /**

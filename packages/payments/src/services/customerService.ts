@@ -1,5 +1,4 @@
 import type { Customer, OakClient, Result } from "../types";
-import { err } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { buildQueryString } from "./helpers";
 import { withAuth } from "../utils/withAuth";
@@ -22,6 +21,21 @@ export interface CustomerService {
     customer_id: string,
     filter: Customer.BalanceFilter,
   ): Promise<Result<Customer.BalanceResponse>>;
+
+  /** Upload files for a customer (multipart/form-data). */
+  uploadFiles(
+    customerId: string,
+    files: unknown,
+  ): Promise<Result<Customer.FilesResponse>>;
+
+  /** List files for a customer. */
+  getFiles(customerId: string): Promise<Result<Customer.FilesResponse>>;
+
+  /** Populate KYC data for a customer on a specific provider platform. */
+  populatePlatform(
+    customerId: string,
+    data: Customer.PlatformRequest,
+  ): Promise<Result<Customer.PlatformResponse>>;
 }
 
 /**
@@ -98,20 +112,61 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     id: string,
     sync: Customer.Sync,
   ): Promise<Result<Customer.SyncResponse>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
-    return httpClient.post<Customer.SyncResponse>(
-      `${client.config.baseUrl}/api/v1/customers/${id}/sync`,
-      sync,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.post<Customer.SyncResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", id, "sync"),
+        sync,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
+    );
+  },
+
+  async uploadFiles(
+    customerId: string,
+    files: unknown,
+  ): Promise<Result<Customer.FilesResponse>> {
+    return withAuth(client, (token) =>
+      httpClient.postMultipart<Customer.FilesResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "files"),
+        files,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          retryOptions: client.retryOptions,
+        },
+      ),
+    );
+  },
+
+  async getFiles(customerId: string): Promise<Result<Customer.FilesResponse>> {
+    return withAuth(client, (token) =>
+      httpClient.get<Customer.FilesResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "files"),
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          retryOptions: client.retryOptions,
+        },
+      ),
+    );
+  },
+
+  async populatePlatform(
+    customerId: string,
+    data: Customer.PlatformRequest,
+  ): Promise<Result<Customer.PlatformResponse>> {
+    return withAuth(client, (token) =>
+      httpClient.post<Customer.PlatformResponse>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "platforms"),
+        data,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          retryOptions: client.retryOptions,
+        },
+      ),
     );
   },
 
@@ -119,21 +174,18 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     customer_id: string,
     filter: Customer.BalanceFilter,
   ): Promise<Result<Customer.BalanceResponse>> {
-    const token = await client.getAccessToken();
-    if (!token.ok) {
-      return err(token.error);
-    }
-
     const queryString = buildQueryString(filter);
 
-    return httpClient.get<Customer.BalanceResponse>(
-      `${client.config.baseUrl}/api/v1/customers/${customer_id}/balance${queryString}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token.value}`,
+    return withAuth(client, (token) =>
+      httpClient.get<Customer.BalanceResponse>(
+        `${buildUrl(client.config.baseUrl, "api/v1/customers", customer_id, "balances")}${queryString}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
         },
-        retryOptions: client.retryOptions,
-      },
+      ),
     );
   },
 });

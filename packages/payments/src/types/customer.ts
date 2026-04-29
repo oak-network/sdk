@@ -3,6 +3,20 @@ import { ApiResponse } from "./common";
 export namespace Customer {
   export type DocumentType = "personal_tax_id" | "company_tax_id";
 
+  export type Status =
+    | "INITIATED"
+    | "APPROVED"
+    | "REJECTED"
+    | "IN_REVIEW"
+    | "INCOMPLETE"
+    | "NOT_STARTED"
+    | "DOCUMENT_REQUIRED"
+    | "PENDING"
+    | "PROCESSING"
+    | "DOCUMENT_PENDING"
+    | "DOCUMENT_APPROVED"
+    | "AWAITING_CONFIRMATION";
+
   export interface Base {
     email: string;
     document_number?: string;
@@ -51,6 +65,9 @@ export namespace Customer {
     customer_wallet?: string | null;
     trading_wallet?: string | null;
     account_type?: string | null;
+    additional_info?: Record<string, unknown> | null;
+    synced?: boolean | null;
+    synced_at?: string | null;
   }
 
   type Provider =
@@ -89,6 +106,14 @@ export namespace Customer {
     document_type?: string;
     country_code?: string;
   }
+  export type FilesResponse = ApiResponse<unknown>;
+  export type PlatformResponse = ApiResponse<unknown>;
+
+  export interface PlatformRequest {
+    provider: string;
+    [key: string]: unknown;
+  }
+
   export interface BalanceFilter {
     provider: string;
     role: string;
@@ -113,7 +138,7 @@ export namespace Customer {
         as_of: string;
         totals: {
           currency: string;
-          amount: number;
+          available: number;
           pending: number;
           reserved: number;
           instant_payouts: number;

@@ -22,7 +22,7 @@ export namespace Payment {
   export interface FraudCheckConfig {
     threshold?: "low" | "medium" | "high";
     sequence?: "fraud_before_auth" | "fraud_after_auth";
-    action_on_fail?: "reject" | "review";
+    action_on_fail?: "RETAIN_AUTH" | "CANCEL_AUTH";
   }
 
   export interface FraudCheck {
@@ -48,7 +48,7 @@ export namespace Payment {
     payment_method: PaymentMethod;
     installments?: number;
     float_rate?: number;
-    capture_method: "automatic";
+    capture_method: "automatic" | "manual";
     fraud_check?: FraudCheck;
   }
 
@@ -151,7 +151,28 @@ export namespace Payment {
     metadata?: Record<string, string>;
   }
 
-  export type Request = MercadoPagoRequest | PagarMeRequest | StripeRequest;
+  export interface PagarMePixRequest {
+    provider: "pagar_me";
+    source: {
+      amount: number;
+      currency: "brl";
+      customer: {
+        id: string;
+      };
+      payment_method: {
+        type: "pix";
+        expiry_date: string; // ISO date, must be in the future
+      };
+    };
+    confirm?: boolean;
+    metadata?: Record<string, string>;
+  }
+
+  export type Request =
+    | MercadoPagoRequest
+    | PagarMeRequest
+    | PagarMePixRequest
+    | StripeRequest;
 
   // ----------------------------------------
   // Payment responses (create / confirm / cancel)
@@ -163,7 +184,7 @@ export namespace Payment {
     metadata?: Record<string, string>;
     id: string;
     status: string;
-    type: "payment";
+    type: string;
     created_at: string;
     updated_at: string;
     provider_response?: ProviderResponse;

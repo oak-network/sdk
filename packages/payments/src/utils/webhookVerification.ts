@@ -29,13 +29,28 @@ export function verifyWebhookSignature(
   secret: string,
 ): boolean {
   try {
-    // Generate expected signature
+    // Parse the CrowdSplit-Signature header: "t=<timestamp>,v1=<sig>"
+    let timestamp: string;
+    let v1Signature: string;
+
+    if (signature.includes("t=") && signature.includes("v1=")) {
+      const parts = signature.split(",");
+      timestamp = (parts.find(p => p.trimStart().startsWith("t="))?.replace("t=", "") ?? "").trim();
+      v1Signature = (parts.find(p => p.trimStart().startsWith("v1="))?.replace("v1=", "") ?? "").trim();
+    } else {
+      // Fallback: treat as raw signature (legacy)
+      timestamp = "";
+      v1Signature = signature;
+    }
+
+    // Crowdsplit signs: timestamp + "." + payload
+    const base = timestamp ? `${timestamp}.${payload}` : payload;
     const hmac = createHmac("sha256", secret);
-    hmac.update(payload);
+    hmac.update(base, "utf8");
     const expectedSignature = hmac.digest("hex");
 
     // Convert both signatures to buffers for timing-safe comparison
-    const signatureBuffer = Buffer.from(signature, "utf-8");
+    const signatureBuffer = Buffer.from(v1Signature, "utf-8");
     const expectedBuffer = Buffer.from(expectedSignature, "utf-8");
 
     // Ensure buffers are same length to prevent timing attacks
