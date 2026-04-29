@@ -48,3 +48,15 @@ export type { MerchantService } from "./merchantService";
 
 export { createFileService } from "./fileService";
 export type { FileService } from "./fileService";
+
+export { createTaxService } from "./taxService";
+export type { TaxService } from "./taxService";
+
+export { createProviderProxyService } from "./providerProxyService";
+export type { ProviderProxyService } from "./providerProxyService";
+
+export { createPixService } from "./pixService";
+export type { PixService } from "./pixService";
+
+export { createSandboxService } from "./sandboxService";
+export type { SandboxService } from "./sandboxService";

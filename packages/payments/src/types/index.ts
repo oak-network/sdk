@@ -20,3 +20,7 @@ export * from "./payout";
 export * from "./wallet";
 export * from "./merchant";
 export * from "./file";
+export * from "./tax";
+export * from "./providerProxy";
+export * from "./pix";
+export * from "./sandbox";

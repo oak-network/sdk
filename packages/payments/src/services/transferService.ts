@@ -1,10 +1,12 @@
 import type { Transfer, OakClient, Result } from "../types";
+import { ApiResponse } from "../types";
 import { httpClient } from "../utils/httpClient";
 import { withAuth } from "../utils/withAuth";
 import { buildUrl } from "../utils/buildUrl";
 
 export interface TransferService {
   create(transfer: Transfer.Request): Promise<Result<Transfer.Response>>;
+  sendWebhook(data: unknown): Promise<Result<ApiResponse<unknown>>>;
 }
 
 /**
@@ -17,6 +19,21 @@ export const createTransferService = (client: OakClient): TransferService => ({
       httpClient.post<Transfer.Response>(
         buildUrl(client.config.baseUrl, "api/v1/transfer"),
         transfer,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          retryOptions: client.retryOptions,
+        },
+      ),
+    );
+  },
+
+  async sendWebhook(data: unknown): Promise<Result<ApiResponse<unknown>>> {
+    return withAuth(client, (token) =>
+      httpClient.post<ApiResponse<unknown>>(
+        buildUrl(client.config.baseUrl, "api/v1/transfer/webhook"),
+        data,
         {
           headers: {
             Authorization: `Bearer ${token}`,
