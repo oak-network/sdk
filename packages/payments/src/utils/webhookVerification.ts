@@ -33,10 +33,10 @@ export function verifyWebhookSignature(
     let timestamp: string;
     let v1Signature: string;
 
-    if (signature.startsWith("t=")) {
+    if (signature.includes("t=") && signature.includes("v1=")) {
       const parts = signature.split(",");
-      timestamp = (parts[0]?.replace("t=", "") ?? "").trim();
-      v1Signature = (parts[1]?.replace("v1=", "") ?? "").trim();
+      timestamp = (parts.find(p => p.trimStart().startsWith("t="))?.replace("t=", "") ?? "").trim();
+      v1Signature = (parts.find(p => p.trimStart().startsWith("v1="))?.replace("v1=", "") ?? "").trim();
     } else {
       // Fallback: treat as raw signature (legacy)
       timestamp = "";
