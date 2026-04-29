@@ -22,7 +22,7 @@ export namespace Payment {
   export interface FraudCheckConfig {
     threshold?: "low" | "medium" | "high";
     sequence?: "fraud_before_auth" | "fraud_after_auth";
-    action_on_fail?: "reject" | "review";
+    action_on_fail?: "retain_auth" | "cancel_auth";
   }
 
   export interface FraudCheck {

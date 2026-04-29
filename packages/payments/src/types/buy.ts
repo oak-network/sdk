@@ -3,7 +3,7 @@ import { ApiResponse } from "./common";
 export namespace Buy {
   export interface PaymentMethod {
     type: "customer_wallet";
-    chain?: "ethereum" | "polygon" | "arbitrum" | "solana";
+    chain?: "ethereum" | "polygon" | "arbitrum" | "solana" | "celo";
     evm_address: string;
   }
 
@@ -48,6 +48,9 @@ export namespace Buy {
     provider: "bridge";
     source: Source;
     destination: Destination;
+    provider_data?: {
+      developer_fee_percent?: number;
+    };
     metadata?: Metadata;
   }
 

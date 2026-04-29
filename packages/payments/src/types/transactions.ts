@@ -22,12 +22,14 @@ export namespace Transaction {
   // Status
   // ----------------------
   export type Status =
-    | "INITIATED"
-    | "PENDING"
-    | "COMPLETED"
-    | "SETTLED"
-    | "FAILED"
-    | "CANCELED_AFTER_COMPLETION";
+    | "created"
+    | "awaiting_confirmation"
+    | "processing"
+    | "captured"
+    | "succeeded"
+    | "failed"
+    | "canceled_after_completion"
+    | "canceled";
 
   // ----------------------
   // Model

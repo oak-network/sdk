@@ -9,7 +9,10 @@ export namespace Provider {
     | "mercado_pago"
     | "bridge"
     | "stripe"
-    | "pagar_me";
+    | "pagar_me"
+    | "brla"
+    | "facilita_pay"
+    | "inter_bank";
 
   export type TargetRole = "subaccount" | "customer" | "connected_account";
 

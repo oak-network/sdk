@@ -127,7 +127,7 @@ export const createCustomerService = (client: OakClient): CustomerService => ({
     const queryString = buildQueryString(filter);
 
     return httpClient.get<Customer.BalanceResponse>(
-      `${client.config.baseUrl}/api/v1/customers/${customer_id}/balance${queryString}`,
+      `${client.config.baseUrl}/api/v1/customers/${customer_id}/balances${queryString}`,
       {
         headers: {
           Authorization: `Bearer ${token.value}`,
