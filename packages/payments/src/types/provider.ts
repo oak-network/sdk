@@ -9,9 +9,30 @@ export namespace Provider {
     | "mercado_pago"
     | "bridge"
     | "stripe"
-    | "pagar_me";
+    | "pagar_me"
+    | "brla"
+    | "facilita_pay"
+    | "inter_bank"
+    | "wallet_service"
+    | "crowd_split"
+    | "konduto"
+    | "cel_coin"
+    | "cel_baas";
 
   export type TargetRole = "subaccount" | "customer" | "connected_account";
+
+  export type PlatformStatus =
+    | "NOT_SUBMITTED"
+    | "SUBMITTED"
+    | "AWAITING_CONFIRMATION"
+    | "PROCESSING"
+    | "APPROVED"
+    | "REJECTED"
+    | "RESTRICTED"
+    | "CANCELLED"
+    | "ERROR";
+
+  export type KycLevel = "1" | "2";
 
   // ----------------------
   // Schema

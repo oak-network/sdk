@@ -204,7 +204,7 @@ describe("Oak services (Unit)", () => {
         service.balance("cust-1", { provider: "stripe", role: "customer" }),
       httpMethod: "get",
       expectedArgs: [
-        `${SANDBOX_URL}/api/v1/customers/cust-1/balance?provider=stripe&role=customer`,
+        `${SANDBOX_URL}/api/v1/customers/cust-1/balances?provider=stripe&role=customer`,
         authConfig,
       ],
     });

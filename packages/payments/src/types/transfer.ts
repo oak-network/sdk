@@ -16,8 +16,8 @@ export namespace Transfer {
       };
       payment_method?: {
         id?: string; // if present, chain and evm_address are forbidden
-        type: string; // from TRANSFER_PAYMENT_METHOD_TYPE keys
-        chain?: string; // from WALLET_CHAIN values, required when id is absent
+        type: "customer_wallet" | "bank";
+        chain?: "polygon" | "celo"; // required when id is absent
         evm_address?: string; // required when id is absent, validated as checksummed address
       };
     };

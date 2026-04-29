@@ -17,6 +17,11 @@ export interface PaymentMethodService {
     customerId: string,
     query?: PaymentMethod.ListQuery,
   ): Promise<Result<PaymentMethod.ListResponse>>;
+  update(
+    customerId: string,
+    paymentMethodId: string,
+    paymentMethod: PaymentMethod.Request,
+  ): Promise<Result<PaymentMethod.Response>>;
   delete(
     customerId: string,
     paymentMethodId: string,
@@ -76,6 +81,25 @@ export const createPaymentMethodService = (
         `${buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "payment_methods")}${queryString}`,
         {
           headers: { Authorization: `Bearer ${token}` },
+          retryOptions: client.retryOptions,
+        },
+      ),
+    );
+  },
+
+  async update(
+    customerId: string,
+    paymentMethodId: string,
+    paymentMethod: PaymentMethod.Request,
+  ): Promise<Result<PaymentMethod.Response>> {
+    return withAuth(client, (token) =>
+      httpClient.put<PaymentMethod.Response>(
+        buildUrl(client.config.baseUrl, "api/v1/customers", customerId, "payment_methods", paymentMethodId),
+        paymentMethod,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           retryOptions: client.retryOptions,
         },
       ),

@@ -9,11 +9,14 @@ export namespace Plan {
     description: string;
     frequency: number; // in days
     price: number;
+    overridden_price?: number;
     start_date: string; // ISO date format (YYYY-MM-DD)
     end_date?: string; // Optional ISO date format
     is_auto_renewable: boolean;
     currency: string; // e.g. "BRL"
     allow_amount_override: boolean;
+    campaign_id?: string;
+    campaign_name?: string;
     created_by: string;
   }
 
@@ -28,6 +31,7 @@ export namespace Plan {
     description: string;
     frequency: number; // in days
     price: number;
+    overridden_price?: number;
     is_active: boolean;
     start_time: string; // ISO datetime
     end_time: string; // ISO datetime
@@ -36,6 +40,8 @@ export namespace Plan {
     updated_by: string;
     currency: string; // lowercase like "brl"
     allow_amount_override: boolean;
+    campaign_id?: string;
+    campaign_name?: string;
     created_at: string; // ISO datetime
     updated_at: string; // ISO datetime
     deleted_at: string | null;
@@ -66,5 +72,7 @@ export namespace Plan {
   export interface ListQuery {
     page_no?: number;
     per_page?: number;
+    active?: boolean;
+    expired?: boolean;
   }
 }

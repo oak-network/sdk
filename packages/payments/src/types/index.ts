@@ -14,3 +14,8 @@ export * from "./plan";
 export * from "./buy";
 export * from "./result";
 export * from "./refund";
+export * from "./subscription";
+export * from "./dispute";
+export * from "./payout";
+export * from "./file";
+export * from "./tax";

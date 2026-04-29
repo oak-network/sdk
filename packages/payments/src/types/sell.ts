@@ -6,7 +6,8 @@ export namespace Sell {
   // ----------------------
   export type PaymentMethod =
     | { type: "pix"; id: string } // saved payment method
-    | { type: "pix"; pix_string: string }; // direct PIX string
+    | { type: "pix"; pix_string: string } // direct PIX string
+    | { type: "bank"; id: string }; // saved bank payment method
 
   // ----------------------
   // Request
@@ -42,7 +43,7 @@ export namespace Sell {
     currency: string;
     customer: { id: string };
     payment_method: {
-      type: "pix";
+      type: "pix" | "bank";
       id?: string;
       pix_string?: string;
     };

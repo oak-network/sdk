@@ -41,6 +41,8 @@ export function getConfigFromEnv(): OakClientConfig {
   };
 }
 
+export const INTEGRATION_TEST_TIMEOUT = 30000;
+
 export function getTestEnvironment(): TestEnvironment {
   return {
     paymentCustomerId: process.env.PAYMENT_CUSTOMER_ID,
