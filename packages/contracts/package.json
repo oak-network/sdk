@@ -51,7 +51,7 @@
   "scripts": {
     "build": "tsup",
     "prepublishOnly": "pnpm run build",
-    "test": "jest --testPathPatterns='__tests__/unit' --coverage",
+    "test": "jest --coverage",
     "test:unit": "jest --testPathPatterns='__tests__/unit' --coverage",
     "test:integration": "jest --testPathPatterns='__tests__/integration' --coverage --coverageThreshold='{}'",
     "test:watch": "jest --watchAll"
