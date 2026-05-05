@@ -36,14 +36,15 @@ jobs:
               ? payload.changed_files.filter(f => typeof f === 'string' && SAFE_FILENAME.test(f))
               : [];
             const truncated = Boolean(payload.truncated);
-            const fileCount = Number.isFinite(payload.file_count) ? payload.file_count : changedFiles.length;
+            const rawCount = Number(payload.file_count);
+            const fileCount = Number.isFinite(rawCount) ? rawCount : changedFiles.length;
             const sha = typeof payload.sha === 'string' ? payload.sha : '';
             const compareUrl = typeof payload.compare_url === 'string' && payload.compare_url.startsWith(GITHUB_ORIGIN)
               ? payload.compare_url
               : '';
 
             const escapeMd = (s) => String(s).replace(/[`*_\[\]\\#!()~<>|]/g, '\\$&');
-            const commitMessage = escapeMd((payload.commit_message ?? '(no message)').slice(0, MAX_COMMIT_MSG_LENGTH));
+            const commitMessage = escapeMd(String(payload.commit_message ?? '(no message)').slice(0, MAX_COMMIT_MSG_LENGTH));
 
             if (changedFiles.length === 0 && fileCount === 0) {
               console.log('No changed files in payload. Skipping issue creation.');
