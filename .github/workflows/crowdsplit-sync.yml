@@ -1,0 +1,136 @@
+name: Crowdsplit Staging Sync
+
+on:
+  repository_dispatch:
+    types: [crowdsplit-staging-pushed]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: crowdsplit-sync
+  cancel-in-progress: false
+
+jobs:
+  create-sync-issue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Analyze changes and create issue
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            // --- Constants ---
+            const MAX_COMMIT_MSG_LENGTH = 500;
+            const MAX_DISPLAYED_FILES = 50;
+            const MAX_SHA_LENGTH = 7;
+            const DEDUP_WINDOW_MS = 24 * 60 * 60 * 1000;
+            const DEDUP_QUERY_LIMIT = 5;
+            const GITHUB_ORIGIN = 'https://github.com/';
+            const SAFE_FILENAME = /^[\w\-./]+$/;
+
+            // --- Parse and validate payload ---
+            const payload = context.payload.client_payload ?? {};
+
+            const changedFiles = Array.isArray(payload.changed_files)
+              ? payload.changed_files.filter(f => typeof f === 'string' && SAFE_FILENAME.test(f))
+              : [];
+            const truncated = Boolean(payload.truncated);
+            const rawCount = Number(payload.file_count);
+            const fileCount = Number.isFinite(rawCount) ? rawCount : changedFiles.length;
+            const sha = typeof payload.sha === 'string' ? payload.sha : '';
+            const compareUrl = typeof payload.compare_url === 'string' && payload.compare_url.startsWith(GITHUB_ORIGIN)
+              ? payload.compare_url
+              : '';
+
+            const escapeMd = (s) => String(s).replace(/[`*_\[\]\\#!()~<>|]/g, '\\$&');
+            const commitMessage = escapeMd(String(payload.commit_message ?? '(no message)').slice(0, MAX_COMMIT_MSG_LENGTH));
+
+            if (changedFiles.length === 0 && fileCount === 0) {
+              console.log('No changed files in payload. Skipping issue creation.');
+              return;
+            }
+
+            // --- Build display elements ---
+            const displayedFiles = changedFiles.slice(0, MAX_DISPLAYED_FILES);
+            const fileList = displayedFiles.length > 0
+              ? displayedFiles.map(f => `- \`${f}\``).join('\n')
+              : `_File list not available — ${fileCount} file(s) changed (see commit for details)._`;
+
+            const shortSha = sha ? sha.substring(0, MAX_SHA_LENGTH) : 'unknown';
+            const commitLink = compareUrl ? `[\`${shortSha}\`](${compareUrl})` : `\`${shortSha}\``;
+
+            const truncationParts = [];
+            if (truncated || changedFiles.length > MAX_DISPLAYED_FILES) {
+              truncationParts.push(`> **Note:** ${fileCount} files changed in total, showing first ${displayedFiles.length}.`);
+            }
+            const truncationNote = truncationParts.length > 0 ? '\n\n' + truncationParts.join('\n') : '';
+
+            const runLink = `_[Workflow run](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})_`;
+
+            // --- Deduplicate: append to recent open issue if one exists ---
+            const since = new Date(Date.now() - DEDUP_WINDOW_MS).toISOString();
+            const existingIssues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'api-sync',
+              state: 'open',
+              sort: 'created',
+              direction: 'desc',
+              since,
+              per_page: DEDUP_QUERY_LIMIT,
+            });
+
+            // Filter out PRs — listForRepo returns both issues and pull requests
+            const issuesOnly = existingIssues.data.filter(i => !i.pull_request);
+
+            if (issuesOnly.length > 0) {
+              const latestIssue = issuesOnly[0];
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: latestIssue.number,
+                body: [
+                  `### Additional staging push detected`,
+                  ``,
+                  `**Commit:** ${commitLink}`,
+                  `**Message:** ${commitMessage}`,
+                  ``,
+                  `### Changed files`,
+                  fileList,
+                  truncationNote,
+                  ``,
+                  runLink,
+                ].join('\n'),
+              });
+              console.log(`Appended comment to existing issue #${latestIssue.number}`);
+              return;
+            }
+
+            // --- Create new issue ---
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[API Sync] Crowdsplit staging updated — ${fileCount} file(s) changed`,
+              body: [
+                `## Crowdsplit Staging Change Detected`,
+                ``,
+                `A push to Crowdsplit \`staging\` included changes that may require SDK updates.`,
+                ``,
+                `**Commit:** ${commitLink}`,
+                `**Message:** ${commitMessage}`,
+                ``,
+                `### Changed files`,
+                fileList,
+                truncationNote,
+                ``,
+                `### Action required`,
+                `1. Review the changed files in Crowdsplit`,
+                `2. Determine if SDK types, services, or methods need updating`,
+                `3. Follow SDK patterns (Result<T,E>, factory functions, withAuth)`,
+                ``,
+                `---`,
+                `${runLink} · _Auto-generated by Crowdsplit Staging Sync workflow_`,
+              ].join('\n'),
+              labels: ['api-sync', 'crowdsplit'],
+            });
