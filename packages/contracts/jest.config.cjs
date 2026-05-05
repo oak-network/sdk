@@ -1,5 +1,8 @@
 module.exports = {
   preset: "ts-jest",
+  transform: {
+    "^.+\\.ts$": ["ts-jest", { tsconfig: "tsconfig.test.json" }],
+  },
   testEnvironment: "node",
   testTimeout: 60_000,
   testMatch: ["**/__tests__/**/*.test.ts"],
