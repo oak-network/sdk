@@ -72,18 +72,25 @@ if (result.ok) {
 
 ## Services
 
-The SDK ships 10 service modules. Import the factory function for each service you need.
+The SDK ships 17 service modules. Import the factory function for each service you need.
 
 | Service                                                                | Factory                              | What it does                                        |
 | ---------------------------------------------------------------------- | ------------------------------------ | --------------------------------------------------- |
 | [Customers](https://www.oaknetwork.org/docs/sdk/customers)             | `createCustomerService(client)`      | Create, get, list, update, sync, and check balances |
-| [Payments](https://www.oaknetwork.org/docs/sdk/payments)               | `createPaymentService(client)`       | Create, confirm, cancel payments                    |
+| [Payments](https://www.oaknetwork.org/docs/sdk/payments)               | `createPaymentService(client)`       | Create, confirm, cancel, capture payments           |
 | [Payment Methods](https://www.oaknetwork.org/docs/sdk/payment-methods) | `createPaymentMethodService(client)` | Add, list, get, delete payment methods              |
 | [Webhooks](https://www.oaknetwork.org/docs/sdk/webhooks)               | `createWebhookService(client)`       | Register, manage, and monitor webhooks              |
 | [Transactions](https://www.oaknetwork.org/docs/sdk/transactions)       | `createTransactionService(client)`   | List, get, and settle transactions                  |
-| [Transfers](https://www.oaknetwork.org/docs/sdk/transfers)             | `createTransferService(client)`      | Create provider transfers (Stripe, PagarMe, BRLA)   |
+| [Transfers](https://www.oaknetwork.org/docs/sdk/transfers)             | `createTransferService(client)`      | Create provider transfers (Stripe, PagarMe, BRLA)  |
 | [Plans](https://www.oaknetwork.org/docs/sdk/plans)                     | `createPlanService(client)`          | CRUD subscription plans                             |
+| [Subscriptions](https://www.oaknetwork.org/docs/sdk/subscriptions)     | `createSubscriptionService(client)`  | Subscribe, cancel, list, pay subscriptions          |
 | [Refunds](https://www.oaknetwork.org/docs/sdk/refunds)                 | `createRefundService(client)`        | Refund a payment (full or partial)                  |
+| [Disputes](https://www.oaknetwork.org/docs/sdk/disputes)               | `createDisputeService(client)`       | List, submit evidence, close disputes               |
+| [Payouts](https://www.oaknetwork.org/docs/sdk/payouts)                 | `createPayoutService(client)`        | Create outbound payments                            |
+| [Providers](https://www.oaknetwork.org/docs/sdk/providers)             | `createProviderService(client)`      | Get schema, status, submit provider registration    |
+| [Files](https://www.oaknetwork.org/docs/sdk/files)                     | `createFileService(client)`          | Upload, list, get, delete files                     |
+| [Taxes](https://www.oaknetwork.org/docs/sdk/taxes)                     | `createTaxService(client)`           | Calculate taxes                                     |
+| [Countries](https://www.oaknetwork.org/docs/sdk/countries)             | `createCountryService(client)`       | List countries with KYC support status (public)     |
 | [Buy](https://www.oaknetwork.org/docs/sdk/buy-and-sell)                | `createBuyService(client)`           | Crypto on-ramp via Bridge                           |
 | [Sell](https://www.oaknetwork.org/docs/sdk/buy-and-sell)               | `createSellService(client)`          | Crypto off-ramp via Avenia                          |
 
