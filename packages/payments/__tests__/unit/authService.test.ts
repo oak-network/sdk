@@ -110,6 +110,34 @@ describe("Auth (Unit)", () => {
     expect(mockedHttpClient.post).toHaveBeenCalledTimes(2);
   });
 
+  it("should return OakError when clientSecret is missing", async () => {
+    const noSecretClient = createOakClient({
+      environment: "sandbox",
+      clientId: "test-client-id",
+      retryOptions,
+    });
+
+    const result = await noSecretClient.grantToken();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain("clientSecret is required");
+    }
+  });
+
+  it("should return OakError from getAccessToken when clientSecret is missing", async () => {
+    const noSecretClient = createOakClient({
+      environment: "sandbox",
+      clientId: "test-client-id",
+      retryOptions,
+    });
+
+    const result = await noSecretClient.getAccessToken();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain("clientSecret is required");
+    }
+  });
+
   it("should return ApiError if grantToken fails", async () => {
     mockedHttpClient.post.mockResolvedValue(
       err(new ApiError("HTTP error", 500, null)) as never

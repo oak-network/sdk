@@ -6,7 +6,8 @@ import type { OakEnvironment } from "./environment";
 export interface OakClientConfig {
   environment: OakEnvironment;
   clientId: string;
-  clientSecret: string;
+  /** Required for authenticated endpoints. May be omitted when using only public services (e.g. countries). */
+  clientSecret?: string;
   customUrl?: string;
   retryOptions?: Partial<RetryOptions>;
 }
