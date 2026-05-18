@@ -45,3 +45,6 @@ export type { FileService } from "./fileService";
 
 export { createTaxService } from "./taxService";
 export type { TaxService } from "./taxService";
+
+export { createCountryService } from "./countryService";
+export type { CountryService } from "./countryService";
