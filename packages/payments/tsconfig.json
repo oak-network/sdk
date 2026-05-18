@@ -9,11 +9,13 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "moduleResolution": "node",
+    // Explicit allowlist — prevents auto-inclusion of all @types/*.
+    // Add new @types packages here if src/ needs their globals.
+    "types": ["node"],
     // Required for @SandboxOnly decorator exported in public API
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": ["src/**/*", "__tests__/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "__tests__"]
 }

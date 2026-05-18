@@ -31,6 +31,13 @@ export class AuthManager {
    * @returns Result containing TokenResponse or error
    */
   async grantToken(): Promise<Result<TokenResponse, OakError>> {
+    if (!this.config.clientSecret) {
+      return err(new OakError(
+        "clientSecret is required for authenticated endpoints. " +
+        "Provide it in createOakClient() config.",
+      ));
+    }
+
     const payload: TokenRequest = {
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
