@@ -67,6 +67,7 @@ export namespace Webhook {
     | "provider_registration.awaiting_confirmation"
     | "provider_registration.processing"
     | "provider_registration.action_required"
+    | "provider_registration.updated"
     | "provider_registration.documents_uploaded"
     | "provider_registration.verification_expired"
     // Payment lifecycle

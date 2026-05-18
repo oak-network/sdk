@@ -67,7 +67,6 @@ export namespace PaymentMethod {
     bank_routing_number: string; // pattern: digits only
     bank_account_type: string;
     bank_account_name: string;
-    bank_metadata?: Record<string, any>;
     metadata?: Record<string, any>;
   }
 
