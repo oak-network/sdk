@@ -1,5 +1,14 @@
 # @oaknetwork/payments-sdk
 
+## 1.3.0
+
+### Minor Changes
+
+### Minor Changes
+
+- Remove deprecated field values from payment method and add new webhook field
+- Add `createCountryService` for listing countries with KYC support status via the public `GET /api/v1/countries` endpoint
+
 ## 1.2.0
 
 ### Minor Changes
