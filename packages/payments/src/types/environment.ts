@@ -6,15 +6,17 @@ export interface EnvironmentConfig {
 }
 
 export const ENVIRONMENT_URLS: Record<OakEnvironment, string> = {
-  sandbox: "https://api-stage.usecrowdpay.xyz",
-  production: "https://app.usecrowdpay.xyz",
+  sandbox: "https://stage-payments.oaknetwork.org",
+  production: "https://payments.oaknetwork.org",
 };
 
 /**
  * @param environment - Target environment
  * @returns Configuration for the specified environment
  */
-export function getEnvironmentConfig(environment: OakEnvironment): EnvironmentConfig {
+export function getEnvironmentConfig(
+  environment: OakEnvironment,
+): EnvironmentConfig {
   return {
     apiUrl: ENVIRONMENT_URLS[environment],
     allowsTestOperations: environment === "sandbox",
@@ -28,7 +30,7 @@ export function getEnvironmentConfig(environment: OakEnvironment): EnvironmentCo
  */
 export function resolveBaseUrl(
   environment: OakEnvironment,
-  customUrl?: string
+  customUrl?: string,
 ): string {
   if (customUrl) {
     return customUrl;
