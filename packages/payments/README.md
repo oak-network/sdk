@@ -81,7 +81,7 @@ The SDK ships 17 service modules. Import the factory function for each service y
 | [Payment Methods](https://www.oaknetwork.org/docs/sdk/payment-methods) | `createPaymentMethodService(client)` | Add, list, get, delete payment methods              |
 | [Webhooks](https://www.oaknetwork.org/docs/sdk/webhooks)               | `createWebhookService(client)`       | Register, manage, and monitor webhooks              |
 | [Transactions](https://www.oaknetwork.org/docs/sdk/transactions)       | `createTransactionService(client)`   | List, get, and settle transactions                  |
-| [Transfers](https://www.oaknetwork.org/docs/sdk/transfers)             | `createTransferService(client)`      | Create provider transfers (Stripe, PagarMe, BRLA)  |
+| [Transfers](https://www.oaknetwork.org/docs/sdk/transfers)             | `createTransferService(client)`      | Create provider transfers (Stripe, PagarMe, BRLA)   |
 | [Plans](https://www.oaknetwork.org/docs/sdk/plans)                     | `createPlanService(client)`          | CRUD subscription plans                             |
 | [Subscriptions](https://www.oaknetwork.org/docs/sdk/subscriptions)     | `createSubscriptionService(client)`  | Subscribe, cancel, list, pay subscriptions          |
 | [Refunds](https://www.oaknetwork.org/docs/sdk/refunds)                 | `createRefundService(client)`        | Refund a payment (full or partial)                  |
@@ -387,10 +387,10 @@ if (result.ok) {
 
 ### Environments
 
-| Environment  | API Base URL                        | Description                      |
-| ------------ | ----------------------------------- | -------------------------------- |
-| `sandbox`    | `https://api-stage.usecrowdpay.xyz` | Testing — all operations allowed |
-| `production` | `https://app.usecrowdpay.xyz`       | Live — test operations blocked   |
+| Environment  | API Base URL                            | Description                      |
+| ------------ | --------------------------------------- | -------------------------------- |
+| `sandbox`    | `https://stage-payments.oaknetwork.org` | Testing — all operations allowed |
+| `production` | `https://payments.oaknetwork.org`       | Live — test operations blocked   |
 
 ```typescript
 const client = createOakClient({
