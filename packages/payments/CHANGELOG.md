@@ -1,5 +1,13 @@
 # @oaknetwork/payments-sdk
 
+## 1.4.0
+
+### Minor Changes
+
+### Minor Changes
+
+- updated new cs domain
+
 ## 1.3.0
 
 ### Minor Changes
