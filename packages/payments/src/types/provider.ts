@@ -80,6 +80,9 @@ export namespace Provider {
     provider_response: any | null;
     rejection_reason: string | null;
     readiness: any | null;
+    failure_reasons: string[] | null;
+    changes: string[] | null;
+    action_required: boolean;
     created_at: string;
     updated_at: string;
   }
@@ -109,9 +112,11 @@ export namespace Provider {
     status: string;
     provider: string;
     target_role: string;
+    provider_data: RegistrationData | null;
     provider_response: any | null;
     rejection_reason: string | null;
     readiness: any | null;
+    action_required: boolean;
     created_at: string;
     updated_at: string;
   }
