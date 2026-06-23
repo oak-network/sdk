@@ -6,7 +6,7 @@ export interface EnvironmentConfig {
 }
 
 export const ENVIRONMENT_URLS: Record<OakEnvironment, string> = {
-  sandbox: "https://stage-payments.oaknetwork.org",
+  sandbox: "https://sandbox-payments.oaknetwork.org",
   production: "https://payments.oaknetwork.org",
 };
 

@@ -387,10 +387,10 @@ if (result.ok) {
 
 ### Environments
 
-| Environment  | API Base URL                            | Description                      |
-| ------------ | --------------------------------------- | -------------------------------- |
-| `sandbox`    | `https://stage-payments.oaknetwork.org` | Testing — all operations allowed |
-| `production` | `https://payments.oaknetwork.org`       | Live — test operations blocked   |
+| Environment  | API Base URL                              | Description                      |
+| ------------ | ----------------------------------------- | -------------------------------- |
+| `sandbox`    | `https://sandbox-payments.oaknetwork.org` | Testing — all operations allowed |
+| `production` | `https://payments.oaknetwork.org`         | Live — test operations blocked   |
 
 ```typescript
 const client = createOakClient({
