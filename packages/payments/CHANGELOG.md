@@ -1,5 +1,13 @@
 # @oaknetwork/payments-sdk
 
+## 1.5.0
+
+### Minor Changes
+
+### Minor Changes
+
+- updated sandbox url and provider registration types
+
 ## 1.4.0
 
 ### Minor Changes
